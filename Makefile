@@ -15,6 +15,9 @@ data/vicmap.geojson: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/addres
 dist/vicmap-osm.geojson: data/vicmap.geojson
 	./vicmap2osm.js $< $@
 
+dist/vicmap-osm-flats.geojson: dist/vicmap-osm.geojson
+	./reduceOverlap.js $< $@
+
 data/vicmap.fgb: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
 	ogr2ogr -f FlatGeobuf $@ $<
 

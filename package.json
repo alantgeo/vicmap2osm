@@ -10,5 +10,8 @@
     "ndjson": "^2.0.0",
     "readable-stream": "^3.6.0",
     "title-case": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=12.3"
   }
 }
