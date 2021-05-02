@@ -1,7 +1,7 @@
 # download VicMap source data
 # the URL here usually gets manually updated weekly though no guarantees
 # it's a mirror of the upstream VICMAP data with split shp files reduced to a single shp file
-downloadVicmap:
+data/VICMAP_ADDRESS.zip:
 	mkdir -p data
 	wget --no-verbose --directory-prefix=data https://www.alantgeo.com.au/share/VICMAP_ADDRESS.zip
 
