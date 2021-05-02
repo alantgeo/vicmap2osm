@@ -3,7 +3,7 @@
 # it's a mirror of the upstream VICMAP data with split shp files reduced to a single shp file
 downloadVicmap:
 	mkdir -p data
-	wget --directory-prefix=data https://www.alantgeo.com.au/share/VICMAP_ADDRESS.zip
+	wget --no-verbose --directory-prefix=data https://www.alantgeo.com.au/share/VICMAP_ADDRESS.zip
 
 unzip: data/VICMAP_ADDRESS.zip
 	mkdir -p data/vicmap
