@@ -46,9 +46,10 @@ const reduce = new Transform({
 
     var groupedFeatures = features[key]
     if (groupedFeatures.length === 1) {
+      // point not overlapping
       this.push(groupedFeatures[0])
     } else {
-      // reduce
+      // points overlapping, try to reduce to non-overlapping
 
       // if housenumber, street, suburb, state, postcode are all the same
       // and it's only unit which differs,
@@ -90,7 +91,6 @@ const reduce = new Transform({
               }, [])
               .map(range => range.join('-'))
 
-            // todo sort numeric
             nonUnitFeature.properties['addr:flats'] = sortedAllOtherUnitsAsRanges.join(';')
             this.push(nonUnitFeature)
           }
@@ -118,7 +118,6 @@ const reduce = new Transform({
             }, [])
             .map(range => range.join('-'))
 
-          // todo sort numeric
           feature.properties['addr:flats'] = unitRanges.join(';')
           this.push(feature)
         }
