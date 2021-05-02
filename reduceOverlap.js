@@ -69,12 +69,14 @@ const reduce = new Transform({
             // multiple non-unit features, unsure how to reduce
           } else {
             const nonUnitFeature = nonUnitFeatures[0]
+
             // place all the other addr:unit into addr:flats
             const allOtherUnits = groupedFeatures.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
 
             // if allOtherUnits.length is one then that means we have one address without a unit and one with a unit at the same point
             // TODO should we just drop the non-unit address and keep the addr:unit one?
 
+            // adapted from https://stackoverflow.com/a/54973116/6702659
             const sortedAllOtherUnitsAsRanges = allOtherUnits
               .slice()
               .sort((a, b) => a - b)
@@ -102,6 +104,7 @@ const reduce = new Transform({
           const feature = groupedFeatures[0]
           delete feature.properties['addr:unit']
 
+          // adapted from https://stackoverflow.com/a/54973116/6702659
           const unitRanges = units
             .slice()
             .sort((a, b) => a - b)
