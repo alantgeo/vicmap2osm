@@ -1,0 +1,14 @@
+{
+  "name": "vicmap-addresses2osm",
+  "version": "1.0.0",
+  "description": "Transform upstream VicMap Address data into OSM schema",
+  "main": "index.js",
+  "author": "Andrew Harvey <andrew@alantgeo.com.au>",
+  "license": "MIT",
+  "dependencies": {
+    "capital-case": "^1.0.4",
+    "ndjson": "^2.0.0",
+    "readable-stream": "^3.6.0",
+    "title-case": "^3.0.3"
+  }
+}

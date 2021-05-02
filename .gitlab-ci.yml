@@ -1,0 +1,21 @@
+image: "debian:buster-slim"
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - apt-get update && apt-get install -y curl gnupg gdal-bin unzip wget
+    - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+    - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+    - apt-get update && apt-get install -y yarn
+    - yarn install
+    - mkdir -p dist
+    - make downloadVicmap unzip
+    - make data/vicmap.geojson
+    - make dist/vicmap-osm.geojson
+  artifacts:
+    name: "build"
+    paths:
+      - dist
