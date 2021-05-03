@@ -19,7 +19,7 @@ data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp: data/VI
 	unzip -d data/vicmap -n $<
 
 data/vicmap-property.fgb: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp
-	ogr2ogr -f FlatGeobuf $@ $<
+	ogr2ogr -f FlatGeobuf -nlt PROMOTE_TO_MULTI $@ $<
 
 data/vicmap.geojson: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
 	ogr2ogr -f GeoJSONSeq $@ $<
