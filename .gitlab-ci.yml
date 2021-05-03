@@ -41,7 +41,8 @@ build:
     - yarn install
     - node test/index.js
     - mkdir -p dist
-    - make --assume-old=data/vicmap.geojson dist/vicmap-osm.geojson
+    - touch --no-create data/vicmap.geojson
+    - make dist/vicmap-osm.geojson
     - make dist/vicmap-osm-flats.geojson
   artifacts:
     name: "build"
