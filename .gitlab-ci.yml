@@ -1,6 +1,6 @@
 image: "debian:buster-slim"
 
-cache:
+cache: &global_cache
   key: global
   paths:
     - .yarn
@@ -14,6 +14,7 @@ stages:
 prepare:
   stage: prepare
   cache:
+    <<: *global_cache
     policy: push
   script:
     - apt-get update && apt-get install -y curl gnupg gdal-bin unzip wget make
@@ -29,6 +30,7 @@ prepare:
 build:
   stage: build
   cache:
+    <<: *global_cache
     policy: pull
   script:
     - apt-get update && apt-get install -y curl gnupg make
