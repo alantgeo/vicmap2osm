@@ -39,6 +39,7 @@ build:
     - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
     - apt-get update && apt-get install -y yarn nodejs
     - yarn install
+    - node test/index.js
     - mkdir -p dist
     - make dist/vicmap-osm.geojson
     - make dist/vicmap-osm-flats.geojson

@@ -9,6 +9,7 @@
     "capital-case": "^1.0.4",
     "ndjson": "^2.0.0",
     "readable-stream": "^3.6.0",
+    "tape": "^5.2.2",
     "title-case": "^3.0.3"
   },
   "engines": {
