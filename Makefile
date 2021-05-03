@@ -5,9 +5,21 @@ data/VICMAP_ADDRESS.zip:
 	mkdir -p data
 	wget --no-verbose --directory-prefix=data https://www.alantgeo.com.au/share/VICMAP_ADDRESS.zip
 
-unzip: data/VICMAP_ADDRESS.zip
+# cadastre used for debugging
+data/VICMAP_PROPERTY.zip:
+	mkdir -p data
+	wget --no-verbose --directory-prefix=data https://www.alantgeo.com.au/share/VICMAP_PROPERTY.zip
+
+data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp: data/VICMAP_ADDRESS.zip
 	mkdir -p data/vicmap
-	unzip -d data/vicmap $<
+	unzip -d data/vicmap -n $<
+
+data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp: data/VICMAP_PROPERTY.zip
+	mkdir -p data/vicmap
+	unzip -d data/vicmap -n $<
+
+data/vicmap-property.fgb: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp
+	ogr2ogr -f FlatGeobuf $@ $<
 
 data/vicmap.geojson: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
 	ogr2ogr -f GeoJSONSeq $@ $<
