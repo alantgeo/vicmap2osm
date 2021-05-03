@@ -40,7 +40,10 @@ build:
     - apt-get update && apt-get install -y yarn nodejs
     - yarn install
     - node test/index.js
-    - mkdir -p dist
+    - mkdir -p dist data
+    - mkdir -p data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer
+    - touch data/VICMAP_ADDRESS.zip
+    - touch data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
     - touch --no-create data/vicmap.geojson
     - make dist/vicmap-osm.geojson
     - make dist/vicmap-osm-flats.geojson
