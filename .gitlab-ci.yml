@@ -46,7 +46,8 @@ build:
     - touch data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
     - touch --no-create data/vicmap.geojson
     - make dist/vicmap-osm.geojson
-    - make dist/vicmap-osm-flats.geojson
+    - make dist/vicmap-osm-uniq.geojson
+    - make dist/vicmap-osm-uniq-flats.geojson
   artifacts:
     name: "build"
     paths:
