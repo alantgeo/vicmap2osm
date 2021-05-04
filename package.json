@@ -5,12 +5,19 @@
   "main": "index.js",
   "author": "Andrew Harvey <andrew@alantgeo.com.au>",
   "license": "MIT",
+  "scripts": {
+    "test": "./node_modules/.bin/tape test/index.js test/cluster.js"
+  },
   "dependencies": {
     "capital-case": "^1.0.4",
+    "cheap-ruler": "^3.0.1",
+    "flatbush": "^3.3.0",
+    "geoflatbush": "^1.0.0",
     "ndjson": "^2.0.0",
     "readable-stream": "^3.6.0",
     "tape": "^5.2.2",
-    "title-case": "^3.0.3"
+    "title-case": "^3.0.3",
+    "yargs": "^17.0.0"
   },
   "engines": {
     "node": ">=12.3"
