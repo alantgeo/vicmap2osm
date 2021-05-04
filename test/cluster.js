@@ -1,6 +1,6 @@
 const test = require('tape')
 
-const cluster = require('../cluster.js')
+const cluster = require('../lib/cluster.js')
 
 const A = {
   type: 'Feature',
