@@ -6,15 +6,24 @@ const ndjson = require('ndjson')
 const toOSM = require('./toOSM.js')
 const filterOSM = require('./filterOSM.js')
 
-const args = process.argv.slice(2)
+const argv = require('yargs/yargs')(process.argv.slice(2))
+  .option('debug', {
+    type: 'boolean',
+    description: 'Dumps full debug logs'
+  })
+  .option('tracing', {
+    type: 'boolean',
+    description: 'Includes _pfi tags to aid debugging'
+  })
+  .argv
 
-if (args.length < 2) {
+if (argv._.length < 2) {
   console.error("Usage: ./vicmap2osm.js input.geojson output.geojson")
   process.exit(1)
 }
 
-const inputFile = args[0]
-const outputFile = args[1]
+const inputFile = argv._[0]
+const outputFile = argv._[1]
 
 if (!fs.existsSync(inputFile)) {
   console.error(`${inputFile} not found`)
@@ -26,10 +35,14 @@ const transform = new Transform({
   writableObjectMode: true,
   transform(feature, encoding, callback) {
     // convert source Feature into a Feature per the OSM schema
-    const osm = toOSM(feature)
+    const osm = toOSM(feature, {
+      tracing: argv.tracing
+    })
 
-    // some addresses we skip importing into OSM
-    if (filterOSM(osm)) {
+    // some addresses we skip importing into OSM, see README.md#omitted-addresses
+    if (filterOSM(osm, {
+      debug: argv.debug
+    })) {
       this.push(osm)
     }
 

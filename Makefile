@@ -28,13 +28,28 @@ data/vicmap.geojson: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/addres
 	ogr2ogr -f GeoJSONSeq $@ $<
 
 dist/vicmap-osm.geojson: data/vicmap.geojson
-	./vicmap2osm.js $< $@
+	./bin/vicmap2osm.js $< $@
 
-dist/vicmap-osm-flats.geojson: dist/vicmap-osm.geojson
-	./reduceOverlap.js $< $@
+dist/vicmap-osm-uniq.geojson: dist/vicmap-osm.geojson
+	node --max-old-space-size=4096 bin/reduceDuplicates.js $< $@
+
+dist/vicmap-osm-uniq-flats.geojson: dist/vicmap-osm-uniq.geojson
+	./bin/reduceOverlap.js $< $@
+
+loadPgOSM: dist/vicmap-osm.geojson
+	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vm_osm
 
 data/vicmap.fgb: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
 	ogr2ogr -f FlatGeobuf $@ $<
 
 dist/vicmap-osm.fgb: dist/vicmap-osm.geojson
 	ogr2ogr -f FlatGeobuf $@ $<
+
+# useful for development to be able to query a database
+loadPgAdd: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
+	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vmadd
+	# index all columns for faster queries during development
+	psql -f src/createIndexQuery.sql --tuples-only | psql
+
+loadPgProp: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp
+	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vmprop

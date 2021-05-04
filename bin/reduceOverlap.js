@@ -3,16 +3,17 @@
 const fs = require('fs')
 const { Readable, Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
+const util = require('util')
 
-const args = process.argv.slice(2)
+const argv = require('yargs/yargs')(process.argv.slice(2)).argv
 
-if (args.length < 2) {
+if (argv._.length < 2) {
   console.error("Usage: ./reduceOverlap.js input.geojson output.geojson")
   process.exit(1)
 }
 
-const inputFile = args[0]
-const outputFile = args[1]
+const inputFile = argv._[0]
+const outputFile = argv._[1]
 
 if (!fs.existsSync(inputFile)) {
   console.error(`${inputFile} not found`)
@@ -22,11 +23,21 @@ if (!fs.existsSync(inputFile)) {
 let sourceCount = 0
 const features = {}
 
+/**
+ * Index features by geometry. Used as a first pass, so a second pass can easily compare
+ * features with the same geometry.
+ */
 const index = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
   transform(feature, encoding, callback) {
     sourceCount++
+
+    if (!argv.quiet) {
+      if (sourceCount % 10000 === 0) {
+        process.stdout.write(` ${sourceCount / 1000}k\r`)
+      }
+    }
 
     const geometryKey = feature.geometry.coordinates.join(',')
 
@@ -39,22 +50,34 @@ const index = new Transform({
   }
 })
 
+/**
+ * Reduces features with the same geometry.
+ */
+let reduceIndex = 0
 const reduce = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
   transform(key, encoding, callback) {
+    reduceIndex++
+    if (!argv.quiet) {
+      if (reduceIndex % 10000 === 0) {
+        process.stdout.write(` ${reduceIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(reduceIndex / sourceCount * 100)}%)\r`)
+      }
+    }
 
     var groupedFeatures = features[key]
+
     if (groupedFeatures.length === 1) {
-      // point not overlapping
+      // only one feature with this geometry, nothing to reduce, output as is
       this.push(groupedFeatures[0])
     } else {
-      // points overlapping, try to reduce to non-overlapping
+      // mulitple features with the same geometry
 
-      // if housenumber, street, suburb, state, postcode are all the same
+      // if housename, housenumber, street, suburb, state, postcode are all the same
       // and it's only unit which differs,
       // and there is an address with no unit
       // then remove all the unit addresses and add them as addr:flats on the no unit address
+      const sameHousename = [...new Set(groupedFeatures.map(f => f.properties['addr:housename']))].length <= 1
       const sameHousenumber = [...new Set(groupedFeatures.map(f => f.properties['addr:housenumber']))].length <= 1
       const sameStreet = [...new Set(groupedFeatures.map(f => f.properties['addr:street']))].length <= 1
       const sameSuburb = [...new Set(groupedFeatures.map(f => f.properties['addr:suburb']))].length <= 1
@@ -63,11 +86,13 @@ const reduce = new Transform({
 
       const hasNonUnit = groupedFeatures.map(f => 'addr:unit' in f.properties).includes(false)
 
-      if (sameHousenumber && sameStreet && sameSuburb && sameState && samePostcode) {
+      if (sameHousename && sameHousenumber && sameStreet && sameSuburb && sameState && samePostcode) {
         if (hasNonUnit) {
           const nonUnitFeatures = groupedFeatures.filter(f => (!('addr:unit' in f.properties)))
           if (nonUnitFeatures.length > 1) {
             // multiple non-unit features, unsure how to reduce
+            console.log('multiple non-unit features, unsure how to reduce')
+            console.dir(groupedFeatures, {depth: null})
           } else {
             const nonUnitFeature = nonUnitFeatures[0]
 
@@ -76,6 +101,8 @@ const reduce = new Transform({
 
             // if allOtherUnits.length is one then that means we have one address without a unit and one with a unit at the same point
             // TODO should we just drop the non-unit address and keep the addr:unit one?
+            // need to determine if you always have a non-unit address for the unit address, if there is then
+            // perhaps we can safely drop the non-unit address and use a single addr:unit
 
             // adapted from https://stackoverflow.com/a/54973116/6702659
             const sortedAllOtherUnitsAsRanges = allOtherUnits
@@ -100,6 +127,9 @@ const reduce = new Transform({
           const units = groupedFeatures.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
 
           // TODO assert units.length > 1
+          if (units.length <= 1) {
+            // console.log(`all have same housenumber, street, suburb, state, postcode but no non-unit, but only found ${units.length} units`, units)
+          }
 
           const feature = groupedFeatures[0]
           delete feature.properties['addr:unit']
@@ -122,11 +152,13 @@ const reduce = new Transform({
           this.push(feature)
         }
       } else {
-        console.log('addresses with the same geometry, however more than unit differs')
+        // addresses with the same geometry, however more than unit differs
         // TODO need to investigate to see what we can/shoud do about these
-        //console.log(groupedFeatures)
         for (let i = 0; i < groupedFeatures.length; i++) {
           this.push(groupedFeatures[i])
+          if (debugSameGeometry) {
+            debugSameGeometry.write(groupedFeatures[i])
+          }
         }
       }
     }
@@ -134,6 +166,11 @@ const reduce = new Transform({
     callback()
   }
 })
+
+const debugSameGeometry = argv.debug ?
+  ndjson.stringify()
+    .pipe(fs.createWriteStream('debug/reduceOverlap/sameGeometry.geojson'))
+  : null
 
 // first pass to index by geometry
 console.log('First pass to index by geometry')
@@ -158,6 +195,7 @@ pipeline(
             console.log(err)
             process.exit(1)
           } else {
+            debugSameGeometry.end()
             process.exit(0)
           }
         }
