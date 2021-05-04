@@ -100,11 +100,11 @@ const reduce = new Transform({
           // more than one cluster, reduce those clustered into one, and then report all the results
           const clusterAverages = clusters.map(cluster => {
             if (cluster.length === 1) {
-              return cluster
+              return cluster[0]
             } else {
               const averageCoordinates = [
-                cluster.map(f => f.geometry.coordinates[0]).reduce((acc, cur) => acc + cur) / groupedFeatures.length,
-                cluster.map(f => f.geometry.coordinates[1]).reduce((acc, cur) => acc + cur) / groupedFeatures.length
+                cluster.map(f => f.geometry.coordinates[0]).reduce((acc, cur) => acc + cur) / cluster.length,
+                cluster.map(f => f.geometry.coordinates[1]).reduce((acc, cur) => acc + cur) / cluster.length
               ]
               const averageFeature = cluster[0]
               averageFeature.geometry.coordinates = averageCoordinates
@@ -119,7 +119,7 @@ const reduce = new Transform({
               properties: clusterAverages[0].properties,
               geometry: {
                 type: 'LineString',
-                coordinates: averageClusters.map(p => p.geometry.coordinates)
+                coordinates: clusterAverages.map(p => p.geometry.coordinates)
               }
             }
             debugDuplicateAddressStream.write(webOfMatches)
@@ -132,10 +132,12 @@ const reduce = new Transform({
   }
 })
 
-const debugDuplicateAddressesStream = argv.debug ?
-  ndjson.stringify()
-    .pipe(fs.createWriteStream('debug/reduceDuplicates/duplicateAddresses.geojson'))
-  : null
+const debugDuplicateAddressStream = argv.debug ? ndjson.stringify() : null
+
+let debugApplicationsAddressStreamOutput
+if (debugDuplicateAddressStream) {
+  debugApplicationsAddressStreamOutput = debugDuplicateAddressStream.pipe(fs.createWriteStream('debug/reduceDuplicates/duplicateAddresses.geojson'))
+}
 
 // first pass to index by geometry
 console.log('First pass to index by address properties')
@@ -160,8 +162,17 @@ pipeline(
             console.log(err)
             process.exit(1)
           } else {
-            debugDuplicateAddressesStream.end()
-            process.exit(0)
+            if (debugDuplicateAddressStream) {
+              debugDuplicateAddressStream.end()
+            }
+            if (debugApplicationsAddressStreamOutput) {
+              debugApplicationsAddressStreamOutput.on('finish', () => {
+                console.log('saved debug/reduceDuplicates/duplicateAddresses.geojson')
+                process.exit(0)
+              })
+            } else {
+              process.exit(0)
+            }
           }
         }
       )
