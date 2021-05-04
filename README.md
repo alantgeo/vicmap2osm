@@ -77,3 +77,15 @@ Data consumers can still easily explode `addr:flats` out into overlapping nodes 
 ### null values
 
 Values `UNNAMED` and `NOT NAMED` appear as street name and locality names. These values are treated as null/empty values rather than proper names.
+
+### name
+Source data contains a field for building / property name. This appears to be a mixed bag sometimes it might fit better as `addr:housename` othertimes simply `name`. Further it's not too clear the distinction between these tags and how house names, property names, building names or the name of the venue at the site should be tagged.
+
+It's common for the source data to use what we'd consider a description like "Shop", "Public Toilets" or "Reserve".
+
+For these reasons this building / property name is not included, however it could be a useful point of reference for mappers considering manually adding this data at a later stage.
+
+### Complex Name
+Source data sometimes includes a complex name, for example _CHADSTONE SHOPPING CENTRE_ or _MELBOURNE UNIVERSITY_. These attributes are not used as these names should appear on the actual feature like `shop=mall` or `amenity=university`.
+
+They might be of interest for mappers as an additional data source, externally to this import.

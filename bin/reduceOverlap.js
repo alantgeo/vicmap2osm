@@ -73,11 +73,10 @@ const reduce = new Transform({
     } else {
       // mulitple features with the same geometry
 
-      // if housename, housenumber, street, suburb, state, postcode are all the same
+      // if housenumber, street, suburb, state, postcode are all the same
       // and it's only unit which differs,
       // and there is an address with no unit
       // then remove all the unit addresses and add them as addr:flats on the no unit address
-      const sameHousename = [...new Set(groupedFeatures.map(f => f.properties['addr:housename']))].length <= 1
       const sameHousenumber = [...new Set(groupedFeatures.map(f => f.properties['addr:housenumber']))].length <= 1
       const sameStreet = [...new Set(groupedFeatures.map(f => f.properties['addr:street']))].length <= 1
       const sameSuburb = [...new Set(groupedFeatures.map(f => f.properties['addr:suburb']))].length <= 1
@@ -86,7 +85,7 @@ const reduce = new Transform({
 
       const hasNonUnit = groupedFeatures.map(f => 'addr:unit' in f.properties).includes(false)
 
-      if (sameHousename && sameHousenumber && sameStreet && sameSuburb && sameState && samePostcode) {
+      if (sameHousenumber && sameStreet && sameSuburb && sameState && samePostcode) {
         if (hasNonUnit) {
           const nonUnitFeatures = groupedFeatures.filter(f => (!('addr:unit' in f.properties)))
           if (nonUnitFeatures.length > 1) {

@@ -44,7 +44,6 @@ const index = new Transform({
 
     const key = [
       feature.properties['addr:unit'],
-      feature.properties['addr:housename'],
       feature.properties['addr:housenumber'],
       feature.properties['addr:street'],
       feature.properties['addr:suburb'],
