@@ -3,9 +3,14 @@
 const fs = require('fs')
 const { Readable, Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
-const util = require('util')
+const cloneDeep = require('clone-deep')
 
-const argv = require('yargs/yargs')(process.argv.slice(2)).argv
+const argv = require('yargs/yargs')(process.argv.slice(2))
+  .option('debug', {
+    type: 'boolean',
+    description: 'Dumps full debug logs'
+  })
+  .argv
 
 if (argv._.length < 2) {
   console.error("Usage: ./reduceOverlap.js input.geojson output.geojson")
@@ -87,50 +92,62 @@ const reduce = new Transform({
 
       if (sameHousenumber && sameStreet && sameSuburb && sameState && samePostcode) {
         if (hasNonUnit) {
+          // all have same housenumber, street, suburb, state, postcode and there is a non-unit feature
           const nonUnitFeatures = groupedFeatures.filter(f => (!('addr:unit' in f.properties)))
           if (nonUnitFeatures.length > 1) {
             // multiple non-unit features, unsure how to reduce
-            console.log('multiple non-unit features, unsure how to reduce')
-            console.dir(groupedFeatures, {depth: null})
+            // TODO should these still be output to be picked up by ranges
+            if (argv.debug) {
+              groupedFeatures.forEach(feature => {
+                debugStreams.multipleNonUnit.write(feature)
+              })
+            }
           } else {
-            const nonUnitFeature = nonUnitFeatures[0]
+            // a single non-unit feature exists
+            const nonUnitFeature = cloneDeep(nonUnitFeatures[0])
 
-            // place all the other addr:unit into addr:flats
+            // place all the other addr:unit into addr:flats on the non-unit feature
             const allOtherUnits = groupedFeatures.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
 
             // if allOtherUnits.length is one then that means we have one address without a unit and one with a unit at the same point
-            // TODO should we just drop the non-unit address and keep the addr:unit one?
-            // need to determine if you always have a non-unit address for the unit address, if there is then
-            // perhaps we can safely drop the non-unit address and use a single addr:unit
+            // in this case we just drop the non-unit address and keep the addr:unit one
+            if (allOtherUnits.length === 1) {
+              if (argv.debug) {
+                groupedFeatures.forEach(feature => {
+                  debugStreams.oneUnitOneNonUnit.write(feature)
+                })
+              }
+              this.push(allOtherUnits[0])
+            } else {
+              // adapted from https://stackoverflow.com/a/54973116/6702659
+              const sortedAllOtherUnitsAsRanges = allOtherUnits
+                .slice()
+                .sort((a, b) => a - b)
+                .reduce((acc, cur, idx, src) => {
+                  if ((idx > 0) && ((cur - src[idx - 1]) === 1)) {
+                    acc[acc.length - 1][1] = cur
+                  } else {
+                    acc.push([cur])
+                  }
+                  return acc
+                }, [])
+                .map(range => range.join('-'))
 
-            // adapted from https://stackoverflow.com/a/54973116/6702659
-            const sortedAllOtherUnitsAsRanges = allOtherUnits
-              .slice()
-              .sort((a, b) => a - b)
-              .reduce((acc, cur, idx, src) => {
-                if ((idx > 0) && ((cur - src[idx - 1]) === 1)) {
-                  acc[acc.length - 1][1] = cur
-                } else {
-                  acc.push([cur])
-                }
-                return acc
-              }, [])
-              .map(range => range.join('-'))
-
-            nonUnitFeature.properties['addr:flats'] = sortedAllOtherUnitsAsRanges.join(';')
-            this.push(nonUnitFeature)
+              nonUnitFeature.properties['addr:flats'] = sortedAllOtherUnitsAsRanges.join(';')
+              this.push(nonUnitFeature)
+            }
           }
         } else {
-          // all have same housenumber, street, suburb, state, postcode but no non-unit
+          // all have same housenumber, street, suburb, state, postcode but no non-unit, ie. all with different unit values
           // combine all the addr:unit into addr:flats and then drop addr:unit
           const units = groupedFeatures.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
 
-          // TODO assert units.length > 1
           if (units.length <= 1) {
-            // console.log(`all have same housenumber, street, suburb, state, postcode but no non-unit, but only found ${units.length} units`, units)
+            console.log(`all have same housenumber, street, suburb, state, postcode with no non-unit, but only found ${units.length} units`, units)
+            process.exit(1)
           }
 
-          const feature = groupedFeatures[0]
+          const feature = cloneDeep(groupedFeatures[0])
           delete feature.properties['addr:unit']
 
           // adapted from https://stackoverflow.com/a/54973116/6702659
@@ -152,13 +169,13 @@ const reduce = new Transform({
         }
       } else {
         // addresses with the same geometry, however more than unit differs
-        // TODO need to investigate to see what we can/shoud do about these
-        for (let i = 0; i < groupedFeatures.length; i++) {
-          this.push(groupedFeatures[i])
-          if (debugSameGeometry) {
-            debugSameGeometry.write(groupedFeatures[i])
+        // TODO need to investigate to see what we can/should do about these
+        groupedFeatures.forEach(feature => {
+          this.push(feature)
+          if (argv.debug) {
+            debugStreams.sameGeometry.write(feature)
           }
-        }
+        })
       }
     }
 
@@ -166,10 +183,16 @@ const reduce = new Transform({
   }
 })
 
-const debugSameGeometry = argv.debug ?
-  ndjson.stringify()
-    .pipe(fs.createWriteStream('debug/reduceOverlap/sameGeometry.geojson'))
-  : null
+const debugKeys = ['multipleNonUnit', 'oneUnitOneNonUnit', 'sameGeometry']
+const debugStreams = {}
+const debugStreamOutputs = {}
+
+if (argv.debug) {
+  debugKeys.forEach(key => {
+    debugStreams[key] = ndjson.stringify()
+    debugStreamOutputs[key] = debugStreams[key].pipe(fs.createWriteStream(`debug/reduceOverlap/${key}.geojson`))
+  })
+}
 
 // first pass to index by geometry
 console.log('First pass to index by geometry')
@@ -194,8 +217,25 @@ pipeline(
             console.log(err)
             process.exit(1)
           } else {
-            debugSameGeometry.end()
-            process.exit(0)
+            if (argv.debug) {
+              debugKeys.forEach(key => {
+                debugStreams[key].end()
+              })
+
+              Promise.all(debugKeys.map(key => {
+                return new Promise(resolve => {
+                  debugStreamOutputs[key].on('finish', () => {
+                    console.log(`saved debug/reduceOverlap/${key}.geojson`)
+                    resolve()
+                  })
+                })
+              }))
+                .then(() => {
+                  process.exit(0)
+                })
+            } else {
+              process.exit(0)
+            }
           }
         }
       )

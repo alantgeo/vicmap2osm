@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 
+/**
+ * Convert from Vicmap Address schema into OSM Address schema, and omit some addresses
+ */
+
 const fs = require('fs')
 const { Transform, pipeline } = require('readable-stream')
 const ndjson = require('ndjson')
-const toOSM = require('./toOSM.js')
-const filterOSM = require('./filterOSM.js')
+const toOSM = require('../lib/toOSM.js')
+const filterOSM = require('../lib/filterOSM.js')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {

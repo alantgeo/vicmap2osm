@@ -11,6 +11,7 @@
   "dependencies": {
     "capital-case": "^1.0.4",
     "cheap-ruler": "^3.0.1",
+    "clone-deep": "^4.0.1",
     "flatbush": "^3.3.0",
     "geoflatbush": "^1.0.0",
     "ndjson": "^2.0.0",
