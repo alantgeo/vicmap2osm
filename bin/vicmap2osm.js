@@ -9,6 +9,7 @@ const { Transform, pipeline } = require('readable-stream')
 const ndjson = require('ndjson')
 const toOSM = require('../lib/toOSM.js')
 const filterOSM = require('../lib/filterOSM.js')
+const filterSource = require('../lib/filterSource.js')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {
@@ -44,9 +45,7 @@ const transform = new Transform({
     })
 
     // some addresses we skip importing into OSM, see README.md#omitted-addresses
-    if (filterOSM(osm, {
-      debug: argv.debug
-    })) {
+    if (filterOSM(osm) && filterSource(feature)) {
       this.push(osm)
     }
 
