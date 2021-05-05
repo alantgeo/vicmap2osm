@@ -27,6 +27,9 @@ data/vicmap-property.fgb: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/
 data/vicmap.geojson:
 	ogr2ogr -f GeoJSONSeq $@ data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
 
+vicmapExtract:
+	ogr2ogr -f GeoJSONSeq -clipsrc 144.95392 -37.80260 144.97298 -37.79204 data/vicmap.geojson data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
+
 dist/vicmap-osm.geojson: data/vicmap.geojson
 	./bin/vicmap2osm.js $< $@
 
