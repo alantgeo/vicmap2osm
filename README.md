@@ -102,4 +102,4 @@ One potential solution is to encode this in the `addr:` key like `addr:unit`, `a
 
 Another solution is use a new tag like `addr:unit:prefix=Unit`, although there is no existing usage of this tagging scheme ([taginfo](https://taginfo.openstreetmap.org/search?q=addr%3Aunit#keys)).
 
-Alternativly this information could be omitted.
+In the current codebase this information is omitted.
