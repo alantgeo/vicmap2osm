@@ -102,7 +102,6 @@ test('toOSM range with prefix aX-bY', t => {
   const output = {
     type: 'Feature',
     properties: {
-      'addr:housename': 'STUDENT RESIDENCE - SITE LV 4',
       'addr:housenumber': 'A1-A8',
       'addr:street': 'Lakeside Village Drive',
       'addr:suburb': 'Lilydale',
