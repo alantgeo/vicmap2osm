@@ -34,10 +34,12 @@ dist/vicmap-osm.geojson: data/vicmap.geojson
 	./bin/vicmap2osm.js $< $@
 
 dist/vicmap-osm-uniq.geojson: dist/vicmap-osm.geojson
-	node --max-old-space-size=4096 bin/reduceDuplicates.js $< $@
+	mkdir -p debug/reduceDuplicates
+	node --max_old_space_size=4096 ./bin/reduceDuplicates.js --debug $< $@
 
 dist/vicmap-osm-uniq-flats.geojson: dist/vicmap-osm-uniq.geojson
-	./bin/reduceOverlap.js $< $@
+	mkdir -p debug/reduceOverlap
+	node --max_old_space_size=4096 ./bin/reduceOverlap.js --debug $< $@
 
 loadPgOSM: dist/vicmap-osm.geojson
 	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vm_osm
