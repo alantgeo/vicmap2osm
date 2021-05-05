@@ -4,6 +4,7 @@ const fs = require('fs')
 const { Readable, Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
 const cloneDeep = require('clone-deep')
+const unitsToRanges = require('../lib/unitsToRanges.js')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {

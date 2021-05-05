@@ -6,7 +6,7 @@
   "author": "Andrew Harvey <andrew@alantgeo.com.au>",
   "license": "MIT",
   "scripts": {
-    "test": "./node_modules/.bin/tape test/toOSM.js test/cluster.js"
+    "test": "./node_modules/.bin/tape test/toOSM.js test/cluster.js test/unitsToRanges.js"
   },
   "dependencies": {
     "capital-case": "^1.0.4",
