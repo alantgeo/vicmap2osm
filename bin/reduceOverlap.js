@@ -79,105 +79,89 @@ const reduce = new Transform({
     } else {
       // mulitple features with the same geometry
 
-      // if housenumber, street, suburb, state, postcode are all the same
-      // and it's only unit which differs,
-      // and there is an address with no unit
-      // then remove all the unit addresses and add them as addr:flats on the no unit address
-      const sameHousenumber = [...new Set(groupedFeatures.map(f => f.properties['addr:housenumber']))].length <= 1
-      const sameStreet = [...new Set(groupedFeatures.map(f => f.properties['addr:street']))].length <= 1
-      const sameSuburb = [...new Set(groupedFeatures.map(f => f.properties['addr:suburb']))].length <= 1
-      const sameState = [...new Set(groupedFeatures.map(f => f.properties['addr:state']))].length <= 1
-      const samePostcode = [...new Set(groupedFeatures.map(f => f.properties['addr:postcode']))].length <= 1
+      // group by housenumber, street, suburb, state, postcode to reduce units into addr:flats
+      // groupedFeatures all all the features at the same point
+      const featuresGroupByNonUnit = {}
+      groupedFeatures.forEach(feature => {
+        const key = [
+          feature.properties['addr:housenumber'],
+          feature.properties['addr:street'],
+          feature.properties['addr:suburb'],
+          feature.properties['addr:state'],
+          feature.properties['addr:postcode']
+        ].join(';')
 
-      const hasNonUnit = groupedFeatures.map(f => 'addr:unit' in f.properties).includes(false)
+        if (!(key in featuresGroupByNonUnit)) {
+          featuresGroupByNonUnit[key] = []
+        }
 
-      if (sameHousenumber && sameStreet && sameSuburb && sameState && samePostcode) {
-        if (hasNonUnit) {
-          // all have same housenumber, street, suburb, state, postcode and there is a non-unit feature
-          const nonUnitFeatures = groupedFeatures.filter(f => (!('addr:unit' in f.properties)))
-          if (nonUnitFeatures.length > 1) {
-            // multiple non-unit features, unsure how to reduce
-            // TODO should these still be output to be picked up by ranges
-            if (argv.debug) {
-              groupedFeatures.forEach(feature => {
-                debugStreams.multipleNonUnit.write(feature)
-              })
-            }
-          } else {
-            // a single non-unit feature exists
-            const nonUnitFeature = cloneDeep(nonUnitFeatures[0])
+        featuresGroupByNonUnit[key].push(feature)
+      })
 
-            // place all the other addr:unit into addr:flats on the non-unit feature
-            const allOtherUnits = groupedFeatures.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
+      Object.values(featuresGroupByNonUnit).forEach(featureGroup => {
+        if (featureGroup.length > 1) {
+          const hasNonUnit = featureGroup.map(f => 'addr:unit' in f.properties).includes(false)
 
-            // if allOtherUnits.length is one then that means we have one address without a unit and one with a unit at the same point
-            // in this case we just drop the non-unit address and keep the addr:unit one
-            if (allOtherUnits.length === 1) {
+          if (hasNonUnit) {
+            // all have same housenumber, street, suburb, state, postcode and there is a non-unit feature
+            const nonUnitFeatures = featureGroup.filter(f => (!('addr:unit' in f.properties)))
+            if (nonUnitFeatures.length > 1) {
+              // multiple non-unit features, unsure how to reduce
+              // TODO should these still be output to be picked up by ranges
               if (argv.debug) {
-                groupedFeatures.forEach(feature => {
-                  debugStreams.oneUnitOneNonUnit.write(feature)
+                featureGroup.forEach(feature => {
+                  debugStreams.multipleNonUnit.write(feature)
                 })
               }
-              this.push(allOtherUnits[0])
             } else {
-              // adapted from https://stackoverflow.com/a/54973116/6702659
-              const sortedAllOtherUnitsAsRanges = allOtherUnits
-                .slice()
-                .sort((a, b) => a - b)
-                .reduce((acc, cur, idx, src) => {
-                  if ((idx > 0) && ((cur - src[idx - 1]) === 1)) {
-                    acc[acc.length - 1][1] = cur
-                  } else {
-                    acc.push([cur])
-                  }
-                  return acc
-                }, [])
-                .map(range => range.join('-'))
+              // a single non-unit feature exists
+              const nonUnitFeature = cloneDeep(nonUnitFeatures[0])
 
-              nonUnitFeature.properties['addr:flats'] = sortedAllOtherUnitsAsRanges.join(';')
-              this.push(nonUnitFeature)
-            }
-          }
-        } else {
-          // all have same housenumber, street, suburb, state, postcode but no non-unit, ie. all with different unit values
-          // combine all the addr:unit into addr:flats and then drop addr:unit
-          const units = groupedFeatures.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
+              // place all the other addr:unit into addr:flats on the non-unit feature
+              const allOtherUnits = featureGroup.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
 
-          if (units.length <= 1) {
-            console.log(`all have same housenumber, street, suburb, state, postcode with no non-unit, but only found ${units.length} units`, units)
-            process.exit(1)
-          }
-
-          const feature = cloneDeep(groupedFeatures[0])
-          delete feature.properties['addr:unit']
-
-          // adapted from https://stackoverflow.com/a/54973116/6702659
-          const unitRanges = units
-            .slice()
-            .sort((a, b) => a - b)
-            .reduce((acc, cur, idx, src) => {
-              if ((idx > 0) && ((cur - src[idx - 1]) === 1)) {
-                acc[acc.length - 1][1] = cur
+              // if allOtherUnits.length is one then that means we have one address without a unit and one with a unit at the same point
+              // in this case we just drop the non-unit address and keep the addr:unit one
+              if (allOtherUnits.length === 1) {
+                if (argv.debug) {
+                  featureGroup.forEach(feature => {
+                    debugStreams.oneUnitOneNonUnit.write(feature)
+                  })
+                }
+                this.push(allOtherUnits[0])
               } else {
-                acc.push([cur])
+                nonUnitFeature.properties['addr:flats'] = unitsToRanges(allOtherUnits)
+                // TODO should we set addr:flats:prefix from addr:unit:prefix?
+                this.push(nonUnitFeature)
               }
-              return acc
-            }, [])
-            .map(range => range.join('-'))
+            }
+          } else {
+            // all have same housenumber, street, suburb, state, postcode but no non-unit, ie. all with different unit values
+            // combine all the addr:unit into addr:flats and then drop addr:unit
+            const units = featureGroup.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
 
-          feature.properties['addr:flats'] = unitRanges.join(';')
+            if (units.length <= 1) {
+              console.log(`all have same housenumber, street, suburb, state, postcode with no non-unit, but only found ${units.length} units`, units)
+              process.exit(1)
+            }
+
+            const feature = cloneDeep(featureGroup[0])
+            delete feature.properties['addr:unit']
+
+            feature.properties['addr:flats'] = unitsToRanges(units)
+            this.push(feature)
+          }
+        } else if (featureGroup.length === 1) {
+          // while other features share the same geometry, this one is unique in it's housenumber,street,suburb,state,postcode
+          // so output this feature, and we deal with the overlap at another stage
+          const feature = featureGroup[0]
           this.push(feature)
-        }
-      } else {
-        // addresses with the same geometry, however more than unit differs
-        // TODO need to investigate to see what we can/should do about these
-        groupedFeatures.forEach(feature => {
-          this.push(feature)
+
           if (argv.debug) {
             debugStreams.sameGeometry.write(feature)
           }
-        })
-      }
+        }
+      })
     }
 
     callback()
