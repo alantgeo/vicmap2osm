@@ -1,0 +1,18 @@
+{
+  "attributes": {
+    "type":      true,
+    "id":        true,
+    "version":   false,
+    "changeset": false,
+    "timestamp": false,
+    "uid":       false,
+    "user":      false,
+    "way_nodes": true
+  },
+  "format_options": {
+  },
+  "linear_tags": ["addr:interpolation"],
+  "area_tags": ["addr:housenumber"],
+  "exclude_tags": [],
+  "include_tags": ["addr:*"]
+}

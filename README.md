@@ -12,7 +12,7 @@ The _prepare_ stage downloads Vicmap Address data and converts it into GeoJSON, 
 
 The _build_ stage does all the processing to produce the import candidate data and intermediate datasets and reports.
 
-## Build candidate files
+## Build candidate files (pre-conflation)
 
 Download source Vicmap data and convert to GeoJSON:
 

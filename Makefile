@@ -61,3 +61,16 @@ loadPgAdd: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
 
 loadPgProp: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp
 	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vmprop
+
+data/victoria.osm.pbf:
+	wget --no-verbose --directory-prefix=data http://download.openstreetmap.fr/extracts/oceania/australia/victoria.osm.pbf
+
+# addr:suburb, addr:postcode alone without a housenumber or being an interpolation way aren't of much use for comparisons
+data/victoria-addr.osm.pbf: data/victoria.osm.pbf
+	osmium tags-filter --output=$@ --overwrite $< addr:housenumber addr:interpolation
+
+data/victoria-addr.osm.geojson: data/victoria-addr.osm.pbf
+	osmium export --config=config/osmium-export-config.json --output-format=geojsonseq --output=$@ --overwrite $<
+
+data/victoria-addr.osm.fgb: data/victoria-addr.osm.geojson
+	ogr2ogr -f FlatGeobuf -nlt PROMOTE_TO_MULTI $@ $<
