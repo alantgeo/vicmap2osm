@@ -39,5 +39,53 @@ test('units list to addr:flats', t => {
     'range and singular'
   )
 
+  t.same(
+    unitsToRanges(['3', '1']),
+    '1;3',
+    'singular sorted'
+  )
+
+  t.same(
+    unitsToRanges(['1', '2', '5', '4']),
+    '1-2;4-5',
+    'range sorted'
+  )
+
+  t.same(
+    unitsToRanges(['1-2', '3-4']),
+    '1-4',
+    'accepted ranged input'
+  )
+
+  t.same(
+    unitsToRanges(['1A', '2A']),
+    '1A-2A',
+    'with suffix'
+  )
+
+  t.same(
+    unitsToRanges(['1A', '2A', '3']),
+    '1A-2A;3',
+    'partially with suffix'
+  )
+
+  t.same(
+    unitsToRanges(['1A', '2B']),
+    '1A;2B',
+    'different suffix not merged'
+  )
+
+  t.same(
+    unitsToRanges(['A1b', 'A2b']),
+    'A1b-A2b',
+    'prefix merged'
+  )
+
+  t.same(
+    unitsToRanges(['A1b', 'C2d']),
+    'A1b;C2d',
+    'different prefix not merged'
+  )
+
   t.end()
 })
