@@ -129,7 +129,7 @@ const reduce = new Transform({
                     debugStreams.oneUnitOneNonUnit.write(feature)
                   })
                 }
-                this.push(allOtherUnits[0])
+                this.push(featureGroup.filter(f => 'addr:unit' in f.properties)[0])
               } else {
                 nonUnitFeature.properties['addr:flats'] = unitsToRanges(allOtherUnits)
                 // TODO should we set addr:flats:prefix from addr:unit:prefix?
