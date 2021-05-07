@@ -81,4 +81,4 @@ data/victoria-addr.osm.geojson: data/victoria-addr.osm.pbf
 	osmium export --config=config/osmium-export-config.json --output-format=geojsonseq --output=$@ --overwrite $<
 
 data/victoria-addr.osm.fgb: data/victoria-addr.osm.geojson
-	ogr2ogr -f FlatGeobuf -nlt PROMOTE_TO_MULTI $@ $<
+	ogr2ogr -f FlatGeobuf -nlt PROMOTE_TO_MULTI -skipfailures -mapFieldType Integer64List=String $@ $<
