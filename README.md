@@ -28,9 +28,13 @@ Remove duplicates where all address attributes match at the same location or wit
 
 Reduce some address points with the same coordinates but different address attributes (see _Overlapping points_ below) (code at `bin/reduceOverlap.js`):
 
-    make dist/vicmap-osm-flats.geojson
+    make dist/vicmap-osm-uniq-flats.geojson
 
 This is only done for strictly overlapping points, where the geometry varies slightly then that's okay we don't attempt to combine.
+
+Drop address ranges where the range endpoints are seperatly mapped.
+
+    make dist/vicmap-osm-flats-withinrange.geojson
 
 ### Omitted addresses
 
@@ -41,6 +45,14 @@ Source addresses are omitted where they:
 Since these addresses have no identifying attribute beyond street, and there is often multiple of these along a street all with the same street/suburb/postcode, they are of little utility and therefore omitted.
 
 These rules are defined in `filterOSM.js`.
+
+#### Duplicates through mixed range/individual points
+
+Some addresses appear as both a range and individual points. For example one address as `1-5` but additional addresses as `1`, `3` and `5`.
+
+Where the endpoints of the range match existing non-range address points, and where the unit value is the same, and where the individual points have different geometries the range address is dropped in favour of the indivdiual points.
+
+Where the individual points share the same geometry as each other, then the range is favoured and the individual points are dropped.
 
 ### OSM schema
 
