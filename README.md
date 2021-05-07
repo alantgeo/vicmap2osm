@@ -34,7 +34,7 @@ This is only done for strictly overlapping points, where the geometry varies sli
 
 Drop address ranges where the range endpoints are seperatly mapped.
 
-    make dist/vicmap-osm-flats-withinrange.geojson
+    make dist/vicmap-osm-uniq-flats-withinrange.geojson
 
 ### Omitted addresses
 
