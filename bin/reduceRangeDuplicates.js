@@ -260,6 +260,7 @@ pipeline(
       // second pass to reduce overlapping features
       pipeline(
         fs.createReadStream(inputFile),
+        ndjson.parse(),
         reduceRange,
         reduceNonRange,
         ndjson.stringify(),
