@@ -15,7 +15,7 @@
 const fs = require('fs')
 const { Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
-const withinRange = require('./lib/withinRange.js')
+const withinRange = require('../lib/withinRange.js')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {
@@ -203,7 +203,8 @@ const reduceNonRange = new Transform({
     if (!isRange) {
       // not a range, ahall be removed removed when this non-range exists within a range, but the range wasn't removed already
       let dropFeature = false
-      ranges.forEach(range => {
+      for (let i = 0; i < ranges.length; i++) {
+        const range = ranges[i]
         if (withinRange(feature, range)) {
           // found within a range, drop feature unless would drop addr:unit information
           if ('addr:unit' in feature.properties) {
@@ -223,7 +224,7 @@ const reduceNonRange = new Transform({
           }
           break
         }
-      })
+      }
       if (!dropFeature) {
         this.push(feature)
       }
