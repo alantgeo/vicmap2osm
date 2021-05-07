@@ -5,6 +5,7 @@ const { Readable, Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
 const cloneDeep = require('clone-deep')
 const unitsToRanges = require('../lib/unitsToRanges.js')
+const valueLimits = require('../lib/valueLimits.js')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {
@@ -168,6 +169,26 @@ const reduce = new Transform({
   }
 })
 
+/**
+ * limit values
+ */
+let limitValuesIndex = 0
+const limitValues = new Transform({
+  readableObjectMode: true,
+  writableObjectMode: true,
+  transform(feature, encoding, callback) {
+    limitValuesIndex++
+    if (!argv.quiet) {
+      if (limitValuesIndex % 10000 === 0) {
+        process.stdout.write(` ${limitValuesIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(limitValuesIndex / sourceCount * 100)}%)\r`)
+      }
+    }
+    this.push(valueLimits(feature))
+
+    callback()
+  }
+})
+
 const debugKeys = ['multipleNonUnit', 'oneUnitOneNonUnit', 'sameGeometry']
 const debugStreams = {}
 const debugStreamOutputs = {}
@@ -195,6 +216,7 @@ pipeline(
       pipeline(
         Readable.from(Object.keys(features)),
         reduce,
+        limitValues,
         ndjson.stringify(),
         fs.createWriteStream(outputFile),
         err => {
