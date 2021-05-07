@@ -68,7 +68,7 @@ loadPgAdd: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
 	psql -f src/createIndexQuery.sql --tuples-only | psql
 
 loadPgProp: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp
-	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vmprop
+	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vmprop -nlt MULTIPOLYGON
 
 data/victoria.osm.pbf:
 	wget --no-verbose --directory-prefix=data http://download.openstreetmap.fr/extracts/oceania/australia/victoria.osm.pbf
