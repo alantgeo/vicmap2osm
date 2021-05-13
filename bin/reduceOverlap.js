@@ -131,7 +131,7 @@ const reduce = new Transform({
                 }
                 this.push(featureGroup.filter(f => 'addr:unit' in f.properties)[0])
               } else {
-                nonUnitFeature.properties['addr:flats'] = unitsToRanges(allOtherUnits)
+                nonUnitFeature.properties['addr:flats'] = unitsToRanges(allOtherUnits, featureGroup)
                 // TODO should we set addr:flats:prefix from addr:unit:prefix?
                 this.push(nonUnitFeature)
               }
@@ -149,7 +149,7 @@ const reduce = new Transform({
             const feature = cloneDeep(featureGroup[0])
             delete feature.properties['addr:unit']
 
-            feature.properties['addr:flats'] = unitsToRanges(units)
+            feature.properties['addr:flats'] = unitsToRanges(units, featureGroup)
             this.push(feature)
           }
         } else if (featureGroup.length === 1) {
