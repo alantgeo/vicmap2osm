@@ -6,9 +6,9 @@ Vicmap Address data © State of Victoria (Department of Environment, Land, Water
 
 ## GitLab CI/CD
 
-GitLab CI/CD automates data process in 
+We use GitLab CI/CD to automate data processing.
 
-The _prepare_ stage downloads Vicmap Address data and converts it into GeoJSON, because this takes around 45 minutes, it's cached through CI/CD for future use.
+The _prepare_ stage downloads Vicmap Address data and converts it into GeoJSON, because this takes around 45 minutes, it's cached through Gitlab for future use, and only needs to be re-run when source Vicmap data changes.
 
 The _build_ stage does all the processing to produce the import candidate data and intermediate datasets and reports.
 
@@ -16,21 +16,27 @@ The _build_ stage does all the processing to produce the import candidate data a
 
 Download source Vicmap data and convert to GeoJSON:
 
-   make data/vicmap.geojson
+    make data/vicmap.geojson
 
-Convert into OSM address schema, and omit addresses which don't meet our threshold for import (see _Omitted addresses_ below) (code at `bin/vicmap2osm.js`):
+Next, convert into [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at `bin/vicmap2osm.js`):
 
     make dist/vicmap-osm.geojson
 
-Remove duplicates where all address attributes match at the same location or within a small proximity (code at `bin/reduceDuplicates.js`):
+Next, remove duplicates where all address attributes match at the same location or within a small proximity (code at `bin/reduceDuplicates.js`, see [_Removing duplicates_](#removing-duplicates)):
 
     make dist/vicmap-osm-uniq.geojson
 
-Reduce some address points with the same coordinates but different address attributes (see _Overlapping points_ below) (code at `bin/reduceOverlap.js`):
+Two debug outputs are produced from this step.
+
+1. singleCluster - visualises where all addresses with the same address properties are combined into a single "cluster" based on a 25 meter maximum threshold distance. In this case it's safe to reduce all the points into a single centroid point.
+
+2. multiCluster - visualises where all addresses with the same address properties exceed the 25 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be manually reviewed for manual import.
+
+![multiCluster example](img/reduceDuplicates_multiCluster.png)
+
+Next, reduce some address points with the exact same coordinates but different address attributes (see [_Removing duplicates_](#removing-duplicates) below) (code at `bin/reduceOverlap.js`):
 
     make dist/vicmap-osm-uniq-flats.geojson
-
-This is only done for strictly overlapping points, where the geometry varies slightly then that's okay we don't attempt to combine.
 
 Drop address ranges where the range endpoints are seperatly mapped.
 
@@ -38,13 +44,13 @@ Drop address ranges where the range endpoints are seperatly mapped.
 
 ### Omitted addresses
 
-Source addresses are omitted where they:
+Source addresses are omitted:
 
-1. have neither a `addr:housenumber` nor `addr:housename`.
+1. where the address has neither a `addr:housenumber` nor `addr:housename`. Since these addresses have no identifying attribute beyond street, and there is often multiple of these along a street all with the same street/suburb/postcode, they are of little utility and therefore omitted.
 
-Since these addresses have no identifying attribute beyond street, and there is often multiple of these along a street all with the same street/suburb/postcode, they are of little utility and therefore omitted.
+2. where, if the address has a building unit type, the building unit type must match a whitelisted type. For example this includes unit and shop numbers but excludes things like car space numbers.
 
-These rules are defined in `filterOSM.js`.
+These rules are defined in `filterOSM.js` and `filterSource.js`.
 
 #### Duplicates through mixed range/individual points
 
@@ -66,13 +72,15 @@ Where the individual points share the same geometry as each other, then the rang
 
 The schema mapping mostly happens in `toOSM.js`.
 
-### Overlapping points
+### Removing duplicates
 
-Source address data contains many address points overlapping.
+Source address data contains many address points overlapping or within a close proximity.
 
-1. First pass, where all the OSM tags are the same, and the points have the exact same geometry, all the duplicates are omitted.
+1. Where all the OSM tags are the same, and the points have the exact same geometry within a close proximity, all the duplicates are omitted and the centroid location is used. This happens in `bin/reduceDuplicates.js` during `make dist/vicmap-osm-uniq.geojson`.
 
-Where each of the housenumber, street, suburb, postcode, state are the same for each of the overlapping points, but only the unit value differs we attempt to reduce these to a single address point without `addr:unit` but instead using [`addr:flats`](https://wiki.openstreetmap.org/wiki/Key:addr:flats).
+![reduceDuplicates in action](img/reduceDuplicates_singleCluster.png)
+
+2. Where each of the housenumber, street, suburb, postcode, state are the same for each of the strictly overlapping points, but only the unit value differs we attempt to reduce these to a single address point without `addr:unit` but instead using [`addr:flats`](https://wiki.openstreetmap.org/wiki/Key:addr:flats).
 
 `addr:flats` is the documented tag for describing the unit numbers at an address.
 
@@ -82,7 +90,7 @@ Where you have an apartment building containing multiple units, this import choo
 
 Where possible, unit numbers are reduced to ranges, for example to create `addr:flats=1-5;10-15;20` instead of `addr:flats=1;2;3;4;5;10;11;12;13;14;15;20`.
 
-Multiple points overlapping don't add any extra value to the OSM data and are are harder for mappers to manage, especially for large appartment buildings.
+Multiple points overlapping don't add any extra value to the OSM data and are are harder for mappers to manage, especially for large apartment buildings.
 
 Data consumers can still easily explode `addr:flats` out into overlapping nodes with varying `addr:unit` if desired.
 
