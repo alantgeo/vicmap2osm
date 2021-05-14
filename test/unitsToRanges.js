@@ -65,7 +65,7 @@ test('units list to addr:flats', t => {
 
   t.same(
     unitsToRanges(['1A', '2A', '3']),
-    '1A-2A;3',
+    '3;1A-2A',
     'partially with suffix'
   )
 
@@ -97,6 +97,12 @@ test('units list to addr:flats', t => {
     unitsToRanges(['1', '1-2']),
     '1-2',
     'source duplicates removed with range'
+  )
+
+  t.same(
+    unitsToRanges('2,15,3,12,1,9,19,1C,1A,6,14,16,5,5-6,A,B,C,4,17-18,7-8'.split(',')),
+    '1-9;12;14-19;1A;1C;A;B;C',
+    'complex real world data'
   )
 
   t.end()
