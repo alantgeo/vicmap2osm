@@ -87,5 +87,17 @@ test('units list to addr:flats', t => {
     'different prefix not merged'
   )
 
+  t.same(
+    unitsToRanges(['1', '1']),
+    '1',
+    'source duplicates removed'
+  )
+
+  t.same(
+    unitsToRanges(['1', '1-2']),
+    '1-2',
+    'source duplicates removed with range'
+  )
+
   t.end()
 })
