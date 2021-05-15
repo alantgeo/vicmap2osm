@@ -1,6 +1,6 @@
 # vicmap2osm
 
-Prepares [Vicmap Address](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-address) data for import into OpenStreetMap.
+Prepares [Vicmap Address](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-address) data for [import](https://wiki.openstreetmap.org/wiki/Import/Guidelines) into OpenStreetMap.
 
 Vicmap Address data © State of Victoria (Department of Environment, Land, Water and Planning), CC BY 4.0, with an [OSMF LWG CC waiver](https://wiki.openstreetmap.org/wiki/File:Vicmap_CCBYPermission_OSM_Final_Jan2018_Ltr.pdf).
 
@@ -38,9 +38,17 @@ Next, reduce some address points with the exact same coordinates but different a
 
     make dist/vicmap-osm-uniq-flats.geojson
 
-Drop address ranges where the range endpoints are seperatly mapped.
+Three debug outputs are produced from this step.
+
+1. multipleNonUnit
+2. oneUnitOneNonUnit - where there is one address without a unit and one with a unit at the same point, with all the same address attributes except unit. In this case we just drop the non-unit address and keep the addr:unit one.
+3. sameGeometry
+
+Next, drop address ranges where the range endpoints are separately mapped (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at `bin/reduceRangeDuplicates.js`).
 
     make dist/vicmap-osm-uniq-flats-withinrange.geojson
+
+Even if we are lacking the intermediate address points within the range, we still drop the range as software can interpolate intermediate addresses from the two endpoints.
 
 ### Omitted addresses
 
@@ -50,13 +58,13 @@ Source addresses are omitted:
 
 2. where, if the address has a building unit type, the building unit type must match a whitelisted type. For example this includes unit and shop numbers but excludes things like car space numbers.
 
-These rules are defined in `filterOSM.js` and `filterSource.js`.
+These rules are defined in `lib/filterOSM.js` and `lib/filterSource.js`.
 
-#### Duplicates through mixed range/individual points
+#### Duplicates through mixed range and points
 
 Some addresses appear as both a range and individual points. For example one address as `1-5` but additional addresses as `1`, `3` and `5`.
 
-Where the endpoints of the range match existing non-range address points, and where the unit value is the same, and where the individual points have different geometries the range address is dropped in favour of the indivdiual points.
+Where the endpoints of the range match existing non-range address points, and where the unit value is the same, and where the individual points have different geometries the range address is dropped in favour of the individual points.
 
 Where the individual points share the same geometry as each other, then the range is favoured and the individual points are dropped.
 
@@ -70,7 +78,7 @@ Where the individual points share the same geometry as each other, then the rang
 - `addr:postcode` is as supplied.
 - `addr:state` is as supplied and should always be `VIC`.
 
-The schema mapping mostly happens in `toOSM.js`.
+The schema mapping mostly happens in `lib/toOSM.js`.
 
 ### Removing duplicates
 
@@ -86,7 +94,7 @@ Source address data contains many address points overlapping or within a close p
 
 In the real world where you have different unit numbers for townhouses or villas ideally you'd have different addresses in OSM using `addr:unit` but have each located on each dwelling.
 
-Where you have an apartment building containing multiple units, this import chooses to avoid ovelapping addresses each with a different `addr:unit` instead creating a single node with `addr:flats`.
+Where you have an apartment building containing multiple units, this import chooses to avoid overlapping addresses each with a different `addr:unit` instead creating a single node with `addr:flats`.
 
 Where possible, unit numbers are reduced to ranges, for example to create `addr:flats=1-5;10-15;20` instead of `addr:flats=1;2;3;4;5;10;11;12;13;14;15;20`.
 
@@ -94,12 +102,14 @@ Multiple points overlapping don't add any extra value to the OSM data and are ar
 
 Data consumers can still easily explode `addr:flats` out into overlapping nodes with varying `addr:unit` if desired.
 
+Because OSM tag values are limited to 255 characters, if the constructed `addr:flats` exceeds this it is split across `addr:flats`, `addr:flats1`, etc. While not ideal I don't see any other option.
+
 ### null values
 
 Values `UNNAMED` and `NOT NAMED` appear as street name and locality names. These values are treated as null/empty values rather than proper names.
 
 ### name
-Source data contains a field for building / property name. This appears to be a mixed bag sometimes it might fit better as `addr:housename` othertimes simply `name`. Further it's not too clear the distinction between these tags and how house names, property names, building names or the name of the venue at the site should be tagged.
+Source data contains a field for building / property name. This appears to be a mixed bag sometimes it might fit better as `addr:housename` other times simply `name`. Further it's not too clear the distinction between these tags and how house names, property names, building names or the name of the venue at the site should be tagged.
 
 It's common for the source data to use what we'd consider a description like "Shop", "Public Toilets" or "Reserve".
 
