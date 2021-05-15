@@ -8,8 +8,51 @@ cache: &global_cache
     - data/vicmap.geojson
 
 stages:
+  - docker
   - prepare
   - build
+
+docker prepare:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: docker
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE":prepare -f "docker/prepare.Dockerfile" .
+    - docker push "$CI_REGISTRY_IMAGE":prepare
+  after_script:
+    - docker logout $CI_REGISTRY
+  when: manual
+
+docker build:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: docker
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE":build -f "docker/build.Dockerfile" .
+    - docker push "$CI_REGISTRY_IMAGE":build
+  after_script:
+    - docker logout $CI_REGISTRY
+  when: manual
+
+docker conflate:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: docker
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE":conflate -f "docker/conflate.Dockerfile" .
+    - docker push "$CI_REGISTRY_IMAGE":conflate
+  after_script:
+    - docker logout $CI_REGISTRY
+  when: manual
 
 prepare:
   stage: prepare
