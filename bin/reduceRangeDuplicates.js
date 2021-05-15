@@ -243,8 +243,10 @@ const reduceNonRange = new Transform({
               } else {
                 // since the non-range feature has a unit that the range doesn't have, don't drop it
                 dropFeature = false
-                debugStreams['addrInRangeDifferentUnits'].write(feature)
-                debugStreams['addrInRangeDifferentUnits'].write(range)
+                if (argv.debug) {
+                  debugStreams['addrInRangeDifferentUnits'].write(feature)
+                  debugStreams['addrInRangeDifferentUnits'].write(range)
+                }
               }
           } else {
             // no addr:unit on the feature to safe to drop
