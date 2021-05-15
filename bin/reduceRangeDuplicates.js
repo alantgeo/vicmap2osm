@@ -234,11 +234,13 @@ const reduceNonRange = new Transform({
         const range = ranges[i]
         // if the range wasn't just removed in filter A, and the feature is within the range
         if (!(hash(range) in rangesRemovedInFilterA) && withinRange(feature, range)) {
-          // found within a range, drop feature unless would drop addr:unit information
-          if ('addr:unit' in feature.properties) {
-            // safe to drop if the same addr:unit is also on the range
-            if ('addr:unit' in range.properties &&
-              feature.properties['addr:unit'] === range.properties['addr:unit']) {
+          // found within a range, drop feature unless would drop addr:unit or addr:flats information
+          if ('addr:unit' in feature.properties || 'addr:flats' in feature.properties) {
+            // safe to drop if the same addr:unit and addr:flats is also on the range
+            if (
+              'addr:unit' in feature.properties ? ('addr:unit' in range.properties && feature.properties['addr:unit'] === range.properties['addr:unit']) : true &&
+              'addr:flats' in feature.properties ? ('addr:flats' in range.properties && feature.properties['addr:flats'] === range.properties['addr:flats']) : true
+              ) {
                 dropFeature = true
               } else {
                 // since the non-range feature has a unit that the range doesn't have, don't drop it

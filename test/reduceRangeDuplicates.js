@@ -3,10 +3,11 @@ const fs = require('fs')
 const child_process = require('child_process')
 const mktemp = require('mktemp')
 
-function createFeature(unit, housenumber, street, suburb) {
+function createFeature(unit, housenumber, street, suburb, flats) {
   return {
     type: 'Feature',
     properties: {
+      ...(flats && {'addr:flats': flats}),
       ...(unit && {'addr:unit': unit}),
       'addr:housenumber': housenumber,
       'addr:street': street,
@@ -103,6 +104,37 @@ test('reduceRangeDuplicates', t => {
     fs.readFileSync(outputFile),
     fs.readFileSync(expectedFile),
     'midpoint with unit not dropped'
+  )
+
+  fs.unlinkSync(inputFile)
+  fs.unlinkSync(outputFile)
+  fs.unlinkSync(expectedFile)
+
+  t.end()
+})
+
+test('reduceRangeDuplicates', t => {
+  const inputFile = mktemp.createFileSync('/tmp/input_XXXXX.geojson')
+  const outputFile = mktemp.createFileSync('/tmp/output_XXXXX.geojson')
+  const expectedFile = mktemp.createFileSync('/tmp/expected_XXXXX.geojson')
+
+  const AC = createFeature(null, '249-263', 'Faraday Street', 'Carlton')
+  const B = createFeature(null, '251', 'Faraday Street', 'Carlton', '1;2;3')
+
+  // both features to appear in input
+  fs.appendFileSync(inputFile, JSON.stringify(AC) + '\n')
+  fs.appendFileSync(inputFile, JSON.stringify(B) + '\n')
+
+  // output expected to both features because dropping the midpoint would loose the unit
+  fs.appendFileSync(expectedFile, JSON.stringify(AC) + '\n')
+  fs.appendFileSync(expectedFile, JSON.stringify(B) + '\n')
+
+  child_process.execSync(`./bin/reduceRangeDuplicates.js ${inputFile} ${outputFile}`)
+
+  t.same(
+    fs.readFileSync(outputFile),
+    fs.readFileSync(expectedFile),
+    'midpoint with flats not dropped'
   )
 
   fs.unlinkSync(inputFile)
