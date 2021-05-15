@@ -436,6 +436,11 @@ minimist@^1.2.5:
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
 
+mktemp@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/mktemp/-/mktemp-1.0.0.tgz#b670eff23f52d6529e1dc362cb74ddf85448a9e3"
+  integrity sha512-2duBeS0A75x0M3sCoY0R1TiLsYfIBUtNBNWS++eo+bX/ObVqzblqnEQhlaepoBOLD14wklsV3cYxZ68o5qYO8A==
+
 ndjson@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ndjson/-/ndjson-2.0.0.tgz#320ac86f6fe53f5681897349b86ac6f43bfa3a19"

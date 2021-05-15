@@ -22,6 +22,10 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
     type: 'boolean',
     description: 'Dumps full debug logs'
   })
+  .option('verbose', {
+    type: 'boolean',
+    description: 'Verbose logging'
+  })
   .argv
 
 if (argv._.length < 2) {
@@ -37,10 +41,21 @@ if (!fs.existsSync(inputFile)) {
   process.exit(1)
 }
 
+function hash(feature) {
+  return [
+    feature.properties['addr:housenumber'],
+    feature.properties['addr:street'],
+    feature.properties['addr:suburb'],
+    feature.properties['addr:state'],
+    feature.properties['addr:postcode']
+  ].join('/')
+}
+
 let sourceCount = 0
 
 const ranges = []
 const nonRangesByStreet = {}
+const rangesRemovedInFilterA = {}
 
 // index all non-range addresses by street, suburb, state, postcode
 const index = new Transform({
@@ -78,7 +93,7 @@ const index = new Transform({
 const regexp = /^(?<pre>\D*)(?<num>\d*)(?<suf>\D*)$/
 
 /*
-* First pass removes ranges where each endpoint of the range exists seperatly
+* second pass, filter A removes ranges where each endpoint of the range exists separately
 * eg.
 *  - 304-306 Cardigan Street Carlton - range can be removed since each individual address exists
 *  - 304 Cardigan Street Calton
@@ -98,9 +113,8 @@ const reduceRange = new Transform({
     }
     
     const isRange = feature.properties['addr:housenumber'].split('-').length > 1
-
     if (isRange) {
-      // see if it can be removed when each end point of the range is included seperatly
+      // see if it can be removed when each end point of the range is included separately
       const start = feature.properties['addr:housenumber'].split('-')[0]
       const end = feature.properties['addr:housenumber'].split('-')[1]
 
@@ -123,8 +137,8 @@ const reduceRange = new Transform({
         let pre = ''
         let suf = ''
 
-        matchCandidates.map(matchCandidate => {
-          if (start === matchCandidate.properties['addr:housenumber']) {
+        for (const matchCandidate of matchCandidates) {
+          if (!foundStart && start === matchCandidate.properties['addr:housenumber']) {
             foundStart = true
 
             const match = start.match(regexp)
@@ -132,13 +146,18 @@ const reduceRange = new Transform({
             pre = match.groups.pre
             suf = match.groups.suf
           }
-          if (end === matchCandidate.properties['addr:housenumber']) {
+          if (!foundEnd && end === matchCandidate.properties['addr:housenumber']) {
             foundEnd = true
 
             const match = end.match(regexp)
             endNum = match.groups.num
           }
-        })
+
+          if (foundStart && foundEnd) {
+            // stop early
+            break
+          }
+        }
 
         if (foundStart && foundEnd) {
           // found both start and end
@@ -160,10 +179,18 @@ const reduceRange = new Transform({
           if (!foundAllIntermediates) {
             // some intermediates were missing
             // but we'll pretend that's okay and let the geocoding algorithm use it's own interpolation to still find results
-            console.log('found endpoints but some intermediates are missing', feature)
+            if (argv.verbose) {
+              console.log('Filter A: Found endpoints but some intermediates are missing', feature)
+            }
           }
 
           // can be removed, feature not pushed
+          if (argv.verbose) {
+            console.log(`Filter A: ${feature.properties['addr:housenumber']} can be removed`)
+          }
+
+          // keep track of removed features for filter B, so we don't double remove both range and midpoints
+          rangesRemovedInFilterA[hash(feature)] = true
         } else {
           // since not both start and end found, then still include the range
           this.push(feature)
@@ -183,7 +210,7 @@ const reduceRange = new Transform({
 })
 
 /*
-* Second pass removes ane non-range elements where the range exists, and wasn't removed from the first pass
+* Second pass, filter B removes any non-range elements where the range exists, and wasn't removed from the first pass
 * eg.
 *  - 249-263 Faraday Street
 *  - 251 Faraday Street - removed since not all addresses from the range exist, but this one is covered by the range
@@ -201,11 +228,12 @@ const reduceNonRange = new Transform({
     const isRange = feature.properties['addr:housenumber'].split('-').length > 1
 
     if (!isRange) {
-      // not a range, ahall be removed removed when this non-range exists within a range, but the range wasn't removed already
+      // not a range, shall be removed where this non-range exists within a range, but the range wasn't removed already
       let dropFeature = false
       for (let i = 0; i < ranges.length; i++) {
         const range = ranges[i]
-        if (withinRange(feature, range)) {
+        // if the range wasn't just removed in filter A, and the feature is within the range
+        if (!(hash(range) in rangesRemovedInFilterA) && withinRange(feature, range)) {
           // found within a range, drop feature unless would drop addr:unit information
           if ('addr:unit' in feature.properties) {
             // safe to drop if the same addr:unit is also on the range
@@ -227,7 +255,13 @@ const reduceNonRange = new Transform({
       }
       if (!dropFeature) {
         this.push(feature)
+      } else {
+        if (argv.verbose) {
+          console.log(`Filter B: Dropping ${feature.properties['addr:housenumber']}`)
+        }
       }
+    } else {
+      this.push(feature)
     }
 
     callback()
@@ -257,7 +291,8 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
-      // second pass to reduce overlapping features
+      console.log('Second pass to remove range duplicates')
+      // second pass to remove range duplicates
       pipeline(
         fs.createReadStream(inputFile),
         ndjson.parse(),
