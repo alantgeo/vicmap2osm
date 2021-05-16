@@ -86,6 +86,7 @@ build:
     - make dist/vicmap-osm.geojson
     - make dist/vicmap-osm-uniq.geojson
     - make dist/vicmap-osm-uniq-flats.geojson
+    - make dist/vicmap-osm-uniq-flats-withinrange.geojson
   artifacts:
     name: "build"
     paths:
