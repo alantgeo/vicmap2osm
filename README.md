@@ -133,3 +133,21 @@ One potential solution is to encode this in the `addr:` key like `addr:unit`, `a
 Another solution is use a new tag like `addr:unit:prefix=Unit`, although there is no existing usage of this tagging scheme ([taginfo](https://taginfo.openstreetmap.org/search?q=addr%3Aunit#keys)).
 
 In the current codebase this information is omitted.
+
+## Import Procedure
+To conduct the import, given some addresses are already mapped in OSM we break the state down into city blocks. Where a block contains no addresses in OSM then we consider it low risk to automatically import all address in the block. The only risk is the address in either OSM or the source data is in the wrong block, but this is less likely and would be hard to detect otherwise.
+
+Where there contains some addresses already in OSM for the block, then it will either need further conflation or need to be manually reviewed prior to importing.
+
+Generate the latest view of address data in OSM:
+
+    make data/victoria-addr.osm.fgb
+    make data/victoria-addr.osm.centroids.fgb
+
+Generate city blocks:
+
+    make data/blocks.fgb
+
+Sort blocks into containing some OSM addresses or containing no OSM addresses:
+
+    make data/addressPerBlock.fgb
