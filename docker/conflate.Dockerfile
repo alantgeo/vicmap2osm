@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:unstable-slim
 RUN apt-get -y update && apt-get -y install curl gnupg make wget unzip gdal-bin osmium-tool software-properties-common
 RUN curl -fsSL https://deb.nodesource.com/setup_12.x | bash -
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
