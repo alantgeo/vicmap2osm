@@ -11,7 +11,7 @@ stages:
   - docker
   - prepare
   - build
-  - conflate
+  - build
 
 docker prepare:
   image: docker:latest
@@ -94,16 +94,14 @@ build:
       - dist
       - debug
 
-conflate:
-  stage: conflate
+build osm:
+  stage: build
   image: "registry.gitlab.com/alantgeo/vicmap2osm:conflate"
-  cache:
-    <<: *global_cache
-    policy: pull
+  cache: {}
   script:
     - yarn install
     - make dist/addressesPerBlock.fgb
   artifacts:
-    name: "conflate"
+    name: "build osm"
     paths:
       - dist
