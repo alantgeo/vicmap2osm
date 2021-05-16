@@ -59,15 +59,11 @@ docker conflate:
 
 prepare:
   stage: prepare
+  image: "registry.gitlab.com/alantgeo/vicmap2osm:prepare"
   cache:
     <<: *global_cache
     policy: push
   script:
-    - apt-get update && apt-get install -y curl gnupg gdal-bin unzip wget make
-    - curl -fsSL https://deb.nodesource.com/setup_12.x | bash -
-    - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-    - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-    - apt-get update && apt-get install -y yarn nodejs
     - yarn install
     - mkdir -p dist
     - make data/vicmap.geojson
@@ -75,15 +71,11 @@ prepare:
 
 build:
   stage: build
+  image: "registry.gitlab.com/alantgeo/vicmap2osm:build"
   cache:
     <<: *global_cache
     policy: pull
   script:
-    - apt-get update && apt-get install -y curl gnupg make
-    - curl -fsSL https://deb.nodesource.com/setup_12.x | bash -
-    - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-    - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-    - apt-get update && apt-get install -y yarn nodejs
     - yarn install
     - yarn run test
     - mkdir -p dist data
