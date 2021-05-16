@@ -25,6 +25,7 @@ docker prepare:
   after_script:
     - docker logout $CI_REGISTRY
   when: manual
+  cache: {}
 
 docker build:
   image: docker:latest
@@ -39,6 +40,7 @@ docker build:
   after_script:
     - docker logout $CI_REGISTRY
   when: manual
+  cache: {}
 
 docker conflate:
   image: docker:latest
@@ -53,6 +55,7 @@ docker conflate:
   after_script:
     - docker logout $CI_REGISTRY
   when: manual
+  cache: {}
 
 prepare:
   stage: prepare
