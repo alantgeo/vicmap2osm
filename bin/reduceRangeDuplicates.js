@@ -64,7 +64,7 @@ const index = new Transform({
   transform(feature, encoding, callback) {
     sourceCount++
 
-    if (sourceCount % 10000 === 0) {
+    if (process.stdout.isTTY && sourceCount % 10000 === 0) {
       process.stdout.write(` ${sourceCount / 1000}k\r`)
     }
 
@@ -108,7 +108,7 @@ const reduceRange = new Transform({
   writableObjectMode: true,
   transform(feature, encoding, callback) {
     reduceRangeIndex++
-    if (reduceRangeIndex % 10000 === 0) {
+    if (process.stdout.isTTY && reduceRangeIndex % 10000 === 0) {
       process.stdout.write(` ${reduceRangeIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(reduceRangeIndex / sourceCount * 100)}%)\r`)
     }
     
@@ -221,7 +221,7 @@ const reduceNonRange = new Transform({
   writableObjectMode: true,
   transform(feature, encoding, callback) {
     reduceNonRangeIndex++
-    if (reduceNonRangeIndex % 10000 === 0) {
+    if (process.stdout.isTTY && reduceNonRangeIndex % 10000 === 0) {
       process.stdout.write(` ${reduceNonRangeIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(reduceNonRangeIndex / sourceCount * 100)}%)\r`)
     }
     

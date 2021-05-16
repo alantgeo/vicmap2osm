@@ -40,7 +40,7 @@ const index = new Transform({
   transform(feature, encoding, callback) {
     sourceCount++
 
-    if (sourceCount % 10000 === 0) {
+    if (process.stdout.isTTY && sourceCount % 10000 === 0) {
       process.stdout.write(` ${sourceCount / 1000}k\r`)
     }
 
@@ -70,7 +70,7 @@ const reduce = new Transform({
   writableObjectMode: true,
   transform(key, encoding, callback) {
     reduceIndex++
-    if (reduceIndex % 10000 === 0) {
+    if (process.stdout.isTTY && reduceIndex % 10000 === 0) {
       process.stdout.write(` ${reduceIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(reduceIndex / sourceCount * 100)}%)\r`)
     }
 
