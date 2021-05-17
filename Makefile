@@ -26,7 +26,9 @@ data/vicmap-property.fgb: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/
 
 data/vicmap.geojson:
 	ogr2ogr -f GeoJSONSeq $@ data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
+	wc -l $@
 
+# used for quick debugging
 vicmapExtract:
 	ogr2ogr -f GeoJSONSeq -clipsrc 144.95392 -37.80260 144.97298 -37.79204 data/vicmap.geojson data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
 
@@ -36,6 +38,7 @@ cleanDist:
 dist/vicmap-osm.geojson: data/vicmap.geojson
 	mkdir -p dist
 	./bin/vicmap2osm.js $< $@
+	wc -l $@
 
 dist/vicmap-osm.mbtiles: dist/vicmap-osm.geojson
 	tippecanoe --force -o $@ --minimum-zoom=12 --maximum-zoom=12 --no-feature-limit --no-tile-size-limit --no-tile-stats --read-parallel $<
