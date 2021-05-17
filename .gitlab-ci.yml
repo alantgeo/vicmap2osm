@@ -99,6 +99,8 @@ build osm:
   stage: build
   image: "registry.gitlab.com/alantgeo/vicmap2osm:conflate"
   cache: {}
+  variables:
+    QT_QPA_PLATFORM: "offscreen"
   script:
     - yarn install
     - make dist/addressesPerBlock.fgb
