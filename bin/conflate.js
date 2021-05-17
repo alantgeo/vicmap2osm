@@ -162,8 +162,8 @@ const conflate = new Transform({
   }
 })
 
-// ndjson streams to output debug features
-const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'withinExistingOSMAddressPoly']
+// ndjson streams to output features
+const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
 const outputStreams = {}
 const outputStreamOutputs = {}
 
