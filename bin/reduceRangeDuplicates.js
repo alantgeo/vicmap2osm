@@ -251,7 +251,7 @@ const reduceNonRange = new Transform({
                 }
               }
           } else {
-            // no addr:unit on the feature to safe to drop
+            // no addr:unit or addr:flats on the feature to safe to drop
             dropFeature = true
           }
           break

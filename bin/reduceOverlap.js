@@ -12,6 +12,10 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
     type: 'boolean',
     description: 'Dumps full debug logs'
   })
+  .option('verbose', {
+    type: 'boolean',
+    description: ''
+  })
   .argv
 
 if (argv._.length < 2) {
@@ -131,8 +135,8 @@ const reduce = new Transform({
                 }
                 this.push(featureGroup.filter(f => 'addr:unit' in f.properties)[0])
               } else {
-                nonUnitFeature.properties['addr:flats'] = unitsToRanges(allOtherUnits, featureGroup)
-                // TODO should we set addr:flats:prefix from addr:unit:prefix?
+                const flats = unitsToRanges(allOtherUnits, argv.verbose && featureGroup)
+                nonUnitFeature.properties['addr:flats'] = flats
                 this.push(nonUnitFeature)
               }
             }
@@ -149,7 +153,8 @@ const reduce = new Transform({
             const feature = cloneDeep(featureGroup[0])
             delete feature.properties['addr:unit']
 
-            feature.properties['addr:flats'] = unitsToRanges(units, featureGroup)
+            const flats = unitsToRanges(units, argv.verbose && featureGroup)
+            feature.properties['addr:flats'] = flats
             this.push(feature)
           }
         } else if (featureGroup.length === 1) {
