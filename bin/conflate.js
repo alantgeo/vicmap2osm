@@ -140,6 +140,7 @@ const conflate = new Transform({
             })
             if (matches.length) {
               // matching number and street, high confidence
+              feature.properties._matches = matches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
               outputStreams.exactMatch.write(feature)
             } else {
               // no exact match, probably can import
