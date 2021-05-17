@@ -103,6 +103,7 @@ build osm:
     QT_QPA_PLATFORM: "offscreen"
   script:
     - yarn install
+    - mkdir -p dist data
     - make dist/addressesPerBlock.fgb
   when: manual
   artifacts:
