@@ -4,6 +4,8 @@ Prepares [Vicmap Address](https://www.land.vic.gov.au/maps-and-spatial/spatial-d
 
 Vicmap Address data © State of Victoria (Department of Environment, Land, Water and Planning), CC BY 4.0, with an [OSMF LWG CC waiver](https://wiki.openstreetmap.org/wiki/File:Vicmap_CCBYPermission_OSM_Final_Jan2018_Ltr.pdf).
 
+This import proposal has been supported by the National Heavy Vehicle Regulator (NHVR).
+
 ## GitLab CI/CD
 
 We use GitLab CI/CD to automate data processing.
