@@ -104,7 +104,8 @@ build osm:
   script:
     - yarn install
     - mkdir -p dist data
-    - make dist/addressesPerBlock.fgb
+    - make dist/blocksByOSMAddr.fgb
+    - make summariseBlocksByOSMAddr
   when: manual
   artifacts:
     name: "build osm"

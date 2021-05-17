@@ -152,4 +152,4 @@ Generate city blocks:
 
 Sort blocks into containing some OSM addresses or containing no OSM addresses:
 
-    make data/addressPerBlock.fgb
+    make data/blocksByOSMAddr.fgb

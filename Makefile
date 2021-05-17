@@ -118,8 +118,8 @@ data/blocks.fgb: data/victoria-roads.fgb
 	qgis_process run native:polygonize -- INPUT=$< KEEP_FIELDS=FALSE OUTPUT=$@
 
 # count OSM addresses by block, those with no OSM addresses we can import all the candidate addresses without conflation issues
-dist/addressesPerBlock.fgb: data/victoria-addr.osm.centroids.fgb data/blocks.fgb
+dist/blocksByOSMAddr.fgb: data/victoria-addr.osm.centroids.fgb data/blocks.fgb
 	qgis_process run native:countpointsinpolygon -- POINTS=$< POLYGONS='data/blocks.fgb|layername=blocks' FIELD=NUMPOINTS OUTPUT=$@
 
-summariseAddressesPerBlock:
-	ogrinfo -dialect sqlite -sql 'select count(*), NUMPOINTS = 0 from addressesPerBlock group by (NUMPOINTS = 0)' data/addressesPerBlock.fgb
+summariseBlocksByOSMAddr:
+	ogrinfo -dialect sqlite -sql 'select count(*), NUMPOINTS = 0 from blocksByOSMAddr group by (NUMPOINTS = 0)' data/blocksByOSMAddr.fgb
