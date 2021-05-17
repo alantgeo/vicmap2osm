@@ -81,7 +81,7 @@ data/victoria-addr.osm.pbf: data/victoria.osm.pbf
 	osmium tags-filter --output=$@ --overwrite $< addr:housenumber addr:interpolation
 
 data/victoria-addr.osm.geojson: data/victoria-addr.osm.pbf
-	osmium export --config=config/osmium-export-config.json --output-format=geojsonseq --output=$@ --overwrite $<
+	osmium export --config=config/osmium-export-config.json --output-format=geojsonseq --format-option=print_record_separator=false --output=$@ --overwrite $<
 
 data/victoria-addr.osm.fgb: data/victoria-addr.osm.geojson
 	ogr2ogr -f FlatGeobuf -nlt PROMOTE_TO_MULTI -skipfailures -mapFieldType Integer64List=String $@ $<
@@ -110,7 +110,7 @@ data/victoria-roads.geojson: data/victoria-roads.osm.pbf
 	osmium export --geometry-types=linestring --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
 
 data/victoria-boundary.geojson:
-    npx osm-geojson 2316741 | ogr2ogr -f GeoJSONSeq -explodecollections -nlt MULTILINESTRING $@ /vsistdin/
+	npx osm-geojson 2316741 | ogr2ogr -f GeoJSONSeq -explodecollections -nlt MULTILINESTRING $@ /vsistdin/
 	cat $@ >> data/victoria-roads.geojson
 
 # then convert to fgb
@@ -125,5 +125,12 @@ data/blocks.fgb: data/victoria-roads.fgb
 dist/blocksByOSMAddr.fgb: data/victoria-addr.osm.centroids.fgb data/blocks.fgb
 	qgis_process run native:countpointsinpolygon -- POINTS=$< POLYGONS='data/blocks.fgb|layername=blocks' FIELD=NUMPOINTS OUTPUT=$@
 
+dist/blocksByOSMAddr.geojson: dist/blocksByOSMAddr.fgb
+	ogr2ogr -f GeoJSONSeq $@ $<
+
 summariseBlocksByOSMAddr:
 	ogrinfo -dialect sqlite -sql 'select count(*), NUMPOINTS = 0 from blocksByOSMAddr group by (NUMPOINTS = 0)' data/blocksByOSMAddr.fgb
+
+# conflate processed vicmap data with osm data
+conflate:  dist/vicmap-osm-uniq-flats.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson
+	./bin/conflate.js $^ $@
