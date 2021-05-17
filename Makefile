@@ -128,8 +128,8 @@ dist/blocksByOSMAddr.fgb: data/victoria-addr.osm.centroids.fgb data/blocks.fgb
 dist/blocksByOSMAddr.geojson: dist/blocksByOSMAddr.fgb
 	ogr2ogr -f GeoJSONSeq $@ $<
 
-summariseBlocksByOSMAddr:
-	ogrinfo -dialect sqlite -sql 'select count(*), NUMPOINTS = 0 from blocksByOSMAddr group by (NUMPOINTS = 0)' data/blocksByOSMAddr.fgb
+summariseBlocksByOSMAddr: dist/blocksByOSMAddr.geojson
+	ogrinfo -dialect sqlite -sql 'select count(*), NUMPOINTS = 0 from blocksByOSMAddr group by (NUMPOINTS = 0)' $<
 
 # conflate processed vicmap data with osm data
 dist/conflate: dist/vicmap-osm-uniq-flats.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson
