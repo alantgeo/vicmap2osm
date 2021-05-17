@@ -6,12 +6,15 @@ cache: &global_cache
     - .yarn
     - node_modules
     - data/vicmap.geojson
+    - dist/vicmap-osm-uniq-flats.geojson
+    - data/victoria-addr.osm.geojson
+    - dist/blocksByOSMAddr.geojson
 
 stages:
   - docker
   - prepare
   - build
-  - build
+  - conflate
 
 docker prepare:
   image: docker:latest
@@ -28,7 +31,7 @@ docker prepare:
   when: manual
   cache: {}
 
-docker build:
+docker build-vicmap:
   image: docker:latest
   services:
     - docker:dind
@@ -36,8 +39,23 @@ docker build:
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE":build -f "docker/build.Dockerfile" .
-    - docker push "$CI_REGISTRY_IMAGE":build
+    - docker build --pull -t "$CI_REGISTRY_IMAGE":build-vicmap -f "docker/build-vicmap.Dockerfile" .
+    - docker push "$CI_REGISTRY_IMAGE":build-vicmap
+  after_script:
+    - docker logout $CI_REGISTRY
+  when: manual
+  cache: {}
+
+docker build-osm:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: docker
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE":build-osm -f "docker/build-osm.Dockerfile" .
+    - docker push "$CI_REGISTRY_IMAGE":build-osm
   after_script:
     - docker logout $CI_REGISTRY
   when: manual
@@ -70,12 +88,12 @@ prepare:
     - make data/vicmap.geojson
   when: manual
 
-build:
+build vicmap:
   stage: build
-  image: "registry.gitlab.com/alantgeo/vicmap2osm:build"
+  image: "registry.gitlab.com/alantgeo/vicmap2osm:build-vicmap"
   cache:
     <<: *global_cache
-    policy: pull
+    policy: pull-push
   script:
     - yarn install
     - yarn run test
@@ -90,15 +108,17 @@ build:
     - make dist/vicmap-osm-uniq-flats-withinrange.geojson
   when: manual
   artifacts:
-    name: "build"
+    name: "build vicmap"
     paths:
       - dist
       - debug
 
 build osm:
   stage: build
-  image: "registry.gitlab.com/alantgeo/vicmap2osm:conflate"
-  cache: {}
+  image: "registry.gitlab.com/alantgeo/vicmap2osm:build-osm"
+  cache:
+    <<: *global_cache
+    policy: pull-push
   variables:
     QT_QPA_PLATFORM: "offscreen"
   script:
@@ -109,5 +129,21 @@ build osm:
   when: manual
   artifacts:
     name: "build osm"
+    paths:
+      - dist
+
+conflate:
+  stage: conflate
+  image: "registry.gitlab.com/alantgeo/vicmap2osm:conflate"
+  cache:
+    <<: *global_cache
+    policy: pull
+  script:
+    - yarn install
+    - mkdir -p dist
+    - make dist/conflate
+  when: manual
+  artifacts:
+    name: "conflate"
     paths:
       - dist

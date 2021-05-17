@@ -10,21 +10,17 @@ const ndjson = require('ndjson')
 const PolygonLookup = require('polygon-lookup')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
-  .option('debug', {
-    type: 'boolean',
-    description: 'Dumps full debug logs'
-  })
   .argv
 
 if (argv._.length < 4) {
-  console.error("Usage: ./conflate.js vicmap.geojson osm.geojson blocksByOSMAddr.geojson output.geojson")
+  console.error("Usage: ./conflate.js vicmap.geojson osm.geojson blocksByOSMAddr.geojson dist/conflate")
   process.exit(1)
 }
 
 const vicmapFile = argv._[0]
 const osmFile = argv._[1]
 const blocksByOSMAddrFile = argv._[2]
-const outputFile = argv._[3]
+const outputPath = argv._[3]
 
 if (!fs.existsSync(vicmapFile)) {
   console.error(`${vicmapFile} not found`)
@@ -45,7 +41,6 @@ const blocksByOSMAddr = fs.readFileSync(blocksByOSMAddrFile, 'utf-8').toString()
     try {
       const feature = JSON.parse(line)
       feature.id = index + 1
-      // console.log(feature)
       return feature
     } catch {
       console.log(`Error parsing line ${index} of ${blocksByOSMAddrFile}: ${line}`)
@@ -75,7 +70,6 @@ const filterOSMAddrPoly = new Transform({
   transform(feature, encoding, callback) {
     osmAddrCount++
 
-    console.log(feature)
     if (process.stdout.isTTY && osmAddrCount % 10000 === 0) {
       process.stdout.write(` ${osmAddrCount / 1000}k\r`)
     }
@@ -103,14 +97,12 @@ const filterOSMAddrPoly = new Transform({
       }
     }
 
-    // pass through for further processing
-    this.push(feature)
-
     callback()
   }
 })
 
 // conflate vicmap addresses with OSM addresses
+let sourceCount = 0
 const conflate = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
@@ -176,7 +168,7 @@ const outputStreamOutputs = {}
 
 outputKeys.forEach(key => {
   outputStreams[key] = ndjson.stringify()
-  outputStreamOutputs[key] = outputStreams[key].pipe(fs.createWriteStream(`debug/conflate/${key}.geojson`))
+  outputStreamOutputs[key] = outputStreams[key].pipe(fs.createWriteStream(`${outputPath}/${key}.geojson`))
 })
 
 // first pass to index by geometry
@@ -215,7 +207,7 @@ pipeline(
             Promise.all(outputKeys.map(key => {
               return new Promise(resolve => {
                 outputStreamOutputs[key].on('finish', () => {
-                  console.log(`saved debug/conflate/${key}.geojson`)
+                  console.log(`saved ${outputPath}/${key}.geojson`)
                   resolve()
                 })
               })
