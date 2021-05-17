@@ -19,7 +19,7 @@
     "polygon-lookup": "^2.6.0",
     "readable-stream": "^3.6.0",
     "tape": "^5.2.2",
-    "yargs": "^17.0.0"
+    "yargs": "^17.0.1"
   },
   "engines": {
     "node": ">=12.3"
