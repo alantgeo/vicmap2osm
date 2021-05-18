@@ -185,7 +185,7 @@ if (argv.debug) {
 }
 
 // first pass to index by geometry
-console.log('First pass to index by address properties')
+console.log('Pass 1/2: index by address properties')
 pipeline(
   fs.createReadStream(inputFile),
   ndjson.parse(),
@@ -195,8 +195,9 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
-      console.log(`  of ${sourceCount} features found ${Object.keys(features).length} unique addresses`)
-      // second pass to reduce overlapping features
+      console.log(`  of ${sourceCount.toLocaleString()} features found ${Object.keys(features).length.toLocaleString()} unique addresses`)
+      // second pass to reduce duplicate features
+      console.log('Pass 2/2: reduce duplicate features')
       pipeline(
         Readable.from(Object.keys(features)),
         reduce,

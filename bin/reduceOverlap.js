@@ -206,7 +206,7 @@ if (argv.debug) {
 }
 
 // first pass to index by geometry
-console.log('First pass to index by geometry')
+console.log('Pass 1/2: index by geometry')
 pipeline(
   fs.createReadStream(inputFile),
   ndjson.parse(),
@@ -216,8 +216,9 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
-      console.log(`  of ${sourceCount} features found ${Object.keys(features).length} unique geometries`)
+      console.log(`  of ${sourceCount.toLocaleString()} features found ${Object.keys(features).length.toLocaleString()} unique geometries`)
       // second pass to reduce overlapping features
+      console.log('Pass 2/2: reduce overlapping features')
       pipeline(
         Readable.from(Object.keys(features)),
         reduce,

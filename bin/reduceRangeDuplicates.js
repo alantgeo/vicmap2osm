@@ -53,7 +53,7 @@ function hash(feature) {
 
 let sourceCount = 0
 
-const ranges = []
+const rangesByStreet = {}
 const nonRangesByStreet = {}
 const rangesRemovedInFilterA = {}
 
@@ -70,16 +70,18 @@ const index = new Transform({
 
     const isRange = feature.properties['addr:housenumber'].split('-').length > 1
 
+    const key = [
+      feature.properties['addr:street'],
+      feature.properties['addr:suburb'],
+      feature.properties['addr:state'],
+      feature.properties['addr:postcode']
+    ].join('/')
     if (isRange) {
-      ranges.push(feature)
+      if (!(key in rangesByStreet)) {
+        rangesByStreet[key] = []
+      }
+      rangesByStreet[key].push(feature)
     } else {
-      const key = [
-        feature.properties['addr:street'],
-        feature.properties['addr:suburb'],
-        feature.properties['addr:state'],
-        feature.properties['addr:postcode']
-      ].join('/')
-
       if (!(key in nonRangesByStreet)) {
         nonRangesByStreet[key] = []
       }
@@ -229,32 +231,42 @@ const reduceNonRange = new Transform({
 
     if (!isRange) {
       // not a range, shall be removed where this non-range exists within a range, but the range wasn't removed already
+
+      const key = [
+        feature.properties['addr:street'],
+        feature.properties['addr:suburb'],
+        feature.properties['addr:state'],
+        feature.properties['addr:postcode']
+      ].join('/')
+
       let dropFeature = false
-      for (let i = 0; i < ranges.length; i++) {
-        const range = ranges[i]
-        // if the range wasn't just removed in filter A, and the feature is within the range
-        if (!(hash(range) in rangesRemovedInFilterA) && withinRange(feature, range)) {
-          // found within a range, drop feature unless would drop addr:unit or addr:flats information
-          if ('addr:unit' in feature.properties || 'addr:flats' in feature.properties) {
-            // safe to drop if the same addr:unit and addr:flats is also on the range
-            if (
-              'addr:unit' in feature.properties ? ('addr:unit' in range.properties && feature.properties['addr:unit'] === range.properties['addr:unit']) : true &&
-              'addr:flats' in feature.properties ? ('addr:flats' in range.properties && feature.properties['addr:flats'] === range.properties['addr:flats']) : true
-              ) {
-                dropFeature = true
-              } else {
-                // since the non-range feature has a unit that the range doesn't have, don't drop it
-                dropFeature = false
-                if (argv.debug) {
-                  debugStreams['addrInRangeDifferentUnits'].write(feature)
-                  debugStreams['addrInRangeDifferentUnits'].write(range)
+      if (key in rangesByStreet) {
+        for (let i = 0; i < rangesByStreet[key].length; i++) {
+          const range = rangesByStreet[key][i]
+          // if the range wasn't just removed in filter A, and the feature is within the range
+          if (!(hash(range) in rangesRemovedInFilterA) && withinRange(feature, range)) {
+            // found within a range, drop feature unless would drop addr:unit or addr:flats information
+            if ('addr:unit' in feature.properties || 'addr:flats' in feature.properties) {
+              // safe to drop if the same addr:unit and addr:flats is also on the range
+              if (
+                'addr:unit' in feature.properties ? ('addr:unit' in range.properties && feature.properties['addr:unit'] === range.properties['addr:unit']) : true &&
+                'addr:flats' in feature.properties ? ('addr:flats' in range.properties && feature.properties['addr:flats'] === range.properties['addr:flats']) : true
+                ) {
+                  dropFeature = true
+                } else {
+                  // since the non-range feature has a unit that the range doesn't have, don't drop it
+                  dropFeature = false
+                  if (argv.debug) {
+                    debugStreams['addrInRangeDifferentUnits'].write(feature)
+                    debugStreams['addrInRangeDifferentUnits'].write(range)
+                  }
                 }
-              }
-          } else {
-            // no addr:unit or addr:flats on the feature to safe to drop
-            dropFeature = true
+            } else {
+              // no addr:unit or addr:flats on the feature to safe to drop
+              dropFeature = true
+            }
+            break
           }
-          break
         }
       }
       if (!dropFeature) {
@@ -285,7 +297,7 @@ if (argv.debug) {
 }
 
 // first pass to index by geometry
-console.log('First pass to index non-ranges by street,suburb,state,postcode properties')
+console.log('Pass 1/2: index non-ranges by street,suburb,state,postcode properties')
 pipeline(
   fs.createReadStream(inputFile),
   ndjson.parse(),
@@ -295,8 +307,8 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
-      console.log('Second pass to remove range duplicates')
       // second pass to remove range duplicates
+      console.log('Pass 2/2: remove range duplicates')
       pipeline(
         fs.createReadStream(inputFile),
         ndjson.parse(),
