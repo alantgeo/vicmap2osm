@@ -144,15 +144,19 @@ const reduceRange = new Transform({
             foundStart = true
 
             const match = start.match(regexp)
-            startNum = match.groups.num
-            pre = match.groups.pre
-            suf = match.groups.suf
+            if (match && match.groups) {
+              startNum = match.groups.num
+              pre = match.groups.pre
+              suf = match.groups.suf
+            }
           }
           if (!foundEnd && end === matchCandidate.properties['addr:housenumber']) {
             foundEnd = true
 
             const match = end.match(regexp)
-            endNum = match.groups.num
+            if (match && match.groups) {
+              endNum = match.groups.num
+            }
           }
 
           if (foundStart && foundEnd) {
@@ -161,7 +165,12 @@ const reduceRange = new Transform({
           }
         }
 
-        if (foundStart && foundEnd) {
+        if (foundStart && foundEnd && (!startNum || !endNum)) {
+          // found start and end, but couldn't parse out prefix number suffix
+          console.log(`Filter A: Found start + end, but couldn't parse out prefix number suffix: ${start} - ${end}`)
+        }
+
+        if (foundStart && foundEnd && startNum && endNum) {
           // found both start and end
 
           // see if any intermediates are missing
