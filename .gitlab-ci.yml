@@ -91,6 +91,8 @@ prepare:
 build vicmap:
   stage: build
   image: "registry.gitlab.com/alantgeo/vicmap2osm:build-vicmap"
+  before_script:
+    - ls data dist
   cache:
     <<: *global_cache
     policy: pull-push
@@ -116,6 +118,8 @@ build vicmap:
 build osm:
   stage: build
   image: "registry.gitlab.com/alantgeo/vicmap2osm:build-osm"
+  before_script:
+    - ls data dist
   cache:
     <<: *global_cache
     policy: pull-push
@@ -135,6 +139,8 @@ build osm:
 conflate:
   stage: conflate
   image: "registry.gitlab.com/alantgeo/vicmap2osm:conflate"
+  before_script:
+    - ls data dist
   cache:
     <<: *global_cache
     policy: pull
