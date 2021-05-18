@@ -135,5 +135,5 @@ summariseBlocksByOSMAddr: | dist/blocksByOSMAddr.geojson
 	ogrinfo -dialect sqlite -sql 'select count(*), NUMPOINTS = 0 from blocksByOSMAddr group by (NUMPOINTS = 0)' $<
 
 # conflate processed vicmap data with osm data
-dist/conflate: | dist/vicmap-osm-uniq-flats.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson
-	./bin/conflate.js $^ $@
+dist/conflate:
+	./bin/conflate.js dist/vicmap-osm-uniq-flats.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson $@
