@@ -102,10 +102,10 @@ build vicmap:
     - touch data/VICMAP_ADDRESS.zip
     - touch data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
     - touch --no-create data/vicmap.geojson
-    - make dist/vicmap-osm.geojson
-    - make dist/vicmap-osm-uniq.geojson
-    - make dist/vicmap-osm-uniq-flats.geojson
-    - make dist/vicmap-osm-uniq-flats-withinrange.geojson
+    - time make dist/vicmap-osm.geojson
+    - time make dist/vicmap-osm-uniq.geojson
+    - time make dist/vicmap-osm-uniq-flats.geojson
+    - time make dist/vicmap-osm-uniq-flats-withinrange.geojson
   when: manual
   artifacts:
     name: "build vicmap"
