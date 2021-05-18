@@ -147,6 +147,8 @@ conflate:
   script:
     - yarn install
     - mkdir -p dist
+    - touch data/victoria-addr.osm.pbf
+    - touch --no-create data/victoria-addr.osm.geojson
     - make dist/conflate
   when: manual
   artifacts:
