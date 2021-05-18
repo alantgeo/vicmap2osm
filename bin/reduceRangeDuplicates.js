@@ -174,7 +174,7 @@ const reduceRange = new Transform({
           // found both start and end
 
           // see if any intermediates are missing
-          const foundAllIntermediates = true
+          let foundAllIntermediates = true
           for (let i = (startNum + 2); i <= (endNum - 2) && foundAllIntermediates === true; i += 2) {
             let foundIntermediate = false
             matchCandidates.map(matchCandidate => {
