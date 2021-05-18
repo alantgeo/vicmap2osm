@@ -35,10 +35,17 @@ if (!fs.existsSync(inputFile)) {
   process.exit(1)
 }
 
+let sourceCount = 0
 const transform = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
   transform(feature, encoding, callback) {
+    if (!argv.quiet) {
+      if (process.stdout.isTTY && sourceCount % 10000 === 0) {
+        process.stdout.write(` ${sourceCount / 1000}k\r`)
+      }
+    }
+
     // convert source Feature into a Feature per the OSM schema
     const osm = toOSM(feature, {
       tracing: argv.tracing
