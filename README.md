@@ -136,8 +136,8 @@ Another solution is use a new tag like `addr:unit:prefix=Unit`, although there i
 
 In the current codebase this information is omitted.
 
-## Import Procedure
-To conduct the import, given some addresses are already mapped in OSM we break the state down into city blocks. Where a block contains no addresses in OSM then we consider it low risk to automatically import all address in the block. The only risk is the address in either OSM or the source data is in the wrong block, but this is less likely and would be hard to detect otherwise.
+## Conflation with existing OSM address data
+Given some addresses are already mapped in OSM we first break the state down into city blocks. Where a block contains no addresses in OSM then we consider it low risk to automatically import all address in the block. The only risk is the address in either OSM or the source data is in the wrong block, but this is less likely and would be hard to detect otherwise.
 
 Where there contains some addresses already in OSM for the block, then it will either need further conflation or need to be manually reviewed prior to importing.
 
@@ -153,3 +153,29 @@ Generate city blocks:
 Sort blocks into containing some OSM addresses or containing no OSM addresses:
 
     make data/blocksByOSMAddr.fgb
+
+Conflate Vicmap addresses with OSM:
+
+    make dist/conflate
+
+This produces outputs in `dist/conflate`:
+
+1. `noOSMAddressWithinBlock` - where no OSM addresses were found within the block, then any Vicmap addresses within this block are placed in this output. These are considered good for bulk import.
+2. `withinExistingOSMAddressPoly` - where the candidate Vicmap address was found inside an existing address polygon from OSM. These should be reviewed for import.
+3. `notFoundInBlocks` - some areas of the state didn't have blocks created, particularly in the coastal region, so these are handled manually.
+4. `exactMatch` - `addr:housenumber` and `addr:street` match an existing address within the same block. These should be reviewed for import.
+5. `noExactMatch` - the Vicmap addresses exists within a block with existing OSM addresses, however no exact match on the `addr:housenumber` and `addr:street` was found. This likely can be imported automatically, but may want to be manually reviewed.
+
+- [ ] we need to deal with addresses represented in OSM as interpolation ways. If there is community consensus to replace these existing interpolation ways with individual point nodes or leave the existing interpolation ways.
+- [ ] we need a better way to review matches where some attributes differ, potentially as a quick fix MapRoulette for tricky cases, or done as a bulk import for easy cases (eg. simply adding `addr:suburb`, `addr:state` and `addr:postcode`)
+
+## Import Process
+
+- Dedicated import account
+- Import in batches by suburb/locality and by conflation status
+- Import changeset comments
+
+## Future Work
+
+- Tracking new Vicmap addresses
+- Monitoring changes over time
