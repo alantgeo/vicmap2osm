@@ -136,4 +136,5 @@ summariseBlocksByOSMAddr: | dist/blocksByOSMAddr.geojson
 
 # conflate processed vicmap data with osm data
 dist/conflate:
+	mkdir -p $@
 	./bin/conflate.js dist/vicmap-osm-uniq-flats.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson $@
