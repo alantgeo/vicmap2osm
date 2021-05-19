@@ -192,3 +192,14 @@ Where the address does already exist, but is missing some `addr:*` tags, the new
 
 - Tracking new Vicmap addresses
 - Monitoring changes over time
+
+## Community Feedback
+
+Consultation with the local community on talk-au at https://lists.openstreetmap.org/pipermail/talk-au/2021-May/014622.html determined:
+
+- Including full address attributes (`addr:suburb`, `addr:state`, `addr:postcode`), even when they could be derived from existing boundaries.
+- Existing interpolation way addresses to be replaced with individually mapped address nodes.
+- Imported addresses as lone address nodes, not merged onto existing buildings or other objects.
+- Using `addr:suburb` as a catch-all for the placename/suburb/locality of the address, irrespective of if the value is actually referring to an OSM `place=suburb` or `place=town` or `place=hamlet` etc. (see page 25, section 15 of https://auspost.com.au/content/dam/auspost_corp/media/documents/australia-post-addressing-standards-1999.pdf)
+
+This is based on discussions to date, any of these points can be further discussed if needed.
