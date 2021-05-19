@@ -134,7 +134,7 @@ One potential solution is to encode this in the `addr:` key like `addr:unit`, `a
 
 Another solution is use a new tag like `addr:unit:prefix=Unit`, although there is no existing usage of this tagging scheme ([taginfo](https://taginfo.openstreetmap.org/search?q=addr%3Aunit#keys)).
 
-In the current codebase this information is omitted.
+In the current codebase this information about the unit type is omitted (the unit value is retained).
 
 ## Conflation with existing OSM address data
 Given some addresses are already mapped in OSM we first break the state down into city blocks. Where a block contains no addresses in OSM then we consider it low risk to automatically import all address in the block. The only risk is the address in either OSM or the source data is in the wrong block, but this is less likely and would be hard to detect otherwise.
