@@ -149,8 +149,22 @@ const conflate = new Transform({
           if (block.id in osmAddrPoints || block.id in osmAddrPolygonsByBlock) {
             const osmAddrWithinBlock = [osmAddrPoints[block.id] || [], osmAddrPolygonsByBlock[block.id] || []].flat()
             const matches = osmAddrWithinBlock.filter(osmAddr => {
-              return (feature.properties['addr:street'] === osmAddr.properties['addr:street'] &&
-              feature.properties['addr:housenumber'] === osmAddr.properties['addr:housenumber'] )
+              const osmStreet = osmAddr.properties['addr:street']
+
+              // where someone has used unit/number style values for addr:housenumber, only compare the number component
+              const osmHouseNumber = 'addr:housenumber' in osmAddr.properties ? (osmAddr.properties['addr:housenumber'].split('/').length > 1 ? osmAddr.properties['addr:housenumber'].split('/')[1] : osmAddr.properties['addr:housenumber']) : null
+
+              const osmUnit = 'addr:unit' in osmAddr.properties
+                ? osmAddr.properties['addr:unit']
+                : (
+                  'addr:housenumber' in osmAddr.properties && osmAddr.properties['addr:housenumber'].split('/').length > 1
+                  ? osmAddr.properties['addr:housenumber'].split('/')[0]
+                  : null
+                )
+
+              return feature.properties['addr:street'] === osmStreet
+                && osmHouseNumber !== null && feature.properties['addr:housenumber'] === osmHouseNumber
+                && (('addr:unit' in feature.properties && osmUnit !== null) ? feature.properties['addr:unit'] === osmUnit : true)
             })
             if (matches.length) {
               // matching number and street, high confidence
