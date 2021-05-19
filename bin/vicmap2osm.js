@@ -40,6 +40,8 @@ const transform = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
   transform(feature, encoding, callback) {
+    sourceCount++
+
     if (!argv.quiet) {
       if (process.stdout.isTTY && sourceCount % 10000 === 0) {
         process.stdout.write(` ${sourceCount / 1000}k\r`)
