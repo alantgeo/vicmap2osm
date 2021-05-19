@@ -129,6 +129,7 @@ build osm:
     - yarn install
     - mkdir -p dist data
     - make dist/blocksByOSMAddr.fgb
+    - make dist/blocksByOSMAddr.geojson
     - make summariseBlocksByOSMAddr
   when: manual
   artifacts:
