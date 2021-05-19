@@ -229,7 +229,14 @@ pipeline(
 
       console.log(`Index OSM Address Polygons within each block`)
       // for each OSM address polygon
+      let osmAddrPolygonIndex = 0
       for (const osmAddrPolygon of osmAddrPolygons) {
+        osmAddrPolygonIndex++
+
+        if (process.stdout.isTTY && osmAddrPolygonIndex % 1000 === 0) {
+          process.stdout.write(` ${osmAddrPolygonIndex.toLocaleString()}\r`)
+        }
+
         // find the blocks it might intersect
         const candidateBlocks = blockIndex.search(...bbox(osmAddrPolygon))
         // then test if it actually intersects
