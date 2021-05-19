@@ -148,6 +148,7 @@ conflate:
     - yarn install
     - mkdir -p dist
     - make dist/conflate
+    - wc -l dist/conflate/*.geojson
   when: manual
   artifacts:
     name: "conflate"
