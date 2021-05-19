@@ -8,8 +8,15 @@ const fs = require('fs')
 const { Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
 const PolygonLookup = require('polygon-lookup')
+const Flatbush = require('flatbush')
+const bbox = require('@turf/bbox').default
+const booleanIntersects = require('@turf/boolean-intersects').default
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
+  .option('verbose', {
+    type: 'boolean',
+    description: 'Verbose logging'
+  })
   .argv
 
 if (argv._.length < 4) {
@@ -53,12 +60,17 @@ const lookupBlocks = new PolygonLookup({
   features: blocksByOSMAddr
 })
 let lookupOSMAddressPoly
-const osmAddrPoly = []
+const osmAddrPolygons = []
 const osmAddrLines = [] // address interpolation lines
+
 // indexed by block
 const osmAddrPoints = {
   0: [] // this one is for any points not within a block
 }
+const osmAddrPolygonsByBlock = {
+  0: [] // this one is for any polygons not within a block
+}
+
 
 // find OSM Addresses and store them
 // polygons go into a simple array, which later we create a point in polygon index for
@@ -76,7 +88,7 @@ const filterOSMAddrPoly = new Transform({
 
     if (feature && feature.geometry && feature.geometry.type) {
       if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
-        osmAddrPoly.push(feature)
+        osmAddrPolygons.push(feature)
       } else if (feature.geometry.type === 'Point') {
         const results = lookupBlocks.search(...feature.geometry.coordinates.slice(0, 2), 1)
         const block = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
@@ -113,9 +125,11 @@ const conflate = new Transform({
       process.stdout.write(` ${sourceCount / 1000}k\r`)
     }
 
+    // find which block this vicmap address is in
     const results = lookupBlocks.search(...feature.geometry.coordinates.slice(0, 2), 1)
     const block = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
     if (block) {
+      // address within a block
       if (block.properties.NUMPOINTS === 0) {
         // no OSM addresses found within this block, so able to import without review
         outputStreams.noOSMAddressWithinBlock.write(feature)
@@ -132,8 +146,8 @@ const conflate = new Transform({
           // address not found within an existing OSM address polygon
           
           // see if any address with the same number and street in the same block
-          if (block.id in osmAddrPoints) {
-            const osmAddrWithinBlock = osmAddrPoints[block.id]
+          if (block.id in osmAddrPoints || block.id in osmAddrPolygonsByBlock) {
+            const osmAddrWithinBlock = [osmAddrPoints[block.id] || [], osmAddrPolygonsByBlock[block.id] || []].flat()
             const matches = osmAddrWithinBlock.filter(osmAddr => {
               return (feature.properties['addr:street'] === osmAddr.properties['addr:street'] &&
               feature.properties['addr:housenumber'] === osmAddr.properties['addr:housenumber'] )
@@ -147,9 +161,10 @@ const conflate = new Transform({
               outputStreams.noExactMatch.write(feature)
             }
           } else {
-            // block id not found in osmAddrPoints, meaning there are no osmAddress points in this block,
-            // however in this case NUMPOINTS should have been 0
-            console.log(`Block ID not found when expected`)
+            // block id not found in osmAddrPoints or osmAddrPolygonsByBlock, meaning there are no osmAddress points or polygons in this block,
+            // maybe there was an address as a linear way?
+            // we ignore address interpolation lines and only look at the endpoint nodes from the interpolation way
+            console.log(`Block ID ${block.id} not found when expected for `, JSON.stringify(feature), JSON.stringify(block))
           }
         }
       }
@@ -183,12 +198,36 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
-      console.log(`  of ${osmAddrCount} OSM address features found ${osmAddrPoly.length} addresses represented as polygons, ${osmAddrLines.length} addresses represented as lines`)
+      console.log(`  of ${osmAddrCount} OSM address features found ${osmAddrPolygons.length} addresses represented as polygons, ${osmAddrLines.length} addresses represented as lines`)
+
       console.log('Creating index for OSM Address Polygon lookup')
       lookupOSMAddressPoly = new PolygonLookup({
         type: 'FeatureCollection',
-        features: osmAddrPoly
+        features: osmAddrPolygons
       })
+
+      // create an index of blocks
+      const blockIndex = new Flatbush(blocksByOSMAddr.length)
+      for (const block of blocksByOSMAddr) {
+        blockIndex.add(...bbox(block))
+      }
+      blockIndex.finish()
+
+      console.log(`Index OSM Address Polygons within each block`)
+      // for each OSM address polygon
+      for (const osmAddrPolygon of osmAddrPolygons) {
+        // find the blocks it might intersect
+        const candidateBlocks = blockIndex.search(...bbox(osmAddrPolygon))
+        // then test if it actually intersects
+        const intersectingBlocks = candidateBlocks.map(candidateBlock => booleanIntersects(osmAddrPolygon, blocksByOSMAddr[candidateBlock]))
+        for (const intersectingBlock of intersectingBlocks) {
+          if (!(intersectingBlock.id in osmAddrPolygonsByBlock)) {
+            osmAddrPolygonsByBlock[intersectingBlock.id] = []
+          }
+          osmAddrPolygonsByBlock[intersectingBlock.id].push(osmAddrPolygon)
+        }
+      }
+
       // second pass to conflate with existing OSM data
       console.log('Pass 2/2: Conflate with existing OSM data')
       pipeline(
