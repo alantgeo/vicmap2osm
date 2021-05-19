@@ -83,7 +83,7 @@ const filterOSMAddrPoly = new Transform({
     osmAddrCount++
 
     if (process.stdout.isTTY && osmAddrCount % 10000 === 0) {
-      process.stdout.write(` ${osmAddrCount / 1000}k\r`)
+      process.stdout.write(` ${osmAddrCount.toLocaleString()}\r`)
     }
 
     if (feature && feature.geometry && feature.geometry.type) {
@@ -122,7 +122,7 @@ const conflate = new Transform({
     sourceCount++
 
     if (process.stdout.isTTY && sourceCount % 10000 === 0) {
-      process.stdout.write(` ${sourceCount / 1000}k\r`)
+      process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
     }
 
     // find which block this vicmap address is in

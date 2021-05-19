@@ -46,7 +46,7 @@ const index = new Transform({
 
     if (!argv.quiet) {
       if (process.stdout.isTTY && sourceCount % 10000 === 0) {
-        process.stdout.write(` ${sourceCount / 1000}k\r`)
+        process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
       }
     }
 
@@ -72,7 +72,7 @@ const reduce = new Transform({
     reduceIndex++
     if (!argv.quiet) {
       if (process.stdout.isTTY && reduceIndex % 10000 === 0) {
-        process.stdout.write(` ${reduceIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(reduceIndex / sourceCount * 100)}%)\r`)
+        process.stdout.write(` ${reduceIndex.toLocaleString()} / ${sourceCount.toLocaleString()} (${Math.round(reduceIndex / sourceCount * 100)}%)\r`)
       }
     }
 
@@ -185,7 +185,7 @@ const limitValues = new Transform({
     limitValuesIndex++
     if (!argv.quiet) {
       if (limitValuesIndex % 10000 === 0) {
-        process.stdout.write(` ${limitValuesIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(limitValuesIndex / sourceCount * 100)}%)\r`)
+        process.stdout.write(` ${limitValuesIndex.toLocaleString()} / ${sourceCount.toLocaleString()} (${Math.round(limitValuesIndex / sourceCount * 100)}%)\r`)
       }
     }
     this.push(valueLimits(feature))

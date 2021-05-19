@@ -41,7 +41,7 @@ const index = new Transform({
     sourceCount++
 
     if (process.stdout.isTTY && sourceCount % 10000 === 0) {
-      process.stdout.write(` ${sourceCount / 1000}k\r`)
+      process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
     }
 
     const key = [
@@ -71,7 +71,7 @@ const reduce = new Transform({
   transform(key, encoding, callback) {
     reduceIndex++
     if (process.stdout.isTTY && reduceIndex % 10000 === 0) {
-      process.stdout.write(` ${reduceIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(reduceIndex / sourceCount * 100)}%)\r`)
+      process.stdout.write(` ${reduceIndex.toLocaleString()} / ${sourceCount.toLocaleString()} (${Math.round(reduceIndex / sourceCount * 100)}%)\r`)
     }
 
     const groupedFeatures = features[key]

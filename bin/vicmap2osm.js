@@ -44,7 +44,7 @@ const transform = new Transform({
 
     if (!argv.quiet) {
       if (process.stdout.isTTY && sourceCount % 10000 === 0) {
-        process.stdout.write(` ${sourceCount / 1000}k\r`)
+        process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
       }
     }
 

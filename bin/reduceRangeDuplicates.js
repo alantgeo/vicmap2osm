@@ -65,7 +65,7 @@ const index = new Transform({
     sourceCount++
 
     if (process.stdout.isTTY && sourceCount % 10000 === 0) {
-      process.stdout.write(` ${sourceCount / 1000}k\r`)
+      process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
     }
 
     const isRange = feature.properties['addr:housenumber'].split('-').length > 1
@@ -111,7 +111,7 @@ const reduceRange = new Transform({
   transform(feature, encoding, callback) {
     reduceRangeIndex++
     if (process.stdout.isTTY && reduceRangeIndex % 10000 === 0) {
-      process.stdout.write(` ${reduceRangeIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(reduceRangeIndex / sourceCount * 100)}%)\r`)
+      process.stdout.write(` ${reduceRangeIndex.toLocaleString()} / ${sourceCount.toLocaleString()} (${Math.round(reduceRangeIndex / sourceCount * 100)}%)\r`)
     }
     
     const isRange = feature.properties['addr:housenumber'].split('-').length > 1
@@ -233,7 +233,7 @@ const reduceNonRange = new Transform({
   transform(feature, encoding, callback) {
     reduceNonRangeIndex++
     if (process.stdout.isTTY && reduceNonRangeIndex % 10000 === 0) {
-      process.stdout.write(` ${reduceNonRangeIndex / 1000}k / ${Math.round(sourceCount / 1000)}k (${Math.round(reduceNonRangeIndex / sourceCount * 100)}%)\r`)
+      process.stdout.write(` ${reduceNonRangeIndex.toLocaleString()} / ${sourceCount.toLocaleString()} (${Math.round(reduceNonRangeIndex / sourceCount * 100)}%)\r`)
     }
     
     const isRange = feature.properties['addr:housenumber'].split('-').length > 1
