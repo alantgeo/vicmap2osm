@@ -169,6 +169,19 @@ This produces outputs in `dist/conflate`:
 - [ ] we need to deal with addresses represented in OSM as interpolation ways. If there is community consensus to replace these existing interpolation ways with individual point nodes or leave the existing interpolation ways.
 - [ ] we need a better way to review matches where some attributes differ, potentially as a quick fix MapRoulette for tricky cases, or done as a bulk import for easy cases (eg. simply adding `addr:suburb`, `addr:state` and `addr:postcode`)
 
+### Where should addresses exist?
+
+In OSM addresses might be found in any of these mapping styles in any combination:
+
+1. `addr:*` keys on a building object [example](https://www.openstreetmap.org/way/222891745)
+2. `addr:*` keys on a lone node without any other non-address tags [example](https://www.openstreetmap.org/node/2024786354)
+3. `addr:interpolation` on a linear way [example](https://www.openstreetmap.org/way/196467381)
+4. `addr:*` keys on an another object like `amenity`, `shop`, `office`, etc. which could be a node, way or relation [example](https://www.openstreetmap.org/node/1975940442)
+
+For this import, where the address doesn't already exist, then it will be added as a new lone node, not attached to any existing building or any existing object. Local mappers can choose to merge these tags into an existing building, or into an object (subject to local knowledge or survey).
+
+Where the address does already exist, but is missing some `addr:*` tags, the new tags are added into the existing object.
+
 ## Import Process
 
 - Dedicated import account
