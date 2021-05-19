@@ -173,7 +173,7 @@ outputKeys.forEach(key => {
 })
 
 // first pass to index by geometry
-console.log('First find OSM addresses represented as areas and store them in memory')
+console.log('Pass 1/2: Find OSM addresses represented as areas and store them in memory')
 pipeline(
   fs.createReadStream(osmFile),
   ndjson.parse(),
@@ -190,12 +190,11 @@ pipeline(
         features: osmAddrPoly
       })
       // second pass to conflate with existing OSM data
+      console.log('Pass 2/2: Conflate with existing OSM data')
       pipeline(
         fs.createReadStream(vicmapFile),
         ndjson.parse(),
         conflate,
-        //ndjson.stringify(),
-        //fs.createWriteStream(outputFile),
         err => {
           if (err) {
             console.log(err)
