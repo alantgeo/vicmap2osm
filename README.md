@@ -190,9 +190,11 @@ Where the address does already exist, but is missing some `addr:*` tags, the new
 
 ## Import Process
 
-- Dedicated import account
-- Import in batches by suburb/locality and by conflation status
-- Import changeset comments
+Dedicated import account: [`vicmap_import`](https://www.openstreetmap.org/user/vicmap_import)
+
+Changeset tags: `source=vicmap_address`
+
+Imported in batches by suburb/locality and by conflation status with JOSM
 
 ## Future Work
 
