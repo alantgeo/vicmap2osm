@@ -10,9 +10,13 @@ This import proposal has been supported by the National Heavy Vehicle Regulator 
 
 We use GitLab CI/CD to automate data processing.
 
-The _prepare_ stage downloads Vicmap Address data and converts it into GeoJSON, because this takes around 45 minutes, it's cached through Gitlab for future use, and only needs to be re-run when source Vicmap data changes.
+- _prepare_ stage downloads Vicmap Address data and converts it into GeoJSON, because this takes around 45 minutes, it's cached through Gitlab for future use, and only needs to be re-run when source Vicmap data changes.
 
-The _build_ stage does all the processing to produce the import candidate data and intermediate datasets and reports.
+- _build vicmap_ stage converts Vicmap data into OSM ready data.
+
+- _build osm_ stage downloads existing OSM address data and prepares it for conflation with Vicmap data.
+
+- _conflate_ takes the Vicmap OSM ready data and existing OSM address data from the _build_ stage and conflates the two into import candidates.
 
 ## Build candidate files (pre-conflation)
 
