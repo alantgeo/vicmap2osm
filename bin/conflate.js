@@ -239,13 +239,14 @@ pipeline(
 
         // find the blocks it might intersect
         const candidateBlocks = blockIndex.search(...bbox(osmAddrPolygon))
+
         // then test if it actually intersects
-        const intersectingBlocks = candidateBlocks.map(candidateBlock => booleanIntersects(osmAddrPolygon, blocksByOSMAddr[candidateBlock]))
+        const intersectingBlocks = candidateBlocks.filter(candidateBlock => booleanIntersects(osmAddrPolygon, blocksByOSMAddr[candidateBlock]))
         for (const intersectingBlock of intersectingBlocks) {
-          if (!(intersectingBlock.id in osmAddrPolygonsByBlock)) {
-            osmAddrPolygonsByBlock[intersectingBlock.id] = []
+          if (!((intersectingBlock + 1) in osmAddrPolygonsByBlock)) {
+            osmAddrPolygonsByBlock[intersectingBlock + 1] = []
           }
-          osmAddrPolygonsByBlock[intersectingBlock.id].push(osmAddrPolygon)
+          osmAddrPolygonsByBlock[intersectingBlock + 1].push(osmAddrPolygon)
         }
       }
 
