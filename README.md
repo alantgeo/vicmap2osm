@@ -20,9 +20,11 @@ We use GitLab CI/CD to automate data processing.
 
 ## Build candidate files (pre-conflation)
 
-Download source Vicmap data and convert to GeoJSON:
+Download source Vicmap data and convert to GeoJSON (_prepare_ stage):
 
     make data/vicmap.geojson
+
+The following steps are built into the _build vicmap_ stage.
 
 Next, convert into [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at `bin/vicmap2osm.js`):
 
