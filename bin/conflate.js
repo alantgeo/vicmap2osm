@@ -175,10 +175,12 @@ const conflate = new Transform({
               outputStreams.noExactMatch.write(feature)
             }
           } else {
-            // block id not found in osmAddrPoints or osmAddrPolygonsByBlock, meaning there are no osmAddress points or polygons in this block,
-            // maybe there was an address as a linear way?
-            // we ignore address interpolation lines and only look at the endpoint nodes from the interpolation way
-            console.log(`Block ID ${block.id} not found when expected for `, JSON.stringify(feature), JSON.stringify(block))
+            // block id not found in osmAddrPoints or osmAddrPolygonsByBlock,
+            // however the block was found to be containing OSM addresses
+            // this likely happens when there is an address on a linear way like address interpolation line
+            // given this import plans to replace address interpolation lines, then output as fine to import
+
+            outputStreams.noOSMAddressWithinBlock.write(feature)
           }
         }
       }
