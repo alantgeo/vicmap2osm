@@ -162,3 +162,6 @@ data/victoria-admin-level10.osm.geojson: data/victoria-admin-level10.osm.pbf
 
 dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm.geojson data/victoria-admin-level10.osm.geojson
 	./bin/compareSuburb.geojson $^ $@
+
+printDifferentSuburbs: dist/vicmapSuburbDiffersWithOSM.geojson
+	ogr2ogr -f CSV -select '_osmSuburb,addr:suburb' /vsistdout/ $< | sort | uniq

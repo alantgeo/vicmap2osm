@@ -173,6 +173,7 @@ build compareSuburb:
     - time make dist/vicmap-osm.geojson
     - time make dist/vicmapSuburbDiffersWithOSM.geojson
     - rm -f dist/vicmap-osm.geojson
+    - make printDifferentSuburbs
   when: manual
   artifacts:
     name: "build compareSuburb"
