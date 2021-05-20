@@ -88,6 +88,15 @@ Where the individual points share the same geometry as each other, then the rang
 
 The schema mapping mostly happens in `lib/toOSM.js`.
 
+### addr:suburb
+
+Vicmap locality data sometimes includes a suffix placename to a locality for example:
+
+ - Hillside Greater Melbourne
+ - Hillside Bairnsdale
+
+These are converted into simply "Hillside", the full list of special cases is in `lib/toOSM.js`.
+
 ### Removing duplicates
 
 Source address data contains many address points overlapping or within a close proximity.
