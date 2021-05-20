@@ -10,6 +10,8 @@ const ndjson = require('ndjson')
 const PolygonLookup = require('polygon-lookup')
 const Flatbush = require('flatbush')
 const bbox = require('@turf/bbox').default
+const multiLineString = require('@turf/helpers').multiLineString
+const centroid = require('@turf/centroid').default
 const booleanIntersects = require('@turf/boolean-intersects').default
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
@@ -170,6 +172,9 @@ const conflate = new Transform({
               // matching number and street, high confidence
               feature.properties._matches = matches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
               outputStreams.exactMatch.write(feature)
+
+              const exactMatchLine = multiLineString(matches.map(match => [feature.geometry.coordinates, centroid(match).geometry.coordinates]), feature.properties)
+              outputStreams.exactMatchLines.write(exactMatchLine)
             } else {
               // no exact match, probably can import
               outputStreams.noExactMatch.write(feature)
@@ -194,7 +199,7 @@ const conflate = new Transform({
 })
 
 // ndjson streams to output features
-const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
+const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'exactMatchLines', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
 const outputStreams = {}
 const outputStreamOutputs = {}
 

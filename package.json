@@ -11,6 +11,8 @@
   "dependencies": {
     "@turf/bbox": "^6.3.0",
     "@turf/boolean-intersects": "^6.3.0",
+    "@turf/centroid": "^6.3.0",
+    "@turf/helpers": "^6.3.0",
     "capital-case": "^1.0.4",
     "cheap-ruler": "^3.0.1",
     "clone-deep": "^4.0.1",
