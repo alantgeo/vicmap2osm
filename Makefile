@@ -149,3 +149,16 @@ convertConflationResultsToFGB:
 	ogr2ogr -f FlatGeobuf dist/conflate/exactMatch.fgb dist/conflate/exactMatch.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/noExactMatch.fgb dist/conflate/noExactMatch.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/noOSMAddressWithinBlock.fgb dist/conflate/noOSMAddressWithinBlock.geojson
+
+# extract admin_level=10 from OSM
+data/victoria-admin.osm.pbf: data/victoria.osm.pbf
+	osmium tags-filter --remove-tags --output=$@ $< r/boundary=administrative
+
+data/victoria-admin-level10.osm.pbf: data/victoria-admin.osm.pbf
+	osmium tags-filter --remove-tags --output=$@ $< r/admin_level=10
+
+data/victoria-admin-level10.osm.geojson: data/victoria-admin-level10.osm.pbf
+	osmium export --overwrite --geometry-types=polygon --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
+
+dist/vicmapSuburbDiffersWithOSM.geojson: data/vicmap-osm.geojson data/victoria-admin-level10.osm.geojson
+	./bin/compareSuburb.geojson $^ $@
