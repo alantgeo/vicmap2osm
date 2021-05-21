@@ -97,6 +97,28 @@ Vicmap locality data sometimes includes a suffix placename to a locality for exa
 
 These are converted into simply "Hillside", the full list of special cases is in `lib/toOSM.js`.
 
+### Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`
+Some within the OSM community advocate including full address attributes `addr:suburb`, `addr:postcode`, `addr:state` on all address objects even when they can be derived from a `boundary` object already mapped. Others advocate excluding these attributes from each address object where they can be derived from the `boundary` object.
+
+I undertook analysis (see `bin/compareSuburb.js` and the _build compareSuburb_ stage) to see how consistent Vicmap `addr:suburb` was with OSM `admin_level=10` boundaries and `addr:postcode` with a potential `postal_code` tag on each OSM level 10 boundary.
+
+After excluding some special cases, there were 62 Vicmap addresses with a reported suburb/locality different to what would be derived from the OSM admin boundary. It looks like a bunch are bad Vicmap data, most of the rest are address points practically on the admin boundary line, there's only a [small handful otherwise to deal with](https://gitlab.com/alantgeo/vicmap2osm/-/jobs/1279647817/artifacts/raw/dist/vicmapSuburbDiffersWithOSM.geojson).
+
+This analysis supports it is mostly fine from a data consistency point of view to rely on the `admin_level=10` suburb, except for a handful of cases (and even then it's not clear between Vicmap or OSM which is correct).
+
+For postcodes, of the 2988 `admin_level=10` suburb/localities in OSM:
+
+- 2912 have only one distinct postcode from Vicmap data,
+- 9 have >1 postcode from Vicmap
+- a handful have no addresses
+
+Of the 9 that have >1 postcode, 7 have only 1 address with a different postcode, 1 has only 3 addresses with a different postcode, and one suburb/locality (Melbourne suburb) has two main postcodes 3000 with 51,458 addresses and postcode 3004 with 12,158 postcodes. Then for the Melbourne case, it's clear than Melbourne CBD is 3000 and areas south 3004. We could add a separate `boundary=postal_code` for Melbourne.
+
+![Vicmap address postcodes within Melbourne suburb](img/postcodes_melbourne.png =400x)
+_Vicmap address postcodes within Melbourne suburb_
+
+My analysis supports adding `postal_code` to the level 10 admin boundary is safe for pretty much the whole state, except for Melbourne where we can add a `postal_code` boundary.
+
 ### Removing duplicates
 
 Source address data contains many address points overlapping or within a close proximity.
