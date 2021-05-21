@@ -236,10 +236,13 @@ Imported in batches by suburb/locality and by conflation status with JOSM
 
 Consultation with the local community on talk-au at https://lists.openstreetmap.org/pipermail/talk-au/2021-May/014622.html determined:
 
-- Including full address attributes (`addr:suburb`, `addr:state`, `addr:postcode`), even when they could be derived from existing boundaries.
 - Existing interpolation way addresses to be replaced with individually mapped address nodes.
 - Imported addresses as lone address nodes, not merged onto existing buildings or other objects.
 - Using `addr:suburb` as a catch-all for the placename/suburb/locality of the address, irrespective of if the value is actually referring to an OSM `place=suburb` or `place=town` or `place=hamlet` etc. (see page 25, section 15 of https://auspost.com.au/content/dam/auspost_corp/media/documents/australia-post-addressing-standards-1999.pdf)
 - Further to the previous point, where an existing address uses `addr:city` but our conflation indicates that the `addr:city` value should be `addr:suburb` then this will be updated on the existing object.
 
 This is based on discussions to date, any of these points can be further discussed if needed.
+
+Community discussion still unresolved for:
+
+- Including full address attributes (`addr:suburb`, `addr:state`, `addr:postcode`), even when they could be derived from existing boundaries.
