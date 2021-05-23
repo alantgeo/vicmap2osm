@@ -241,7 +241,7 @@ pipeline(
         osmAddrPolygonIndex++
 
         if (process.stdout.isTTY && osmAddrPolygonIndex % 1000 === 0) {
-          process.stdout.write(` ${osmAddrPolygonIndex.toLocaleString()}\r`)
+          process.stdout.write(` ${osmAddrPolygonIndex.toLocaleString()} of ${osmAddrPolygons.length.toLocaleString()} (${Math.round(osmAddrPolygonIndex / osmAddrPolygons.length * 100)}%)\r`)
         }
 
         // find the blocks it might intersect
