@@ -128,9 +128,36 @@ data/victoria-roads.fgb: data/victoria-roads.geojson data/victoria-boundary.geoj
 data/blocks.fgb: data/victoria-roads.fgb
 	qgis_process run native:polygonize -- INPUT=$< KEEP_FIELDS=FALSE OUTPUT=$@
 
+# blocks from roads mostly works well, except for the coastal area where we end up with one large thin polygon along the coastline
+# we split this one up by suburb/locality boundaries (admin_level=10) to make it smaller and more manageable
+data/coastalStrip.fgb: data/blocks.fgb
+	qgis_process run native:extractbylocation -- INPUT='$<|layername=blocks' INTERSECT=src/pointInPortPhillipBay.geojson OUTPUT=$@ PREDICATE=0
+
+data/coastalStripBySuburb.fgb: data/coastalStrip.fgb data/victoria-admin-level10.osm.fgb
+	qgis_process run native:intersection -- INPUT='$<|layername=coastalStrip' OVERLAY='data/victoria-admin-level10.osm.fgb|layername=victoria-admin-level10.osm' OUTPUT=$@
+
+# replace large coastal strip in blocks with costalStripBySuburb
+data/blocksExcludingCoastalStrip.fgb: data/blocks.fgb
+	qgis_process run native:extractbylocation -- INPUT='$<|layername=blocks' INTERSECT=src/pointInPortPhillipBay.geojson OUTPUT=$@ PREDICATE=2
+
+data/blocksWithCoastalStripSplit.fgb: data/blocksExcludingCoastalStrip.fgb data/coastalStripBySuburb.fgb
+	qgis_process run native:mergevectorlayers -- LAYERS='data/blocksExcludingCoastalStrip.fgb|layername=blocksExcludingCoastalStrip' LAYERS='data/coastalStripBySuburb.fgb|layername=coastalStripBySuburb' OUTPUT=$@
+
+data/osmSuburbLines.fgb:
+	qgis_process run native:polygonstolines -- INPUT=data/victoria-admin-level10.osm.geojson OUTPUT=$@
+
+data/suburbLinesInCoastalStrip.fgb: data/osmSuburbLines.fgb
+	qgis_process run native:extractbylocation -- INPUT='$<|layername=osmSuburbLines' INTERSECT='data/coastalStrip.fgb|layername=coastalStrip' OUTPUT=$@ PREDICATE=0
+
+data/suburbLinesInCoastalStripDissolved.fgb: data/suburbLinesInCoastalStrip.fgb
+	qgis_process run native:dissolve -- INPUT='$<|layername=suburbLinesInCoastalStrip' OUTPUT=$@
+
+data/coastStripSplitBySuburb.fgb: data/coastalStrip.fgb data/suburbLinesInCoastalStripDissolved.fgb
+	qgis_process run native:splitwithlines -- INPUT='$<|layername=coastalStrip' LINES='data/suburbLinesInCoastalStripDissolved.fgb|layername=suburbLinesInCoastalStripDissolved' OUTPUT=$@
+
 # count OSM addresses by block, those with no OSM addresses we can import all the candidate addresses without conflation issues
-dist/blocksByOSMAddr.fgb: data/victoria-addr.osm.centroids.fgb data/blocks.fgb
-	qgis_process run native:countpointsinpolygon -- POINTS=$< POLYGONS='data/blocks.fgb|layername=blocks' FIELD=NUMPOINTS OUTPUT=$@
+dist/blocksByOSMAddr.fgb: data/victoria-addr.osm.centroids.fgb data/blocksWithCoastalStripSplit.fgb
+	qgis_process run native:countpointsinpolygon -- POINTS=$< POLYGONS='data/blocksWithCoastalStripSplit.fgb' FIELD=NUMPOINTS OUTPUT=$@
 
 dist/blocksByOSMAddr.geojson: dist/blocksByOSMAddr.fgb
 	ogr2ogr -f GeoJSONSeq $@ $<
@@ -159,6 +186,9 @@ data/victoria-admin-level10.osm.pbf: data/victoria-admin.osm.pbf
 
 data/victoria-admin-level10.osm.geojson: data/victoria-admin-level10.osm.pbf
 	osmium export --overwrite --geometry-types=polygon --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
+
+data/victoria-admin-level10.osm.fgb: data/victoria-admin-level10.osm.geojson
+	ogr2ogr -f FlatGeobuf $@ $<
 
 dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm.geojson data/victoria-admin-level10.osm.geojson
 	./bin/compareSuburb.js $^ $@ dist/suburbsWithPostcodeCounts.geojson
