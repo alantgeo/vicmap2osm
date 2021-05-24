@@ -123,7 +123,7 @@ const conflate = new Transform({
   transform(feature, encoding, callback) {
     sourceCount++
 
-    if (process.stdout.isTTY && sourceCount % 10000 === 0) {
+    if (process.stdout.isTTY && sourceCount % 1000 === 0) {
       process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
     }
 
@@ -240,7 +240,7 @@ pipeline(
       for (const osmAddrPolygon of osmAddrPolygons) {
         osmAddrPolygonIndex++
 
-        if (process.stdout.isTTY && osmAddrPolygonIndex % 1000 === 0) {
+        if (process.stdout.isTTY && osmAddrPolygonIndex % 100 === 0) {
           process.stdout.write(` ${osmAddrPolygonIndex.toLocaleString()} of ${osmAddrPolygons.length.toLocaleString()} (${Math.round(osmAddrPolygonIndex / osmAddrPolygons.length * 100)}%)\r`)
         }
 
