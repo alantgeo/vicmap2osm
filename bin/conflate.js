@@ -137,68 +137,67 @@ const conflate = new Transform({
         outputStreams.noOSMAddressWithinBlock.write(feature)
       } else {
         // other OSM addresses found within this block, so need to conflate
-        const results = lookupOSMAddressPoly.search(...feature.geometry.coordinates.slice(0, 2), 1)
-        const osmPoly = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
-        if (osmPoly) {
-          // address found within an existing OSM address polygon
-          feature.properties._osmtype = osmPoly.properties['@type']
-          feature.properties._osmid = osmPoly.properties['@id']
 
-          outputStreams.withinExistingOSMAddressPoly.write(feature)
-        } else {
-          // address not found within an existing OSM address polygon
-          
-          // see if any address with the same number and street in the same block
-          if (block.id in osmAddrPoints || block.id in osmAddrPolygonsByBlock) {
-            // for loop with push is faster than spread then flat, or concat
-            const osmAddrWithinBlock = []
-            if (block.id in osmAddrPoints) {
-              for (let i = 0; i < osmAddrPoints[block.id].length; i++) {
-                osmAddrWithinBlock.push(osmAddrPoints[block.id][i])
-              }
+        // see if any address with the same number and street in the same block
+        if (block.id in osmAddrPoints || block.id in osmAddrPolygonsByBlock) {
+          // for loop with push is faster than spread then flat, or concat
+          const osmAddrWithinBlock = []
+          if (block.id in osmAddrPoints) {
+            for (let i = 0; i < osmAddrPoints[block.id].length; i++) {
+              osmAddrWithinBlock.push(osmAddrPoints[block.id][i])
             }
-            if (block.id in osmAddrPolygonsByBlock) {
-              for (let i = 0; i < osmAddrPolygonsByBlock[block.id].length; i++) {
-                osmAddrWithinBlock.push(osmAddrPolygonsByBlock[block.id][i])
-              }
+          }
+          if (block.id in osmAddrPolygonsByBlock) {
+            for (let i = 0; i < osmAddrPolygonsByBlock[block.id].length; i++) {
+              osmAddrWithinBlock.push(osmAddrPolygonsByBlock[block.id][i])
             }
-            const matches = osmAddrWithinBlock.filter(osmAddr => {
-              const osmStreet = osmAddr.properties['addr:street']
+          }
+          const matches = osmAddrWithinBlock.filter(osmAddr => {
+            const osmStreet = osmAddr.properties['addr:street']
 
-              // where someone has used unit/number style values for addr:housenumber, only compare the number component
-              const osmHouseNumber = 'addr:housenumber' in osmAddr.properties ? (osmAddr.properties['addr:housenumber'].split('/').length > 1 ? osmAddr.properties['addr:housenumber'].split('/')[1] : osmAddr.properties['addr:housenumber']) : null
+            // where someone has used unit/number style values for addr:housenumber, only compare the number component
+            const osmHouseNumber = 'addr:housenumber' in osmAddr.properties ? (osmAddr.properties['addr:housenumber'].split('/').length > 1 ? osmAddr.properties['addr:housenumber'].split('/')[1] : osmAddr.properties['addr:housenumber']) : null
 
-              const osmUnit = 'addr:unit' in osmAddr.properties
-                ? osmAddr.properties['addr:unit']
-                : (
-                  'addr:housenumber' in osmAddr.properties && osmAddr.properties['addr:housenumber'].split('/').length > 1
-                  ? osmAddr.properties['addr:housenumber'].split('/')[0]
-                  : null
-                )
+            const osmUnit = 'addr:unit' in osmAddr.properties
+              ? osmAddr.properties['addr:unit']
+              : (
+                'addr:housenumber' in osmAddr.properties && osmAddr.properties['addr:housenumber'].split('/').length > 1
+                ? osmAddr.properties['addr:housenumber'].split('/')[0]
+                : null
+              )
 
-              return feature.properties['addr:street'] === osmStreet
-                && osmHouseNumber !== null && feature.properties['addr:housenumber'] === osmHouseNumber
-                && (('addr:unit' in feature.properties && osmUnit !== null) ? feature.properties['addr:unit'] === osmUnit : true)
-            })
-            if (matches.length) {
-              // matching number and street, high confidence
-              feature.properties._matches = matches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
-              outputStreams.exactMatch.write(feature)
+            return feature.properties['addr:street'] === osmStreet
+              && osmHouseNumber !== null && feature.properties['addr:housenumber'] === osmHouseNumber
+              && (('addr:unit' in feature.properties && osmUnit !== null) ? feature.properties['addr:unit'] === osmUnit : true)
+          })
+          if (matches.length) {
+            // matching unit, number, street, high confidence
+            feature.properties._matches = matches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
+            outputStreams.exactMatch.write(feature)
 
-              const exactMatchLine = multiLineString(matches.map(match => [feature.geometry.coordinates, centroid(match).geometry.coordinates]), feature.properties)
-              outputStreams.exactMatchLines.write(exactMatchLine)
+            const exactMatchLine = multiLineString(matches.map(match => [feature.geometry.coordinates, centroid(match).geometry.coordinates]), feature.properties)
+            outputStreams.exactMatchLines.write(exactMatchLine)
+          } else {
+            // no exact match, see if containing within an existing OSM address polygon
+            const results = lookupOSMAddressPoly.search(...feature.geometry.coordinates.slice(0, 2), 1)
+            const osmPoly = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
+            if (osmPoly) {
+              // address found within an existing OSM address polygon
+              feature.properties._osmtype = osmPoly.properties['@type']
+              feature.properties._osmid = osmPoly.properties['@id']
+
+              outputStreams.withinExistingOSMAddressPoly.write(feature)
             } else {
-              // no exact match, probably can import
+              // address not found within an existing OSM address polygon
               outputStreams.noExactMatch.write(feature)
             }
-          } else {
-            // block id not found in osmAddrPoints or osmAddrPolygonsByBlock,
-            // however the block was found to be containing OSM addresses
-            // this likely happens when there is an address on a linear way like address interpolation line
-            // given this import plans to replace address interpolation lines, then output as fine to import
-
-            outputStreams.noOSMAddressWithinBlock.write(feature)
           }
+        } else {
+          // block id not found in osmAddrPoints or osmAddrPolygonsByBlock,
+          // however the block was found to be containing OSM addresses
+          // this likely happens when there is an address on a linear way like address interpolation line
+          // given this import plans to replace address interpolation lines, then output as fine to import
+          outputStreams.noOSMAddressWithinBlock.write(feature)
         }
       }
     } else {
