@@ -189,7 +189,7 @@ Generate city blocks:
 
 Sort blocks into containing some OSM addresses or containing no OSM addresses:
 
-    make data/blocksByOSMAddr.fgb
+    make dist/blocksByOSMAddr.fgb
 
 Conflate Vicmap addresses with OSM:
 

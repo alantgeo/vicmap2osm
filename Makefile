@@ -162,7 +162,7 @@ dist/blocksByOSMAddr.fgb: data/victoria-addr.osm.centroids.fgb data/blocksWithCo
 	qgis_process run native:countpointsinpolygon -- POINTS=$< POLYGONS='data/blocksWithCoastalStripSplit.fgb' FIELD=NUMPOINTS OUTPUT=$@
 
 dist/blocksByOSMAddr.geojson: dist/blocksByOSMAddr.fgb
-	ogr2ogr -f GeoJSONSeq $@ $<
+	ogr2ogr -f GeoJSONSeq -select 'NUMPOINTS' $@ $<
 
 summariseBlocksByOSMAddr: dist/blocksByOSMAddr.geojson
 	ogrinfo -dialect sqlite -sql 'select count(*), NUMPOINTS = 0 from blocksByOSMAddr group by (NUMPOINTS = 0)' $<
