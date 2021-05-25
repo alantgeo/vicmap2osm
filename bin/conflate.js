@@ -188,8 +188,7 @@ const conflate = new Transform({
             if (osmPoly) {
               // address found within an existing OSM address polygon
               if (argv.debug) {
-                feature.properties._osmtype = osmPoly.properties['@type']
-                feature.properties._osmid = osmPoly.properties['@id']
+                feature.properties._osm = `${osmPoly.properties['@type']}/${osmPoly.properties['@id']}`
               }
 
               outputStreams.withinExistingOSMAddressPoly.write(feature)
