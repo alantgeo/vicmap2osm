@@ -167,8 +167,8 @@ const conflate = new Transform({
               )
 
             return feature.properties['addr:street'] === osmStreet
-              && osmHouseNumber !== null && feature.properties['addr:housenumber'] === osmHouseNumber
-              && (('addr:unit' in feature.properties && osmUnit !== null) ? feature.properties['addr:unit'] === osmUnit : true)
+              && osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '') === osmHouseNumber.replaceAll(' ', '') // ignoring whitespace when comparing house numbers
+              && (('addr:unit' in feature.properties && osmUnit !== null) ? feature.properties['addr:unit'].replaceAll(' ', '') === osmUnit.replaceAll(' ', '') : true)
           })
           if (matches.length) {
             // matching unit, number, street, high confidence
