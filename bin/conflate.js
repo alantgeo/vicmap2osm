@@ -143,13 +143,25 @@ const conflate = new Transform({
           // address found within an existing OSM address polygon
           feature.properties._osmtype = osmPoly.properties['@type']
           feature.properties._osmid = osmPoly.properties['@id']
+
           outputStreams.withinExistingOSMAddressPoly.write(feature)
         } else {
           // address not found within an existing OSM address polygon
           
           // see if any address with the same number and street in the same block
           if (block.id in osmAddrPoints || block.id in osmAddrPolygonsByBlock) {
-            const osmAddrWithinBlock = [osmAddrPoints[block.id] || [], osmAddrPolygonsByBlock[block.id] || []].flat()
+            // for loop with push is faster than spread then flat, or concat
+            const osmAddrWithinBlock = []
+            if (block.id in osmAddrPoints) {
+              for (let i = 0; i < osmAddrPoints[block.id].length; i++) {
+                osmAddrWithinBlock.push(osmAddrPoints[block.id][i])
+              }
+            }
+            if (block.id in osmAddrPolygonsByBlock) {
+              for (let i = 0; i < osmAddrPolygonsByBlock[block.id].length; i++) {
+                osmAddrWithinBlock.push(osmAddrPolygonsByBlock[block.id][i])
+              }
+            }
             const matches = osmAddrWithinBlock.filter(osmAddr => {
               const osmStreet = osmAddr.properties['addr:street']
 
