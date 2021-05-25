@@ -141,6 +141,10 @@ const conflate = new Transform({
         outputStreams.noOSMAddressWithinBlock.write(feature)
       } else {
         // other OSM addresses found within this block, so need to conflate
+        if (!('id' in block)) {
+          console.error('Expected id for block')
+          process.exit(1)
+        }
 
         // see if any address with the same number and street in the same block
         if (block.id in osmAddrPoints || block.id in osmAddrPolygonsByBlock) {
