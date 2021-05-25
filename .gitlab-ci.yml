@@ -84,6 +84,7 @@ prepare:
     policy: push
   script:
     - yarn install
+    - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist
     - make data/vicmap.geojson
   when: manual
@@ -98,6 +99,7 @@ build vicmap:
     policy: pull-push
   script:
     - yarn install
+    - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - yarn run test
     - mkdir -p dist data
     - mkdir -p data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer
@@ -127,6 +129,7 @@ build osm:
     QT_QPA_PLATFORM: "offscreen"
   script:
     - yarn install
+    - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist data
     - make dist/blocksByOSMAddr.fgb
     - make dist/blocksByOSMAddr.geojson
@@ -147,6 +150,7 @@ conflate:
     policy: pull
   script:
     - yarn install
+    - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - make dist/conflate
     - wc -l dist/conflate/*.geojson
   when: manual
@@ -165,6 +169,7 @@ build compareSuburb:
     policy: pull
   script:
     - yarn install
+    - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist data
     - mkdir -p data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer
     - touch data/VICMAP_ADDRESS.zip
