@@ -178,39 +178,18 @@ const conflate = new Transform({
             const exactMatchLine = multiLineString(matches.map(match => [feature.geometry.coordinates, centroid(match).geometry.coordinates]), feature.properties)
             outputStreams.exactMatchLines.write(exactMatchLine)
           } else {
-            // no exact match
+            // no exact match see if containing within an existing OSM address polygon
+            const results = lookupOSMAddressPoly.search(...feature.geometry.coordinates.slice(0, 2), 1)
+            const osmPoly = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
+            if (osmPoly) {
+              // address found within an existing OSM address polygon
+              feature.properties._osmtype = osmPoly.properties['@type']
+              feature.properties._osmid = osmPoly.properties['@id']
 
-            // first see if our non-unit Vicmap address, matches an address from OSM, ignoring any OSM units
-            // this ensures that "1 Main Street" from Vicmap will match OSM consisting of "1/1 Main Street", "2/1 Main Street", where OSM doesn't have a unitless "1 Main Street"
-            const unitlessMatches = 'addr:unit' in feature.properties ? [] : osmAddrWithinBlock.filter(osmAddr => {
-              const osmStreet = osmAddr.properties['addr:street']
-
-              // where someone has used unit/number style values for addr:housenumber, only compare the number component
-              const osmHouseNumber = 'addr:housenumber' in osmAddr.properties ? (osmAddr.properties['addr:housenumber'].split('/').length > 1 ? osmAddr.properties['addr:housenumber'].split('/')[1] : osmAddr.properties['addr:housenumber']) : null
-
-              return feature.properties['addr:street'] === osmStreet
-                && osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '') === osmHouseNumber.replaceAll(' ', '') // ignoring whitespace when comparing house numbers
-            })
-
-            if (unitlessMatches.length) {
-              // we found an existing OSM address after ignoring OSM units from our non-unit Vicmap address
-              // in this case we consider it already mapped
-              feature.properties._matches = matches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
-              outputStreams.matchesUnitlessOSM.write(feature)
+              outputStreams.withinExistingOSMAddressPoly.write(feature)
             } else {
-              // then see if containing within an existing OSM address polygon
-              const results = lookupOSMAddressPoly.search(...feature.geometry.coordinates.slice(0, 2), 1)
-              const osmPoly = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
-              if (osmPoly) {
-                // address found within an existing OSM address polygon
-                feature.properties._osmtype = osmPoly.properties['@type']
-                feature.properties._osmid = osmPoly.properties['@id']
-
-                outputStreams.withinExistingOSMAddressPoly.write(feature)
-              } else {
-                // address not found within an existing OSM address polygon
-                outputStreams.noExactMatch.write(feature)
-              }
+              // address not found within an existing OSM address polygon
+              outputStreams.noExactMatch.write(feature)
             }
           }
         } else {
@@ -231,7 +210,7 @@ const conflate = new Transform({
 })
 
 // ndjson streams to output features
-const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'exactMatchLines', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock', 'matchesUnitlessOSM']
+const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'exactMatchLines', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
 const outputStreams = {}
 const outputStreamOutputs = {}
 
