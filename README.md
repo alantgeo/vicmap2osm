@@ -114,7 +114,7 @@ For postcodes, of the 2988 `admin_level=10` suburb/localities in OSM:
 
 Of the 9 that have >1 postcode, 7 have only 1 address with a different postcode, 1 has only 3 addresses with a different postcode, and one suburb/locality (Melbourne suburb) has two main postcodes 3000 with 51,458 addresses and postcode 3004 with 12,158 postcodes. Then for the Melbourne case, it's clear than Melbourne CBD is 3000 and areas south 3004. We could add a separate `boundary=postal_code` for Melbourne.
 
-![Vicmap address postcodes within Melbourne suburb](img/postcodes_melbourne.png =400x)
+![Vicmap address postcodes within Melbourne suburb](img/postcodes_melbourne.png)
 _Vicmap address postcodes within Melbourne suburb_
 
 My analysis supports adding `postal_code` to the level 10 admin boundary is safe for pretty much the whole state, except for Melbourne where we can add a `postal_code` boundary.
