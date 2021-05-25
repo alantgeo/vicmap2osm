@@ -15,6 +15,10 @@ const centroid = require('@turf/centroid').default
 const booleanIntersects = require('@turf/boolean-intersects').default
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
+  .option('debug', {
+    type: 'boolean',
+    description: 'Include debugging attributes on outputs'
+  })
   .option('verbose', {
     type: 'boolean',
     description: 'Verbose logging'
@@ -183,8 +187,10 @@ const conflate = new Transform({
             const osmPoly = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
             if (osmPoly) {
               // address found within an existing OSM address polygon
-              feature.properties._osmtype = osmPoly.properties['@type']
-              feature.properties._osmid = osmPoly.properties['@id']
+              if (argv.debug) {
+                feature.properties._osmtype = osmPoly.properties['@type']
+                feature.properties._osmid = osmPoly.properties['@id']
+              }
 
               outputStreams.withinExistingOSMAddressPoly.write(feature)
 
