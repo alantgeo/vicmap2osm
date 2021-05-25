@@ -187,6 +187,29 @@ const conflate = new Transform({
               feature.properties._osmid = osmPoly.properties['@id']
 
               outputStreams.withinExistingOSMAddressPoly.write(feature)
+
+              // MapRoulette task
+              const task = {
+                type: 'FeatureCollection',
+                features: [ feature ],
+                cooperativeWork: {
+                  meta: {
+                    version: 2,
+                    type: 1 // tag fix type
+                  },
+                  operations: [{
+                    operationType: 'modifyElement',
+                    data: {
+                      id: `${osmPoly.properties['@type']}/${osmPoly.properties['@id']}`,
+                      operations: [{
+                        operation: 'setTags',
+                        data: feature.properties
+                      }]
+                    }
+                  }]
+                }
+              }
+              outputStreams.mr_withinExistingOSMAddressPoly.write(task)
             } else {
               // address not found within an existing OSM address polygon
               outputStreams.noExactMatch.write(feature)
@@ -210,7 +233,7 @@ const conflate = new Transform({
 })
 
 // ndjson streams to output features
-const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'exactMatchLines', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
+const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'exactMatchLines', 'mr_withinExistingOSMAddressPoly', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
 const outputStreams = {}
 const outputStreamOutputs = {}
 
