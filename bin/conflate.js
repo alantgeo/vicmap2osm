@@ -200,7 +200,7 @@ const conflate = new Transform({
               // MapRoulette task
               const task = {
                 type: 'FeatureCollection',
-                features: [ feature ],
+                features: [ feature, osmPoly ],
                 cooperativeWork: {
                   meta: {
                     version: 2,
