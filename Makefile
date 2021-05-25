@@ -117,11 +117,13 @@ data/victoria-roads.geojson: data/victoria-roads.osm.pbf
 	osmium export --overwrite --geometry-types=linestring --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
 
 data/victoria-boundary.geojson:
-	npx osm-geojson 2316741 | ogr2ogr -f GeoJSONSeq -explodecollections -nlt MULTILINESTRING $@ /vsistdin/
-	cat $@ >> data/victoria-roads.geojson
+	./node_modules/.bin/osm-geojson 2316741 | ogr2ogr -f GeoJSONSeq -explodecollections -nlt MULTILINESTRING $@ /vsistdin/
+
+data/victoria-roads-and-boundary.geojson: data/victoria-roads.geojson data/victoria-boundary.geojson
+	cat $^ > $@
 
 # then convert to fgb
-data/victoria-roads.fgb: data/victoria-roads.geojson data/victoria-boundary.geojson
+data/victoria-roads.fgb: data/victoria-roads-and-boundary.geojson
 	ogr2ogr -f FlatGeobuf -explodecollections -nlt MULTILINESTRING $@ $<
 
 # construct block polygons based on OSM roads
