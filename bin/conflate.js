@@ -167,25 +167,27 @@ const conflate = new Transform({
             const osmHouseNumber = 'addr:housenumber' in osmAddr.properties ? (osmAddr.properties['addr:housenumber'].split('/').length > 1 ? osmAddr.properties['addr:housenumber'].split('/')[1] : osmAddr.properties['addr:housenumber']) : null
 
             const osmUnit = 'addr:unit' in osmAddr.properties
-              ? osmAddr.properties['addr:unit']
+              ? osmAddr.properties['addr:unit'].toLowerCase().replaceAll(' ', '')
               : (
                 'addr:housenumber' in osmAddr.properties && osmAddr.properties['addr:housenumber'].split('/').length > 1
-                ? osmAddr.properties['addr:housenumber'].split('/')[0]
+                ? osmAddr.properties['addr:housenumber'].split('/')[0].toLowerCase().replaceAll(' ', '')
                 : null
               )
 
-            // see if street matches and housenumber matches
+            const vicmapUnit = 'addr:unit' in feature.properties ? feature.properties['addr:unit'].toLowerCase().replaceAll(' ', '') : null
+
+            // see if unit, number, street matches
             // ignoring whitespace when comparing house numbers
             // ignoring case
-            // ignoring unit for the time being
             // ignoring differences between "Foo - Bar Street" and "Foo-Bar Street", these kinds of names are common in country victoria
             return feature.properties['addr:street'] && osmStreet
               && feature.properties['addr:street'].toLowerCase().replaceAll(' - ', '-') === osmStreet.toLowerCase().replaceAll(' - ', '-')
               && osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '').toLowerCase() === osmHouseNumber.replaceAll(' ', '').toLowerCase()
-              && (('addr:unit' in feature.properties && osmUnit !== null) ? feature.properties['addr:unit'].replaceAll(' ', '') === osmUnit.replaceAll(' ', '') : true)
+              && (vicmapUnit === osmUnit)
           })
+
           if (matches.length) {
-            // matching unit, number, street, high confidence
+            // matching unit/number/street => high confidence
             if (argv.debug) {
               feature.properties._matches = matches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
             }
