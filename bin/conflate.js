@@ -174,8 +174,13 @@ const conflate = new Transform({
                 : null
               )
 
-            return feature.properties['addr:street'] === osmStreet
-              && osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '') === osmHouseNumber.replaceAll(' ', '') // ignoring whitespace when comparing house numbers
+            // see if street matches and housenumber matches
+            // ignoring whitespace when comparing house numbers
+            // ignoring case
+            // ignoring unit for the time being
+            // ignoring differences between "Foo - Bar Street" and "Foo-Bar Street", these kinds of names are common in country victoria
+            return (feature.properties['addr:street'].toLowerCase().replaceAll(' - ', '-') === osmStreet.toLowerCase().replaceAll(' - ', '-'))
+              && osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '').toLowerCase() === osmHouseNumber.replaceAll(' ', '').toLowerCase()
               && (('addr:unit' in feature.properties && osmUnit !== null) ? feature.properties['addr:unit'].replaceAll(' ', '') === osmUnit.replaceAll(' ', '') : true)
           })
           if (matches.length) {
