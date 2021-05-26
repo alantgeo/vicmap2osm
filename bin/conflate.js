@@ -185,7 +185,9 @@ const conflate = new Transform({
           })
           if (matches.length) {
             // matching unit, number, street, high confidence
-            feature.properties._matches = matches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
+            if (argv.debug) {
+              feature.properties._matches = matches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
+            }
             outputStreams.exactMatch.write(feature)
 
             const exactMatchLine = multiLineString(matches.map(match => [feature.geometry.coordinates, centroid(match).geometry.coordinates]), feature.properties)
