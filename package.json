@@ -18,6 +18,7 @@
     "clone-deep": "^4.0.1",
     "flatbush": "^3.3.0",
     "geoflatbush": "^1.0.0",
+    "geojsontoosm": "^0.0.3",
     "mktemp": "^1.0.0",
     "ndjson": "^2.0.0",
     "object.omit": "^3.0.0",

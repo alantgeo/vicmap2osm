@@ -77,6 +77,21 @@ docker conflate:
   when: manual
   cache: {}
 
+docker candidate:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: docker
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE":candidate -f "docker/candidate.Dockerfile" .
+    - docker push "$CI_REGISTRY_IMAGE":candidate
+  after_script:
+    - docker logout $CI_REGISTRY
+  when: manual
+  cache: {}
+
 prepare:
   stage: prepare
   image: "registry.gitlab.com/alantgeo/vicmap2osm:prepare"
@@ -158,6 +173,25 @@ conflate:
   when: manual
   artifacts:
     name: "conflate"
+    paths:
+      - dist
+
+candidate:
+  stage: candidate
+  image: "registry.gitlab.com/alantgeo/vicmap2osm:candidate"
+  before_script:
+    - ls data dist
+  cache:
+    <<: *global_cache
+    policy: pull
+  script:
+    - yarn install
+    - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
+    - make dist/candidate
+    - make testUploadCandidates
+  when: manual
+  artifacts:
+    name: "candidate"
     paths:
       - dist
 

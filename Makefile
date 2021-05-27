@@ -188,7 +188,7 @@ data/victoria-admin-level10.osm.pbf: data/victoria-admin.osm.pbf
 	osmium tags-filter --remove-tags --output=$@ $< r/admin_level=10
 
 data/victoria-admin-level10.osm.geojson: data/victoria-admin-level10.osm.pbf
-	osmium export --overwrite --geometry-types=polygon --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
+	osmium export --overwrite --geometry-types=polygon --add-unique-id=type_id --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
 
 data/victoria-admin-level10.osm.fgb: data/victoria-admin-level10.osm.geojson
 	ogr2ogr -f FlatGeobuf $@ $<
@@ -198,3 +198,7 @@ dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm.geojson data/victoria-a
 
 printDifferentSuburbs: dist/vicmapSuburbDiffersWithOSM.geojson
 	ogr2ogr -f CSV -select '_osmSuburb,addr:suburb' /vsistdout/ $< | sort | uniq
+
+dist/candidates: data/victoria-admin-level10.osm.geojson dist/conflate
+	mkdir -p $@
+	./bin/candidates.js $^ $@
