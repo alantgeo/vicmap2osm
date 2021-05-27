@@ -9,6 +9,7 @@ cache: &global_cache
     - dist/vicmap-osm-uniq-flats.geojson
     - data/victoria-addr.osm.geojson
     - dist/blocksByOSMAddr.geojson
+    - data/victoria-admin-level10.osm.geojson
 
 stages:
   - docker
@@ -133,6 +134,7 @@ build osm:
     - mkdir -p dist data
     - make dist/blocksByOSMAddr.fgb
     - make dist/blocksByOSMAddr.geojson
+    - make data/victoria-admin-level10.osm.geojson
     - make summariseBlocksByOSMAddr
   when: manual
   artifacts:
