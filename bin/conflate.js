@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Prepare import candidates by conflating with existing addresses in OSM
+ * Conflate processed Vicmap addresses with existing addresses in OSM
  */
 
 const fs = require('fs')
@@ -76,7 +76,6 @@ const osmAddrPoints = {
 const osmAddrPolygonsByBlock = {
   0: [] // this one is for any polygons not within a block
 }
-
 
 // find OSM Addresses and store them
 // polygons go into a simple array, which later we create a point in polygon index for
@@ -160,6 +159,7 @@ const conflate = new Transform({
               osmAddrWithinBlock.push(osmAddrPolygonsByBlock[block.id][i])
             }
           }
+
           const matches = osmAddrWithinBlock.filter(osmAddr => {
             const osmStreet = osmAddr.properties['addr:street']
 
