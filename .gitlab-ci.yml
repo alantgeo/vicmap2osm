@@ -16,6 +16,8 @@ stages:
   - prepare
   - build
   - conflate
+  - candidate
+  - upload
 
 docker prepare:
   image: docker:latest
@@ -188,12 +190,29 @@ candidate:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - make dist/candidate
-    - make testUploadCandidates
   when: manual
   artifacts:
     name: "candidate"
     paths:
       - dist
+
+upload dev:
+  stage: upload
+  image: "registry.gitlab.com/alantgeo/vicmap2osm:candidate"
+  before_script:
+    - ls data dist
+  cache:
+    <<: *global_cache
+    policy: pull
+  script:
+    - yarn install
+    - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
+    - ./bin/upload.sh
+  when: manual
+  artifacts:
+    name: "upload"
+    paths:
+      - uploadLog
 
 build compareSuburb:
   stage: build
