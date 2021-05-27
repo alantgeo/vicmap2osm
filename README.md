@@ -206,6 +206,19 @@ This produces outputs in `dist/conflate`:
 - [ ] we need to deal with addresses represented in OSM as interpolation ways. If there is community consensus to replace these existing interpolation ways with individual point nodes or leave the existing interpolation ways.
 - [ ] we need a better way to review matches where some attributes differ, potentially as a quick fix MapRoulette for tricky cases, or done as a bulk import for easy cases (eg. simply adding `addr:suburb`, `addr:state` and `addr:postcode`)
 
+## Prepare Final Import Candidates
+
+After conflation, import candidate .osm files are produced with
+
+    make dist/candidates
+
+Split into the following candidate categories, then again split into suburb/locality (`admin_level=10`).
+
+### Candidate Categories
+1. `newAddressesWithoutConflicts` - new addresses from Vicmap where it's unlikely to conflict with existing OSM addresses, can be imported automatically.
+2. `existingAddressesWithNewTagsOnly` - existing OSM addresses where we add new tags from Vicmap (no modifying or removing tags) and no geometry changes, can be imported automatically.
+3. `addrUnitFromHousenumber` - existing OSM addresses where the existing `addr:housenumber` tag is modified to move the unit number into `addr:unit`, can be imported automatically.
+
 ### Where should addresses exist?
 
 In OSM addresses might be found in any of these mapping styles in any combination:
@@ -221,11 +234,20 @@ Where the address does already exist, but is missing some `addr:*` tags, the new
 
 ## Import Process
 
-Dedicated import account: [`vicmap_import`](https://www.openstreetmap.org/user/vicmap_import)
+The dedicated import account used for the import is [`vicmap_import`](https://www.openstreetmap.org/user/vicmap_import).
 
-Changeset tags: `source=vicmap_address`
+`bin/upload.sh` is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by state) there is one OSM Changeset created.
 
-Imported in batches by suburb/locality and by conflation status with JOSM
+This makes it easier for anyone to review uploads in OSMCha or similar.
+
+The changeset comment used is
+
+    Vicmap Import CANDIDATE_CATEGORY_DESCRIPTION: SUBURB_NAME. See https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address
+
+### Changeset tags
+
+- `source=Vicmap Address`
+- `source:ref=https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-address`
 
 ## Future Work
 
