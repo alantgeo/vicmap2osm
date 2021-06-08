@@ -20,6 +20,11 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
     type: 'boolean',
     description: 'Includes _pfi tags to aid debugging'
   })
+  .option('preserve-derivable-properties', {
+    type: 'boolean',
+    default: false,
+    description: 'If set, preserves addr:suburb, addr:postcode, addr:state, otherwise omits them'
+  })
   .argv
 
 if (argv._.length < 2) {
@@ -52,7 +57,7 @@ const transform = new Transform({
     const osm = toOSM(feature, {
       tracing: argv.tracing,
       /* omit addr:suburb, addr:postcode, addr:state */
-      includeDerivableProperties: false
+      includeDerivableProperties: argv.preserveDerivableProperties
     })
 
     // some addresses we skip importing into OSM, see README.md#omitted-addresses

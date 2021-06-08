@@ -41,6 +41,11 @@ dist/vicmap-osm.geojson: data/vicmap.geojson
 	./bin/vicmap2osm.js $< $@
 	wc -l $@
 
+dist/vicmap-osm-with-suburb.geojson: data/vicmap.geojson
+	mkdir -p dist
+	./bin/vicmap2osm.js --preserve-derivable-propreties $< $@
+	wc -l $@
+
 dist/vicmap-osm.mbtiles: dist/vicmap-osm.geojson
 	tippecanoe --force -o $@ --minimum-zoom=12 --maximum-zoom=12 --no-feature-limit --no-tile-size-limit --no-tile-stats --read-parallel $<
 
