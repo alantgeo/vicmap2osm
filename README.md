@@ -6,6 +6,8 @@ Vicmap Address data © State of Victoria (Department of Environment, Land, Water
 
 This import proposal has been supported by the National Heavy Vehicle Regulator (NHVR).
 
+The mandatory OSM wiki documentation of this import is at [https://wiki.openstreetmap.org/wiki/Vicmap_Address](https://wiki.openstreetmap.org/wiki/Vicmap_Address).
+
 ## GitLab CI/CD
 
 We use GitLab CI/CD to automate data processing.
