@@ -62,7 +62,7 @@ Even if we are lacking the intermediate address points within the range, we stil
 
 Source addresses are omitted:
 
-1. where the address has neither a `addr:housenumber` nor `addr:housename`. Since these addresses have no identifying attribute beyond street, and there is often multiple of these along a street all with the same street/suburb/postcode, they are of little utility and therefore omitted.
+1. where the address has neither a `addr:housenumber` nor `addr:housename`. Since these addresses have no identifying attribute beyond street, and there are often multiple of these along a street all with the same street/suburb/postcode, they are of little utility and therefore omitted.
 
 2. where, if the address has a building unit type, the building unit type must match a whitelisted type. For example this includes unit and shop numbers but excludes things like car space numbers.
 
@@ -82,6 +82,9 @@ Where the individual points share the same geometry as each other, then the rang
 - `addr:housename` is included where there is a building name present in the source
 - `addr:housenumber` is constructed from with the number prefix, main number and number suffix fields for each of the from/to range, eg `1A-3B`.
 - `addr:street` is constructed from the street proper name, street type and street suffix, formatted as capital case. eg `Main Street North`.
+
+The following tags were originally coded to support, but are currently set to be excluded, see section below.
+
 - `addr:suburb` is constructed from the locality value formatted as capital case.
 - `addr:postcode` is as supplied.
 - `addr:state` is as supplied and should always be `VIC`.
@@ -119,6 +122,8 @@ _Vicmap address postcodes within Melbourne suburb_
 
 My analysis supports adding `postal_code` to the level 10 admin boundary is safe for pretty much the whole state, except for Melbourne where we can add a `postal_code` boundary.
 
+After lengthy engagement with the local community, we opt to omit these tags in the current import.
+
 ### Removing duplicates
 
 Source address data contains many address points overlapping or within a close proximity.
@@ -127,7 +132,7 @@ Source address data contains many address points overlapping or within a close p
 
 ![reduceDuplicates in action](img/reduceDuplicates_singleCluster.png)
 
-2. Where each of the housenumber, street, suburb, postcode, state are the same for each of the strictly overlapping points, but only the unit value differs we attempt to reduce these to a single address point without `addr:unit` but instead using [`addr:flats`](https://wiki.openstreetmap.org/wiki/Key:addr:flats).
+2. Where each of the housenumber, street (previously also including suburb, postcode, state) are the same for each of the strictly overlapping points, but only the unit value differs we attempt to reduce these to a single address point without `addr:unit` but instead using [`addr:flats`](https://wiki.openstreetmap.org/wiki/Key:addr:flats).
 
 `addr:flats` is the documented tag for describing the unit numbers at an address.
 
@@ -260,11 +265,8 @@ Consultation with the local community on talk-au at https://lists.openstreetmap.
 
 - Existing interpolation way addresses to be replaced with individually mapped address nodes.
 - Imported addresses as lone address nodes, not merged onto existing buildings or other objects.
-- Using `addr:suburb` as a catch-all for the placename/suburb/locality of the address, irrespective of if the value is actually referring to an OSM `place=suburb` or `place=town` or `place=hamlet` etc. (see page 25, section 15 of https://auspost.com.au/content/dam/auspost_corp/media/documents/australia-post-addressing-standards-1999.pdf)
+- Using `addr:suburb` as a catch-all for the placename/suburb/locality of the address, irrespective of if the value is actually referring to an OSM `place=suburb` or `place=town` or `place=hamlet` etc. (see page 25, section 15 of https://auspost.com.au/content/dam/auspost_corp/media/documents/australia-post-addressing-standards-1999.pdf). This was subsequently nullified after deciding to omit `addr:suburb`.
 - Further to the previous point, where an existing address uses `addr:city` but our conflation indicates that the `addr:city` value should be `addr:suburb` then this will be updated on the existing object.
+- Including full address attributes (`addr:suburb`, `addr:state`, `addr:postcode`), even when they could be derived from existing boundaries is contentious with advocates for both options. Due to this, these attributes are omitted.
 
 This is based on discussions to date, any of these points can be further discussed if needed.
-
-Community discussion still unresolved for:
-
-- Including full address attributes (`addr:suburb`, `addr:state`, `addr:postcode`), even when they could be derived from existing boundaries.

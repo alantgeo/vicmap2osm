@@ -50,7 +50,9 @@ const transform = new Transform({
 
     // convert source Feature into a Feature per the OSM schema
     const osm = toOSM(feature, {
-      tracing: argv.tracing
+      tracing: argv.tracing,
+      /* omit addr:suburb, addr:postcode, addr:state */
+      includeDerivableProperties: false
     })
 
     // some addresses we skip importing into OSM, see README.md#omitted-addresses
