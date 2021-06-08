@@ -104,6 +104,7 @@ prepare:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist
+    - make data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
     - make data/vicmap.geojson
   when: manual
 
