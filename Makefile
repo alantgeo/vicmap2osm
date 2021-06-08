@@ -43,7 +43,7 @@ dist/vicmap-osm.geojson: data/vicmap.geojson
 
 dist/vicmap-osm-with-suburb.geojson: data/vicmap.geojson
 	mkdir -p dist
-	./bin/vicmap2osm.js --preserve-derivable-propreties $< $@
+	./bin/vicmap2osm.js --preserve-derivable-properties $< $@
 	wc -l $@
 
 dist/vicmap-osm.mbtiles: dist/vicmap-osm.geojson
