@@ -112,6 +112,7 @@ build vicmap:
   stage: build
   image: "registry.gitlab.com/alantgeo/vicmap2osm:build-vicmap"
   before_script:
+    - mkdir -p data dist
     - ls data dist
   cache:
     <<: *global_cache
@@ -140,6 +141,7 @@ build osm:
   stage: build
   image: "registry.gitlab.com/alantgeo/vicmap2osm:build-osm"
   before_script:
+    - mkdir -p data dist
     - ls data dist
   cache:
     <<: *global_cache
@@ -164,6 +166,7 @@ conflate:
   stage: conflate
   image: "registry.gitlab.com/alantgeo/vicmap2osm:conflate"
   before_script:
+    - mkdir -p data dist
     - ls data dist
   cache:
     <<: *global_cache
@@ -183,6 +186,7 @@ candidate:
   stage: candidate
   image: "registry.gitlab.com/alantgeo/vicmap2osm:candidate"
   before_script:
+    - mkdir -p data dist
     - ls data dist
   cache:
     <<: *global_cache
@@ -201,6 +205,7 @@ upload dev:
   stage: upload
   image: "registry.gitlab.com/alantgeo/vicmap2osm:candidate"
   before_script:
+    - mkdir -p data dist
     - ls data dist
   cache:
     <<: *global_cache
@@ -219,6 +224,7 @@ build compareSuburb:
   stage: build
   image: "registry.gitlab.com/alantgeo/vicmap2osm:build-osm"
   before_script:
+    - mkdir -p data dist
     - ls data dist
   cache:
     <<: *global_cache
