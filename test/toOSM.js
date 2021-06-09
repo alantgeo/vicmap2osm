@@ -22,7 +22,7 @@ test('toOSM basic address schema', t => {
     }
   }
 
-  t.same(toOSM(input), output)
+  t.same(toOSM(input, { includeDerivableProperties: true }), output)
 })
 
 test('toOSM suffix', t => {
@@ -45,7 +45,7 @@ test('toOSM suffix', t => {
     }
   }
 
-  t.same(toOSM(input), output)
+  t.same(toOSM(input, { includeDerivableProperties: true }), output)
 })
 
 test('toOSM simple range X-Y', t => {
@@ -68,7 +68,7 @@ test('toOSM simple range X-Y', t => {
     }
   }
 
-  t.same(toOSM(input), output)
+  t.same(toOSM(input, { includeDerivableProperties: true }), output)
 })
 
 test('toOSM range with suffix Xa-Yb', t => {
@@ -91,7 +91,7 @@ test('toOSM range with suffix Xa-Yb', t => {
     }
   }
 
-  t.same(toOSM(input), output)
+  t.same(toOSM(input, { includeDerivableProperties: true }), output)
 })
 
 test('toOSM range with prefix aX-bY', t => {
@@ -111,6 +111,26 @@ test('toOSM range with prefix aX-bY', t => {
     geometry: {
       type: 'Point',
       coordinates: [ 145.350969, -37.7670618 ]
+    }
+  }
+
+  t.same(toOSM(input, { includeDerivableProperties: true }), output)
+})
+
+test('toOSM basic address schema without derivable properties', t => {
+  t.plan(1)
+
+  const input = { "type": "Feature", "properties": { "PFI": "52043942", "PR_PFI": "602441", "EZI_ADD": "3 BAY ROAD JAM JERRUP 3984", "SOURCE": "LGO", "SRC_VERIF": "2008-12-29", "IS_PRIMARY": "Y", "PROPSTATUS": "A", "GCODEFEAT": "E", "DIST_FLAG": "Y", "LOC_DESC": null, "BLGUNTTYP": null, "HSA_FLAG": "N", "HSAUNITID": null, "BUNIT_PRE1": null, "BUNIT_ID1": 0, "BUNIT_SUF1": null, "BUNIT_PRE2": null, "BUNIT_ID2": 0, "BUNIT_SUF2": null, "FLOOR_TYPE": null, "FL_PREF1": null, "FLOOR_NO_1": 0, "FL_SUF1": null, "FL_PREF2": null, "FLOOR_NO_2": 0, "FL_SUF2": null, "BUILDING": null, "COMPLEX": null, "HSE_PREF1": null, "HSE_NUM1": 3, "HSE_SUF1": null, "HSE_PREF2": null, "HSE_NUM2": 0, "HSE_SUF2": null, "DISP_PREF1": null, "DISP_NUM1": 0, "DISP_SUF1": null, "DISP_PREF2": null, "DISP_NUM2": 0, "DISP_SUF2": null, "ROAD_NAME": "BAY", "ROAD_TYPE": "ROAD", "RD_SUF": null, "LOCALITY": "JAM JERRUP", "LGA_CODE": "304", "STATE": "VIC", "POSTCODE": "3984", "MESH_BLOCK": "20034062000", "NUM_RD_ADD": "3 BAY ROAD", "NUM_ADD": "3", "ADD_CLASS": "S", "ACCESSTYPE": "L", "OUT_PROP": "N", "COMPLXSITE": "N", "LABEL_ADD": "Y", "FQID": "RA_NO_208", "UFI": 461425466, "UFI_CR": "2009-09-23", "UFI_OLD": 0 }, "geometry": { "type": "Point", "coordinates": [ 145.5434286, -38.326053 ] } }
+
+  const output = {
+    type: 'Feature',
+    properties: {
+      'addr:housenumber': '3',
+      'addr:street': 'Bay Road'
+    },
+    geometry: {
+      type: 'Point',
+      coordinates: [ 145.5434286, -38.326053 ]
     }
   }
 
