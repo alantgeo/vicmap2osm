@@ -6,8 +6,8 @@ cache: &global_cache
     - .yarn
     - node_modules
     - data/vicmap.geojson
-    - data/vicmap-complex.geojson
-    - data/vicmap-building.geojson
+    - dist/vicmap-complex.geojson
+    - dist/vicmap-building.geojson
     - dist/vicmap-osm-uniq-flats.geojson
     - data/victoria-addr.osm.geojson
     - data/victoria-named-features.osm.geojson
