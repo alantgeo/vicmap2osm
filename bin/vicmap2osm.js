@@ -64,6 +64,7 @@ const transform = new Transform({
     if (feature.properties.COMPLEX) {
       const complexFeature = {
         type: 'Feature',
+        id: `${feature.properties.PFI}`,
         properties: {
           name: feature.properties.COMPLEX
         },
@@ -82,6 +83,7 @@ const transform = new Transform({
     if (feature.properties.BUILDING) {
       const buildingFeature = {
         type: 'Feature',
+        id: `${feature.properties.PFI}`,
         properties: Object.assign({}, osm.properties, {
           name: feature.properties.BUILDING
         }),
