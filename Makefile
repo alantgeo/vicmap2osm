@@ -200,9 +200,11 @@ data/victoria-admin-level10.osm.fgb: data/victoria-admin-level10.osm.geojson
 
 dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm-with-suburb.geojson data/victoria-admin-level10.osm.geojson
 	./bin/compareSuburb.js $^ $@ dist/suburbsWithPostcodeCounts.geojson
+	wc -l $@
 
 printDifferentSuburbs: dist/vicmapSuburbDiffersWithOSM.geojson
-	ogr2ogr -f CSV -select '_osmSuburb,addr:suburb' /vsistdout/ $< | sort | uniq
+	echo "OSM Suburb,Vicmap Suburb"
+	ogr2ogr -f CSV -select '_osmSuburb,addr:suburb' /vsistdout/ $< | tail -n+1 | sort | uniq
 
 dist/candidates: data/victoria-admin-level10.osm.geojson dist/conflate
 	mkdir -p $@

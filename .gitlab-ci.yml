@@ -239,7 +239,7 @@ build compareSuburb:
     - touch --no-create data/vicmap.geojson
     - time make dist/vicmap-osm-with-suburb.geojson
     - time make dist/vicmapSuburbDiffersWithOSM.geojson
-    - rm -f dist/vicmap-osm.geojson
+    - rm -f dist/vicmap-osm-with-suburb.geojson
     - make printDifferentSuburbs
   when: manual
   artifacts:
