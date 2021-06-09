@@ -198,7 +198,7 @@ data/victoria-admin-level10.osm.geojson: data/victoria-admin-level10.osm.pbf
 data/victoria-admin-level10.osm.fgb: data/victoria-admin-level10.osm.geojson
 	ogr2ogr -f FlatGeobuf $@ $<
 
-dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm.geojson data/victoria-admin-level10.osm.geojson
+dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm-with-suburb.geojson data/victoria-admin-level10.osm.geojson
 	./bin/compareSuburb.js $^ $@ dist/suburbsWithPostcodeCounts.geojson
 
 printDifferentSuburbs: dist/vicmapSuburbDiffersWithOSM.geojson
