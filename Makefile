@@ -216,6 +216,10 @@ dist/candidates: data/victoria-admin-level10.osm.geojson dist/conflate
 	mkdir -p $@
 	./bin/candidates.js $^ $@
 
-dist/vicmap-complex-site: dist/vicmap-complex.geojson data/victoria-named-features.osm.geojson
+dist/vicmap-complex-conflation: dist/vicmap-complex.geojson data/victoria-named-features.osm.geojson
 	mkdirp -p $@
 	./bin/complex.js $^ $@
+
+dist/vicmap-building-conflation: dist/vicmap-building.geojson data/victoria-named-features.osm.geojson
+	mkdirp -p $@
+	./bin/building.js $^ $@

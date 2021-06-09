@@ -178,9 +178,11 @@ conflate:
   script:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
-    - make dist/vicmap-complex-site
     - make dist/conflate
+    - make dist/vicmap-complex-conflation
+    - make dist/vicmap-building-conflation
     - wc -l dist/conflate/*.geojson
+    - wc -l dist/vicmap-*-conflation/*.geojson
   when: manual
   artifacts:
     name: "conflate"

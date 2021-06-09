@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Take Vicmap address points which have a complex value, and group these into sites
+ * Take Vicmap address points which have a complex value, and group these into sites,
+ * then conflate with existing OSM names
  */
 
 const fs = require('fs')

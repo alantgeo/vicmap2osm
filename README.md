@@ -154,12 +154,16 @@ Because OSM tag values are limited to 255 characters, if the constructed `addr:f
 
 Values `UNNAMED` and `NOT NAMED` appear as street name and locality names. These values are treated as null/empty values rather than proper names.
 
-### name
-Source data contains a field for building / property name. This appears to be a mixed bag sometimes it might fit better as `addr:housename` other times simply `name`. Further it's not too clear the distinction between these tags and how house names, property names, building names or the name of the venue at the site should be tagged.
+### Building Name
+Source data contains a field for building / property name. This appears to be a mixed bag sometimes it might fit better as `addr:housename` other times simply `name`. Further it's not too clear the distinction between these tags and how house names, property names, building names or the name of the venue at the site should be tagged or even which type of name it should be.
 
-It's common for the source data to use what we'd consider a description like "Shop", "Public Toilets" or "Reserve".
+It's common for the source data to use what we'd consider a description like "Shop", "Public Toilets" or "Reserve" instead of a proper name.
 
-For these reasons this building / property name is not included, however it could be a useful point of reference for mappers considering manually adding this data at a later stage.
+There are about 40,000 of these names.
+
+So while there is value including property names, building names, farm names as part of the address, since we can't do this reliably, the building / property name is not included in this import, however it could be a useful point of reference for mappers considering manually adding this data at a later stage.
+
+`bin/vicmap2osm.js` outputs `dist/vicmap-building.geojson` which contains all the building name features.
 
 ### Complex Name
 Source data sometimes includes a complex name, for example _CHADSTONE SHOPPING CENTRE_ or _MELBOURNE UNIVERSITY_. These attributes are not used as these names should appear on the actual feature like `shop=mall` or `amenity=university`.
@@ -174,7 +178,7 @@ The script at `bin/complex.js` processes this to:
 - Tests to see weather this complex name is matching a nearby OSM object
 - Where it doesn't find a match in OSM, then it outputs a MapRoulette data file for mappers to review and potentially add these complex names to OSM.
 
-This outputs a bunch of files into `dist/vicmap-complex-site` including, three MapRoulette challanges:
+This outputs a bunch of files into `dist/vicmap-complex-conflation` including, three MapRoulette challanges:
 
 - `mr_singleNearbySimilarFeature` - the Vicmap complex matched a single nearby OSM feature (but the name wasn't an exact match, where it was an exact match the Vicmap complex is not flagged for inclusion in MapRoulette)
 - `mr_multipleNearbySimilarFeatures` - the Vicmap complex matched multiple nearby OSM features
