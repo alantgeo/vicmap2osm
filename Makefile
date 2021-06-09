@@ -204,7 +204,7 @@ dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm-with-suburb.geojson dat
 
 printDifferentSuburbs: dist/vicmapSuburbDiffersWithOSM.geojson
 	echo "OSM Suburb,Vicmap Suburb"
-	ogr2ogr -f CSV -select '_osmSuburb,addr:suburb' /vsistdout/ $< | tail -n+1 | sort | uniq
+	ogr2ogr -f CSV -select '_osmSuburb,addr:suburb' /vsistdout/ $< | tail -n+2 | sort | uniq
 
 dist/candidates: data/victoria-admin-level10.osm.geojson dist/conflate
 	mkdir -p $@
