@@ -200,6 +200,17 @@ Another solution is use a new tag like `addr:unit:prefix=Unit`, although there i
 
 In the current codebase this information about the unit type is omitted (the unit value is retained).
 
+### Why no Vicmap ID?
+Vicmap data has two native IDs,
+
+- PFI (Persistent Feature Identifier) - "The unique code provides at creation of the feature which remains until the feature is retired."
+- UFI (Unique Feature Identifier) - "Each feature is uniquely identified and renewed with each change."
+
+Though neither of these are included in the OSM tags when imported. This was a conscious decision not because,
+
+- When an OSM mapper is confronted by an address with this ID, it's unclear what they should do with it when making changes. eg, if they notice the number is wrong, or the street is wrong and they update it in OSM, is this ID still valid? Is it still the same address in OSM and Vicmap?
+- We want these imported addresses to be organic OSM data freely updated by mappers and not seen as untouchable data, an ID makes it look like it's not organic OSM data and a mapper might choose to just leave it as is even if it doesn't match what's on the ground.
+
 ## Conflation with existing OSM address data
 Given some addresses are already mapped in OSM we first break the state down into city blocks. Where a block contains no addresses in OSM then we consider it low risk to automatically import all address in the block. The only risk is the address in either OSM or the source data is in the wrong block, but this is less likely and would be hard to detect otherwise.
 
