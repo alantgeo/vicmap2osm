@@ -40,6 +40,14 @@ if (!fs.existsSync(inputFile)) {
   process.exit(1)
 }
 
+// output Vicmap complex name data
+const complexStream = ndjson.stringify()
+const complexStreamOutput = complexStream.pipe(fs.createWriteStream(`dist/vicmap-complex.geojson`))
+
+// output Vicmap building name data
+const buildingStream = ndjson.stringify()
+const buildingStreamOutput = buildingStream.pipe(fs.createWriteStream(`dist/vicmap-building.geojson`))
+
 let sourceCount = 0
 const transform = new Transform({
   readableObjectMode: true,
@@ -53,12 +61,34 @@ const transform = new Transform({
       }
     }
 
+    if (feature.properties.COMPLEX) {
+      const complexFeature = {
+        type: 'Feature',
+        properties: {
+          name: feature.properties.COMPLEX
+        },
+        geometry: feature.geometry
+      }
+      complexStream.write(complexFeature)
+    }
+
     // convert source Feature into a Feature per the OSM schema
     const osm = toOSM(feature, {
       tracing: argv.tracing,
       /* omit addr:suburb, addr:postcode, addr:state */
       includeDerivableProperties: argv.preserveDerivableProperties
     })
+
+    if (feature.properties.BUILDING) {
+      const buildingFeature = {
+        type: 'Feature',
+        properties: Object.assign({}, osm.properties, {
+          name: feature.properties.BUILDING
+        }),
+        geometry: osm.geometry
+      }
+      buildingStream.write(buildingFeature)
+    }
 
     // some addresses we skip importing into OSM, see README.md#omitted-addresses
     if (filterOSM(osm) && filterSource(feature)) {
@@ -81,7 +111,15 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
-      process.exit(0)
+      complexStream.end()
+      buildingStream.end()
+      complexStreamOutput.on('finish', () => {
+        console.log(`saved dist/vicmap-complex.geojson`)
+        buildingStreamOutput.on('finish', () => {
+          console.log(`saved dist/vicmap-building.geojson`)
+          process.exit(0)
+        })
+      })
     }
   }
 )

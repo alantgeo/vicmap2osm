@@ -164,7 +164,23 @@ For these reasons this building / property name is not included, however it coul
 ### Complex Name
 Source data sometimes includes a complex name, for example _CHADSTONE SHOPPING CENTRE_ or _MELBOURNE UNIVERSITY_. These attributes are not used as these names should appear on the actual feature like `shop=mall` or `amenity=university`.
 
-They might be of interest for mappers as an additional data source, externally to this import.
+While there is ~55,000 Vicmap points with a complex name, there are only ~2000 uniq names.
+
+`bin/vicmap2osm.js` outputs `dist/vicmap-complex.geojson` which contains all the complex name features.
+
+The script at `bin/complex.js` processes this to:
+
+- Group nearby complex features with the same name into a single centroid point
+- Tests to see weather this complex name is matching a nearby OSM object
+- Where it doesn't find a match in OSM, then it outputs a MapRoulette data file for mappers to review and potentially add these complex names to OSM.
+
+This outputs a bunch of files into `dist/vicmap-complex-site` including, three MapRoulette challanges:
+
+- `mr_singleNearbySimilarFeature` - the Vicmap complex matched a single nearby OSM feature (but the name wasn't an exact match, where it was an exact match the Vicmap complex is not flagged for inclusion in MapRoulette)
+- `mr_multipleNearbySimilarFeatures` - the Vicmap complex matched multiple nearby OSM features
+- `mr_noNearbySimilarFeature` - the Vicmap complex didn't match any nearby OSM features
+
+This is built into the _conflate_ stage.
 
 ### Display Address
 Source data has a display address which can differ from the official address. For example if a building is `1-3` but is signed as simply `1`. Currently we ignore the display address, and while this can be seen as more correct based on the "official" address, does it go against the OSM principle of mapping what's on the ground?

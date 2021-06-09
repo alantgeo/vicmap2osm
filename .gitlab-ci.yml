@@ -8,6 +8,7 @@ cache: &global_cache
     - data/vicmap.geojson
     - dist/vicmap-osm-uniq-flats.geojson
     - data/victoria-addr.osm.geojson
+    - data/victoria-named-features.osm.geojson
     - dist/blocksByOSMAddr.geojson
     - data/victoria-admin-level10.osm.geojson
 
@@ -152,6 +153,7 @@ build osm:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist data
+    - make data/victoria-named-features.osm.geojson
     - make dist/blocksByOSMAddr.fgb
     - make dist/blocksByOSMAddr.geojson
     - make data/victoria-admin-level10.osm.geojson
@@ -174,6 +176,7 @@ conflate:
   script:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
+    - make dist/vicmap-complex-site
     - make dist/conflate
     - wc -l dist/conflate/*.geojson
   when: manual
