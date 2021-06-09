@@ -170,7 +170,7 @@ pipeline(
         }
         if (nearbyMatches.length === 1) {
           // a single nearby OSM features found with similar name
-          if (nearbyMatchedFeatures[0].properties.name.toLowerCase === name.toLowerCase()) {
+          if (nearbyMatchedFeatures[0].properties.name.toLowerCase() === name.toLowerCase()) {
             // name exactly matched
             console.log(`Exact match: ${properties.name} = ${nearbyMatchedFeatures[0].properties.name}`)
           } else {
