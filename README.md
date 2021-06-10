@@ -255,6 +255,10 @@ This produces outputs in `dist/conflate`:
 4. `exactMatch` - `addr:housenumber` and `addr:street` match an existing address within the same block. These should be reviewed for import.
 5. `noExactMatch` - the Vicmap addresses exists within a block with existing OSM addresses, however no exact match on the `addr:housenumber` and `addr:street` was found. This likely can be imported automatically, but may want to be manually reviewed.
 
+Some addresses in OSM are mapped with `addr:housenumber=unit/number`, in the conflation process where matched with a corresponding unit/number/street, then the OSM address is modified into `addr:unit=unit`, `addr:housenumber=number`.
+
+This is outputted as a MapRoulette challenge (`dist/conflate/mr_explodeUnitFromNumber.geojson`), however because we are confident in this change it isn't uploaded into MapRoulette, instead we further process this and upload it as `addrUnitFromHousenumber` in the import candidates.
+
 These results are in GeoJSON format, for easier viewing in QGIS convert to FGB with:
 
     make convertConflationResultsToFGB

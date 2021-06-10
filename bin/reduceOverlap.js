@@ -82,7 +82,7 @@ const reduce = new Transform({
       // only one feature with this geometry, nothing to reduce, output as is
       this.push(groupedFeatures[0])
     } else {
-      // mulitple features with the same geometry
+      // multiple features with the same geometry
 
       // group by housenumber, street, suburb, state, postcode to reduce units into addr:flats
       // groupedFeatures all all the features at the same point

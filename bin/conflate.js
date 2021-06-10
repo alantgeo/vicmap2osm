@@ -180,10 +180,41 @@ const conflate = new Transform({
             // ignoring whitespace when comparing house numbers
             // ignoring case
             // ignoring differences between "Foo - Bar Street" and "Foo-Bar Street", these kinds of names are common in country victoria
-            return feature.properties['addr:street'] && osmStreet
+            const isMatched = feature.properties['addr:street'] && osmStreet
               && feature.properties['addr:street'].toLowerCase().replaceAll(' - ', '-') === osmStreet.toLowerCase().replaceAll(' - ', '-')
               && osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '').toLowerCase() === osmHouseNumber.replaceAll(' ', '').toLowerCase()
               && (vicmapUnit === osmUnit)
+
+            // if matched but the match came from exploding X/Y into Unit X, Number Y, then automate this to be changed in OSM
+            if (isMatched && osmAddr.properties['addr:housenumber'].split('/').length > 1) {
+              // MapRoulette task
+              const task = {
+                type: 'FeatureCollection',
+                features: [ osmAddr ],
+                cooperativeWork: {
+                  meta: {
+                    version: 2,
+                    type: 1 // tag fix type
+                  },
+                  operations: [{
+                    operationType: 'modifyElement',
+                    data: {
+                      id: `${osmAddr.properties['@type']}/${osmAddr.properties['@id']}`,
+                      operations: [{
+                        operation: 'setTags',
+                        data: {
+                          'addr:unit': osmUnit,
+                          'addr:housenumber': osmHouseNumber
+                        }
+                      }]
+                    }
+                  }]
+                }
+              }
+              outputStreams.mr_explodeUnitFromNumber.write(task)
+            }
+
+            return isMatched
           })
 
           if (matches.length) {
@@ -252,7 +283,7 @@ const conflate = new Transform({
 })
 
 // ndjson streams to output features
-const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'exactMatchLines', 'mr_withinExistingOSMAddressPoly', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
+const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'exactMatchLines', 'mr_explodeUnitFromNumber', 'mr_withinExistingOSMAddressPoly', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
 const outputStreams = {}
 const outputStreamOutputs = {}
 
