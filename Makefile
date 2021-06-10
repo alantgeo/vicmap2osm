@@ -191,6 +191,14 @@ convertConflationResultsToFGB:
 	ogr2ogr -f FlatGeobuf dist/conflate/noExactMatch.fgb dist/conflate/noExactMatch.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/noOSMAddressWithinBlock.fgb dist/conflate/noOSMAddressWithinBlock.geojson
 
+dist/vicmap-complex-conflation: dist/vicmap-complex.geojson
+	mkdirp -p $@
+	./bin/complex.js $< data/victoria-named-features.osm.geojson $@
+
+dist/vicmap-building-conflation: dist/vicmap-building.geojson
+	mkdirp -p $@
+	./bin/building.js $< data/victoria-named-features.osm.geojson $@
+
 # extract admin_level=10 from OSM
 data/victoria-admin.osm.pbf: data/victoria.osm.pbf
 	osmium tags-filter --remove-tags --output=$@ $< r/boundary=administrative
@@ -216,10 +224,3 @@ dist/candidates: data/victoria-admin-level10.osm.geojson dist/conflate
 	mkdir -p $@
 	./bin/candidates.js $^ $@
 
-dist/vicmap-complex-conflation: dist/vicmap-complex.geojson
-	mkdirp -p $@
-	./bin/complex.js $< data/victoria-named-features.osm.geojson $@
-
-dist/vicmap-building-conflation: dist/vicmap-building.geojson
-	mkdirp -p $@
-	./bin/building.js $< data/victoria-named-features.osm.geojson $@

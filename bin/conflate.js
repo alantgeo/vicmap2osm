@@ -141,7 +141,7 @@ const conflate = new Transform({
       } else {
         // other OSM addresses found within this block, so need to conflate
         if (!('id' in block)) {
-          console.error('Expected id for block')
+          console.error('Expected id for block, maybe you are missing the polygon-lookup patch, try cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js')
           process.exit(1)
         }
 

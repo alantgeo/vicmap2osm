@@ -145,7 +145,7 @@ function outputCandidates() {
 }
 
 // first pass to index by geometry
-console.log('Step 1/X: Reading suburbs')
+console.log('Step 1/4: Reading suburbs')
 pipeline(
   fs.createReadStream(suburbsFile),
   ndjson.parse(),
@@ -155,13 +155,13 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
-      console.log('Step 2/X: Creating index of Suburbs')
+      console.log('Step 2/4: Creating index of Suburbs')
       lookupSuburbs = new PolygonLookup({
         type: 'FeatureCollection',
         features: suburbs
       })
 
-      console.log('Step 3/X: noOSMAddressWithinBlock')
+      console.log('Step 3/4: noOSMAddressWithinBlock')
       pipeline(
         fs.createReadStream(path.join(conflatePath, 'noOSMAddressWithinBlock.geojson')),
         ndjson.parse(),
@@ -172,7 +172,7 @@ pipeline(
             process.exit(1)
           } else {
 
-            console.log('Step 4/X: noExactMatch')
+            console.log('Step 4/4: noExactMatch')
             pipeline(
               fs.createReadStream(path.join(conflatePath, 'noExactMatch.geojson')),
               ndjson.parse(),

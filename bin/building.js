@@ -72,6 +72,7 @@ outputKeys.forEach(key => {
 })
 
 let sourceCount = 0
+let exactMatchCount = 0
 const conflate = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
@@ -108,7 +109,7 @@ const conflate = new Transform({
       // a single nearby OSM features found with similar name
       if (nearbyMatchedFeatures[0].properties.name.toLowerCase() === name.toLowerCase()) {
         // name exactly matched
-        console.log(`Exact match: ${properties.name} = ${nearbyMatchedFeatures[0].properties.name}`)
+        exactMatchCount++
       } else {
         // name was similar but not an exact match
         // create a MapRoulette task to investigate further
@@ -163,6 +164,7 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
+      console.log(`${exactMatchCount} Vicmap building names exactly matched OSM features`)
 
       outputKeys.forEach(key => {
         outputStreams[key].end()

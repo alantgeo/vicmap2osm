@@ -22,7 +22,11 @@ We use GitLab CI/CD to automate data processing.
 
 ## Build candidate files (pre-conflation)
 
-Download source Vicmap data and convert to GeoJSON (_prepare_ stage):
+Download source Vicmap data (_prepare_ stage):
+
+    data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
+
+Convert to GeoJSON (_prepare_ stage):
 
     make data/vicmap.geojson
 
@@ -240,6 +244,16 @@ This produces outputs in `dist/conflate`:
 3. `notFoundInBlocks` - some areas of the state didn't have blocks created, particularly in the coastal region, so these are handled manually.
 4. `exactMatch` - `addr:housenumber` and `addr:street` match an existing address within the same block. These should be reviewed for import.
 5. `noExactMatch` - the Vicmap addresses exists within a block with existing OSM addresses, however no exact match on the `addr:housenumber` and `addr:street` was found. This likely can be imported automatically, but may want to be manually reviewed.
+
+These results are in GeoJSON format, for easier viewing in QGIS convert to FGB with:
+
+    make convertConflationResultsToFGB
+
+Further processing to conflate Vicmap complex and building names with OSM can be done via:
+
+    make data/victoria-named-features.osm.geojson
+    make dist/vicmap-complex-conflation
+    make dist/vicmap-building-conflation
 
 - [ ] we need to deal with addresses represented in OSM as interpolation ways. If there is community consensus to replace these existing interpolation ways with individual point nodes or leave the existing interpolation ways.
 - [ ] we need a better way to review matches where some attributes differ, potentially as a quick fix MapRoulette for tricky cases, or done as a bulk import for easy cases (eg. simply adding `addr:suburb`, `addr:state` and `addr:postcode`)
