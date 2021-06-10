@@ -116,12 +116,17 @@ const conflate = new Transform({
         const task = {
           type: 'FeatureCollection',
           features: [
+            ...nearbyMatchedFeatures.map(f => {
+              // MapRoulette uses the first feature id as the task ID
+              f.id = feature.id
+              return f
+            }),
+            // last feature is used as the first one shown in MapRoulette
             point(feature.geometry.coordinates, Object.assign({}, feature.properties, {
               'marker-color': 'orange',
               'marker-size': 'large',
               'OSM Name': nearbyMatchedFeatures[0].properties.name
-            }, properties)),
-            ...nearbyMatchedFeatures
+            }, properties))
           ]
         }
         outputStreams.mr_singleNearbySimilarFeature.write(task)
@@ -131,11 +136,16 @@ const conflate = new Transform({
       const task = {
         type: 'FeatureCollection',
         features: [
+          ...nearbyMatchedFeatures.map(f => {
+            // MapRoulette uses the first feature id as the task ID
+            f.id = feature.id
+            return f
+          }),
+          // last feature is used as the first one shown in MapRoulette
           point(feature.geometry.coordinates, Object.assign({}, feature.properties, {
             'marker-color': 'orange',
             'marker-size': 'large'
-          }, properties)),
-          ...nearbyMatchedFeatures
+          }, properties))
         ]
       }
       outputStreams.mr_multipleNearbySimilarFeatures.write(task)
@@ -144,7 +154,10 @@ const conflate = new Transform({
       const task = {
         type: 'FeatureCollection',
         features: [
-          point(feature.geometry.coordinates, Object.assign({}, feature.properties, properties))
+          point(feature.geometry.coordinates, Object.assign({}, feature.properties, properties), {
+            // MapRoulette uses the first feature id as the task ID
+            id: feature.id
+          })
         ]
       }
       outputStreams.mr_noNearbySimilarFeature.write(task)

@@ -123,6 +123,7 @@ pipeline(
       console.log('Stage 2/2 saving features per complex')
       // output complexes as a geometry collection feature with a hull and multipoint
       let complexIndex = 0
+      let exactMatchCount = 0
       for (const [name, complex] of Object.entries(complexes)) {
         complexIndex++
         if (process.stdout.isTTY && complexIndex % 50 === 0) {
@@ -160,58 +161,67 @@ pipeline(
         const nearby = around(osmIndex, ...centroid.geometry.coordinates, Infinity, maxDistanceInKm)
         const nearbyMatches = nearby.filter(i => {
           const similarity = lcs.similarity(osmFeatures[i].properties.name.toLowerCase(), name.toLowerCase())
-          return similarity > 0.7
+          return similarity > 0.8
         })
         const nearbyMatchedFeatures = nearbyMatches.map(i => osmFeatures[i])
 
         if (nearbyMatches.length) {
           console.log(name)
-          console.log(' > ', nearbyMatches.map(i => osmFeatures[i].properties.name))
+          for (const i of nearbyMatches) {
+            const properties = osmFeatures[i].properties
+            console.log(` > ${properties['@type']}/${properties['@id']} ${properties.name} ${properties.name.toLowerCase() === name.toLowerCase() ? '✓' : '⨯'}`)
+          }
+          console.log('')
         }
-        if (nearbyMatches.length === 1) {
-          // a single nearby OSM features found with similar name
-          if (nearbyMatchedFeatures[0].properties.name.toLowerCase() === name.toLowerCase()) {
+
+        if (nearbyMatches.length) {
+          const isExactMatch = nearbyMatchedFeatures.map(feature => feature.properties.name.toLowerCase() === name.toLowerCase()).reduce((acc, cur) => acc && cur, true)
+          if (isExactMatch) {
             // name exactly matched
-            console.log(`Exact match: ${properties.name} = ${nearbyMatchedFeatures[0].properties.name}`)
+            exactMatchCount++
           } else {
             // name was similar but not an exact match
             // create a MapRoulette task to investigate further
-            const task = {
-              type: 'FeatureCollection',
-              features: [
-                ...complex.map(feature => {
-                  feature.properties['marker-color'] = 'orange'
-                  feature.properties['marker-color'] = 'small'
-                  return feature
-                }),
-                point(centroid.geometry.coordinates, Object.assign({}, centroid.properties, {
-                  'marker-color': 'orange',
-                  'marker-size': 'large',
-                  'OSM Name': nearbyMatchedFeatures[0].properties.name
-                })),
-                ...nearbyMatchedFeatures
-              ]
+
+            if (nearbyMatches.length === 1) {
+              // a single nearby OSM features found with similar name
+              const task = {
+                type: 'FeatureCollection',
+                features: [
+                  ...nearbyMatchedFeatures,
+                  ...complex.map(feature => {
+                    feature.properties['marker-color'] = 'orange'
+                    feature.properties['marker-color'] = 'small'
+                    return feature
+                  }),
+                  point(centroid.geometry.coordinates, Object.assign({}, centroid.properties, {
+                    'marker-color': 'orange',
+                    'marker-size': 'large',
+                    'OSM Name': nearbyMatchedFeatures[0].properties.name
+                  }))
+                ]
+              }
+              outputStreams.mr_singleNearbySimilarFeature.write(task)
+            } else if (nearbyMatches.length > 1) {
+              // multiple nearby OSM features found with similar name, create a MapRoulette task to investigate further
+              const task = {
+                type: 'FeatureCollection',
+                features: [
+                  ...nearbyMatchedFeatures,
+                  ...complex.map(feature => {
+                    feature.properties['marker-color'] = 'orange'
+                    feature.properties['marker-color'] = 'small'
+                    return feature
+                  }),
+                  point(centroid.geometry.coordinates, Object.assign({}, centroid.properties, {
+                    'marker-color': 'orange',
+                    'marker-size': 'large'
+                  }))
+                ]
+              }
+              outputStreams.mr_multipleNearbySimilarFeatures.write(task)
             }
-            outputStreams.mr_singleNearbySimilarFeature.write(task)
           }
-        } else if (nearbyMatches.length > 1) {
-          // multiple nearby OSM features found with similar name, create a MapRoulette task to investigate further
-          const task = {
-            type: 'FeatureCollection',
-            features: [
-              ...complex.map(feature => {
-                feature.properties['marker-color'] = 'orange'
-                feature.properties['marker-color'] = 'small'
-                return feature
-              }),
-              point(centroid.geometry.coordinates, Object.assign({}, centroid.properties, {
-                'marker-color': 'orange',
-                'marker-size': 'large'
-              })),
-              ...nearbyMatchedFeatures
-            ]
-          }
-          outputStreams.mr_multipleNearbySimilarFeatures.write(task)
         } else {
           // no nearby OSM feature found with similar name, so create a MapRoulette task
           const task = {
@@ -221,6 +231,7 @@ pipeline(
           outputStreams.mr_noNearbySimilarFeature.write(task)
         }
       }
+      console.log(`${exactMatchCount} Vicmap distinct complex names exactly matched OSM features`)
 
       outputKeys.forEach(key => {
         outputStreams[key].end()

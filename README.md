@@ -265,6 +265,8 @@ Further processing to conflate Vicmap complex and building names with OSM can be
     make dist/vicmap-complex-conflation
     make dist/vicmap-building-conflation
 
+These outputs are described in the [Building Name](#building-name) and [Complex Name](#complex-name) sections.
+
 - [ ] we need to deal with addresses represented in OSM as interpolation ways. If there is community consensus to replace these existing interpolation ways with individual point nodes or leave the existing interpolation ways.
 - [ ] we need a better way to review matches where some attributes differ, potentially as a quick fix MapRoulette for tricky cases, or done as a bulk import for easy cases (eg. simply adding `addr:suburb`, `addr:state` and `addr:postcode`)
 
