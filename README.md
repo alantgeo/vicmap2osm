@@ -169,6 +169,16 @@ So while there is value including property names, building names, farm names as 
 
 `bin/vicmap2osm.js` outputs `dist/vicmap-building.geojson` which contains all the building name features.
 
+The script at `bin/building.js` tests to see whether this building / property name is matching a nearby OSM object.
+
+This outputs a bunch of files into `dist/vicmap-building-conflation` including, three MapRoulette challenges:
+
+- `mr_singleNearbySimilarFeature` - the Vicmap building name matched a single nearby OSM feature (but the name wasn't an exact match, where it was an exact match the Vicmap building name is not flagged for inclusion in MapRoulette)
+- `mr_multipleNearbySimilarFeatures` - the Vicmap building name matched multiple nearby OSM features
+- `mr_noNearbySimilarFeature` - the Vicmap building name didn't match any nearby OSM features
+
+This is built into the _conflate_ stage.
+
 ### Complex Name
 Source data sometimes includes a complex name, for example _CHADSTONE SHOPPING CENTRE_ or _MELBOURNE UNIVERSITY_. These attributes are not used as these names should appear on the actual feature like `shop=mall` or `amenity=university`.
 
@@ -179,10 +189,10 @@ While there is ~55,000 Vicmap points with a complex name, there are only ~2000 u
 The script at `bin/complex.js` processes this to:
 
 - Group nearby complex features with the same name into a single centroid point
-- Tests to see weather this complex name is matching a nearby OSM object
+- Tests to see whether this complex name is matching a nearby OSM object
 - Where it doesn't find a match in OSM, then it outputs a MapRoulette data file for mappers to review and potentially add these complex names to OSM.
 
-This outputs a bunch of files into `dist/vicmap-complex-conflation` including, three MapRoulette challanges:
+This outputs a bunch of files into `dist/vicmap-complex-conflation` including, three MapRoulette challenges:
 
 - `mr_singleNearbySimilarFeature` - the Vicmap complex matched a single nearby OSM feature (but the name wasn't an exact match, where it was an exact match the Vicmap complex is not flagged for inclusion in MapRoulette)
 - `mr_multipleNearbySimilarFeatures` - the Vicmap complex matched multiple nearby OSM features
