@@ -7,11 +7,10 @@
     "timestamp": false,
     "uid":       false,
     "user":      false,
-    "way_nodes": true
+    "way_nodes": false
   },
   "format_options": {
   },
-  "linear_tags": true,
   "area_tags": true,
   "include_tags": ["name"]
 }
