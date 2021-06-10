@@ -61,6 +61,12 @@ dist/vicmap-osm-uniq-flats-withinrange.geojson: dist/vicmap-osm-uniq-flats.geojs
 	mkdir -p debug/reduceRangeDuplicates
 	node --max_old_space_size=4096 ./bin/reduceRangeDuplicates.js --debug $< $@
 
+convertGeoJSONResultsToFGB:
+	ogr2ogr -f FlatGeobuf dist/vicmap-osm.fgb dist/vicmap-osm.geojson
+	ogr2ogr -f FlatGeobuf dist/vicmap-osm-uniq.fgb dist/vicmap-osm-uniq.geojson
+	ogr2ogr -f FlatGeobuf dist/vicmap-osm-uniq-flats.fgb dist/vicmap-osm-uniq-flats.geojson
+	ogr2ogr -f FlatGeobuf dist/vicmap-osm-uniq-flats-withinrange.fgb dist/vicmap-osm-uniq-flats-withinrange.geojson
+
 dist/canidates.geojson: dist/vicmap-osm-uniq-flats-withinrange.geojson
 	cp $< $@
 
