@@ -19,8 +19,8 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
   })
   .argv
 
-if (argv._.length < 4) {
-  console.error("Usage: ./compareSuburb.js vicmap-osm.geojson osm_admin_level_10.geojson dist/vicmapSuburbDiffersWithOSM.geojson dist/suburbsWithPostcodeCounts.geojson")
+if (argv._.length < 6) {
+  console.error("Usage: ./compareSuburb.js vicmap-osm.geojson osm_admin_level_10.geojson dist/vicmapSuburbDiffersWithOSM.geojson dist/suburbsWithPostcodeCounts.geojson dist/postalCodeInstructions.json dist/postalCodeURLs.txt")
   process.exit(1)
 }
 
@@ -28,6 +28,8 @@ const vicmapFile = argv._[0]
 const osmFile = argv._[1]
 const outputFile = argv._[2]
 const postcodeOutputFile = argv._[3]
+const postalCodeInstructionsFile = argv._[4]
+const remoteControlURLsFile = argv._[5]
 
 if (!fs.existsSync(vicmapFile)) {
   console.error(`${vicmapFile} not found`)
@@ -55,6 +57,12 @@ const lookup = new PolygonLookup({
   type: 'FeatureCollection',
   features: osmFeatures
 })
+
+const typeCodes = {
+  node: 'n',
+  way: 'w',
+  relation: 'r'
+}
 
 // postcode counts by OSM admin boundary id
 /*
@@ -123,6 +131,9 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
+      const postalCodeInstructionsStream = ndjson.stringify()
+      const postalCodeInstructionsOutput = postalCodeInstructionsStream.pipe(fs.createWriteStream(postalCodeInstructionsFile))
+
       const suburbsWithPostcodeCountsStream = ndjson.stringify()
       const suburbsWithPostcodeCountsOutput = suburbsWithPostcodeCountsStream.pipe(fs.createWriteStream(postcodeOutputFile))
       osmFeatures.forEach((feature, index) => {
@@ -143,13 +154,47 @@ pipeline(
           feature.properties[`_postcode_count_${index + 1}`] = postcodeCount.count
         })
 
+        if (sortedPostcodeCounts.length) {
+          const postcode = sortedPostcodeCounts[0].postcode
+          if ('postal_code' in feature.properties) {
+            // if OSM feature already has a postal_code
+            if (feature.properties.postal_code === postcode) {
+              // if the OSM postal_code is what we expect then do nothing
+            } else {
+              // otherwise flag it
+              console.log(`${feature.properties['@type']}/${feature.properties['@id']} ${feature.properties.name} has postal_code=${feature.properties.postal_code} however Vicmap data suggests ${postcode}`)
+            }
+          } else {
+            // OSM feature is missing a postal_code, then add it
+            if (postcode !== '3000') { // except melbourne which is split into 3000 and 3004 via a postal boundary
+              const instruction = {
+                type: feature.properties['@type'],
+                id: feature.properties['@id'],
+                name: feature.properties.name,
+                postal_code: postcode
+              }
+              const typeCode = typeCodes[instruction.type]
+              const url = `http://localhost:8111/load_object?new_layer=false&relation_members=false&referrers=false&objects=${typeCode}${instruction.id}&addtags=postal_code=${postcode}` + "\n"
+              fs.appendFile(remoteControlURLsFile, url, err => {
+                if (err) {
+                  console.error(err)
+                }
+              })
+              postalCodeInstructionsStream.write(instruction)
+            }
+          }
+        }
         suburbsWithPostcodeCountsStream.write(feature)
       })
       suburbsWithPostcodeCountsStream.end()
+      postalCodeInstructionsStream.end()
 
       suburbsWithPostcodeCountsOutput.on('finish', () => {
         console.log(`saved ${postcodeOutputFile}`)
-        process.exit(0)
+        postalCodeInstructionsOutput.on('finish', () => {
+          console.log(`saved ${postalCodeInstructionsFile}`)
+          process.exit(0)
+        })
       })
     }
   }

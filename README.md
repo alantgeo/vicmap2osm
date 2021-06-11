@@ -121,12 +121,13 @@ For postcodes, of the 2988 `admin_level=10` suburb/localities in OSM:
 - 9 have >1 postcode from Vicmap
 - a handful have no addresses
 
-Of the 9 that have >1 postcode, 7 have only 1 address with a different postcode, 1 has only 3 addresses with a different postcode, and one suburb/locality (Melbourne suburb) has two main postcodes 3000 with 51,458 addresses and postcode 3004 with 12,158 postcodes. Then for the Melbourne case, it's clear than Melbourne CBD is 3000 and areas south 3004. We could add a separate `boundary=postal_code` for Melbourne.
+Of the 9 that have >1 postcode, 7 have only 1 address with a different postcode, 1 has only 3 addresses with a different postcode, and one suburb/locality (Melbourne suburb) has two main postcodes 3000 with 51,458 addresses and postcode 3004 with 12,158 postcodes. In the Melbourne suburb, it's clear that the Melbourne CBD is 3000 and areas south of the Yarra River are 3004 (see img/postcodes_melbourne.png). A separate `boundary=postal_code` already exists for [3000](https://www.openstreetmap.org/relation/8383583) and [3004](https://www.openstreetmap.org/relation/3402721).
 
-![Vicmap address postcodes within Melbourne suburb](img/postcodes_melbourne.png)
-_Vicmap address postcodes within Melbourne suburb_
+My analysis supports adding `postal_code` to the level 10 admin boundary is safe for pretty much the whole state, except for Melbourne where `postal_code` boundaries [have already been mapped](https://overpass-turbo.eu/s/18eS) (`boundary=postal_code in "VIC, AU"`).
 
-My analysis supports adding `postal_code` to the level 10 admin boundary is safe for pretty much the whole state, except for Melbourne where we can add a `postal_code` boundary.
+At the time of writing 360 `admin_level=10` boundaries have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eU) (`(type=boundary and boundary=administrative and admin_level=10 and postal_code=*) in "VIC, AU"`), 2613 `admin_level=10` boundaries don't have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eV) (`(type=boundary and boundary=administrative and admin_level=10 and postal_code is null) in "VIC, AU"`).
+
+As part of this import, `postal_code` will be added to `admin_level=10` boundaries derived from Vicmap, see XXX.
 
 After lengthy engagement with the local community, we opt to omit these tags in the current import.
 
@@ -225,6 +226,20 @@ Though neither of these are included in the OSM tags when imported. This was a c
 - When an OSM mapper is confronted by an address with this ID, it's unclear what they should do with it when making changes. eg, if they notice the number is wrong, or the street is wrong and they update it in OSM, is this ID still valid? Is it still the same address in OSM and Vicmap?
 - We want these imported addresses to be organic OSM data freely updated by mappers and not seen as untouchable data, an ID makes it look like it's not organic OSM data and a mapper might choose to just leave it as is even if it doesn't match what's on the ground.
 
+### Where should addresses exist?
+
+In OSM addresses might be found in any of these mapping styles in any combination:
+
+1. `addr:*` keys on a building object [example](https://www.openstreetmap.org/way/222891745)
+2. `addr:*` keys on a lone node without any other non-address tags [example](https://www.openstreetmap.org/node/2024786354)
+3. `addr:interpolation` on a linear way [example](https://www.openstreetmap.org/way/196467381)
+4. `addr:*` keys on an another object like `amenity`, `shop`, `office`, etc. which could be a node, way or relation [example](https://www.openstreetmap.org/node/1975940442)
+
+For this import, where the address doesn't already exist, then it will be added as a new lone node, not attached to any existing building or any existing object. Local mappers can choose to merge these tags into an existing building, or into an object (subject to local knowledge or survey).
+
+Where the address does already exist, but is missing some `addr:*` tags, the new tags are added into the existing object.
+
+
 ## Conflation with existing OSM address data
 Given some addresses are already mapped in OSM we first break the state down into city blocks. Where a block contains no addresses in OSM then we consider it low risk to automatically import all address in the block. The only risk is the address in either OSM or the source data is in the wrong block, but this is less likely and would be hard to detect otherwise.
 
@@ -287,22 +302,19 @@ Split into the following candidate categories, then again split into suburb/loca
 2. `existingAddressesWithNewTagsOnly` - existing OSM addresses where we add new tags from Vicmap (no modifying or removing tags) and no geometry changes, can be imported automatically.
 3. `addrUnitFromHousenumber` - existing OSM addresses where the existing `addr:housenumber` tag is modified to move the unit number into `addr:unit`, can be imported automatically.
 
-### Where should addresses exist?
-
-In OSM addresses might be found in any of these mapping styles in any combination:
-
-1. `addr:*` keys on a building object [example](https://www.openstreetmap.org/way/222891745)
-2. `addr:*` keys on a lone node without any other non-address tags [example](https://www.openstreetmap.org/node/2024786354)
-3. `addr:interpolation` on a linear way [example](https://www.openstreetmap.org/way/196467381)
-4. `addr:*` keys on an another object like `amenity`, `shop`, `office`, etc. which could be a node, way or relation [example](https://www.openstreetmap.org/node/1975940442)
-
-For this import, where the address doesn't already exist, then it will be added as a new lone node, not attached to any existing building or any existing object. Local mappers can choose to merge these tags into an existing building, or into an object (subject to local knowledge or survey).
-
-Where the address does already exist, but is missing some `addr:*` tags, the new tags are added into the existing object.
-
 ## Import Process
 
 The dedicated import account used for the import is [`vicmap_import`](https://www.openstreetmap.org/user/vicmap_import).
+
+
+### Stage 1 - postal_code
+
+For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`](#inclusion-of-addrsuburb-addrpostcode-and-addrstate).
+
+Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org/wiki/Key:postal_code) will be added to the existing Victorian `admin_level=10` boundaries using the postcode derived from Vicmap Addresses. Except for Melbourne suburb because there are two postal codes in use, and the `postal_code` boundaries are already mapped.
+
+
+### Stage 2 - 
 
 `bin/upload.sh` is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by state) there is one OSM Changeset created.
 
