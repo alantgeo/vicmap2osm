@@ -213,7 +213,7 @@ data/victoria-admin-level10.osm.pbf: data/victoria-admin.osm.pbf
 	osmium tags-filter --remove-tags --output=$@ $< r/admin_level=10
 
 data/victoria-admin-level10.osm.geojson: data/victoria-admin-level10.osm.pbf
-	osmium export --overwrite --geometry-types=polygon --add-unique-id=type_id --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
+	osmium export --overwrite --config=config/osmium-export-config-adminlevel10.json --geometry-types=polygon --add-unique-id=type_id --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
 
 data/victoria-admin-level10.osm.fgb: data/victoria-admin-level10.osm.geojson
 	ogr2ogr -f FlatGeobuf $@ $<
