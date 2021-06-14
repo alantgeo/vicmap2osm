@@ -22,12 +22,14 @@
     "geojsontoosm": "^0.0.3",
     "mktemp": "^1.0.0",
     "ndjson": "^2.0.0",
+    "node-fetch": "^2.6.1",
     "object.omit": "^3.0.0",
     "osm-geojson": "^0.8.4",
     "polygon-lookup": "^2.6.0",
     "readable-stream": "^3.6.0",
     "string-comparison": "^1.0.9",
     "tape": "^5.2.2",
+    "xml-js": "^1.6.11",
     "yargs": "^17.0.1"
   },
   "engines": {

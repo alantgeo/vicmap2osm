@@ -190,6 +190,9 @@ dist/conflate:
 	mkdir -p $@
 	./bin/conflate.js dist/vicmap-osm-uniq-flats.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson $@
 
+dist/unitFromNumber.osc: dist/conflate/mr_explodeUnitFromNumber.geojson
+	./bin/mr2osc.mjs --dry-run $< $@
+
 convertConflationResultsToFGB:
 	ogr2ogr -f FlatGeobuf dist/conflate/withinExistingOSMAddressPoly.fgb dist/conflate/withinExistingOSMAddressPoly.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/notFoundInBlocks.fgb dist/conflate/notFoundInBlocks.geojson
