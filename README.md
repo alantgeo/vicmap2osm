@@ -310,6 +310,8 @@ For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`
 
 Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org/wiki/Key:postal_code) will be added to the existing Victorian `admin_level=10` boundaries using the postcode derived from Vicmap Addresses. Except for Melbourne suburb because there are two postal codes in use, and the `postal_code` boundaries are already mapped.
 
+The tag changes are created by `bin/compareSuburb.js` which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`.
+
 ### Stage 2 - Set unit from housenumber
 During the conflation stage, Vicmap addresses which were deemed to match OSM addresses where in OSM it was represented as `addr:housenumber=X/Y` whereas in Vicmap it was represented as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
 
@@ -319,9 +321,9 @@ This will be a single Victoria wide changeset.
 
 ### Stage 3 - New addresses without conflicts
 
-`bin/upload.sh` is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by state) there is one OSM Changeset created.
+`bin/upload.sh` is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
 
-This makes it easier for anyone to review uploads in OSMCha or similar.
+This makes it easier for anyone to review uploads in OSMCha and other tools.
 
 The changeset comment used is
 
