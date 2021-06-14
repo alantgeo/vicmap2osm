@@ -305,6 +305,12 @@ Split into the following candidate categories, then again split into suburb/loca
 
 The dedicated import account used for the import is [`vicmap_import`](https://www.openstreetmap.org/user/vicmap_import).
 
+
+### Stage 0 - Find abbreviated addr:street on existing addresses
+`make data/abbrStreetsMR.geojson` generates a MapRoulette challenge file with possible abbreviated street names in existing `addr:street` tags in OSM and suggests fixes. Where the suggested fix matched the unabbreviated road name then this can be safely applied.
+
+- [x] MapRoulette challenge completed
+
 ### Stage 1 - postal_code
 For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`](#inclusion-of-addrsuburb-addrpostcode-and-addrstate).
 

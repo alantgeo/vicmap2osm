@@ -114,6 +114,9 @@ data/victoria-named-features.osm.pbf: data/victoria.osm.pbf
 data/victoria-named-features.osm.geojson: data/victoria-named-features.osm.pbf
 	osmium export --config=config/osmium-export-config-names.json --output-format=geojsonseq --format-option=print_record_separator=false --output=$@ --overwrite $<
 
+data/abbrStreetsMR.geojson: data/victoria-addr.osm.geojson
+	./bin/findAbbrStreets.js $< $@
+
 data/asgs.zip:
 	wget -O $@ 'https://www.abs.gov.au/AUSSTATS/subscriber.nsf/log?openagent&1270055001_ASGS_2016_vol_1_geopackage.zip&1270.0.55.001&Data%20Cubes&C406A18CE1A6A50ACA257FED00145B1D&0&July%202016&12.07.2016&Latest'
 
