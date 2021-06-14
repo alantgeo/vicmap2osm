@@ -52,6 +52,13 @@ const CREATED_BY = 'https://gitlab.com/alantgeo/vicmap2osm'
 const AUTHORIZATION = `Basic ${Buffer.from(process.env.OSM_USERNAME + ':' + process.env.OSM_PASSWORD).toString('base64')}`
 let MAXIMUM_ELEMENTS_PER_UPLOAD_REQUEST = 10000
 
+const changesetTags = {
+  created_by: CREATED_BY,
+  comment: argv.changesetComment,
+  source: 'Vicmap Address',
+  'source:ref': 'https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-address'
+}
+
 console.log(`Retrieving capabilities from ${OSM_API_WRITE}`)
 await fetch(`${OSM_API_WRITE}/api/capabilities`, {
   headers: {
@@ -291,20 +298,14 @@ async function uploadChanges() {
       },
       osm: {
         changeset: {
-          tag: [
-            {
+          tag: Object.keys(changesetTags).map(key => {
+            return {
               _attributes: {
-                k: 'created_by',
-                v: CREATED_BY
-              }
-            },
-            {
-              _attributes: {
-                k: 'comment',
-                v: argv.changesetComment
+                k: key,
+                v: changesetTags[key]
               }
             }
-          ]
+          })
         }
       }
     }, Object.assign({compact: true}, argv.dryRun ? { spaces: 2 } : {}))
