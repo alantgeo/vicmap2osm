@@ -360,13 +360,12 @@ async function uploadChanges() {
     }, Object.assign({
       compact: true,
       attributeValueFn: value => {
-        // TODO need to test this via the dev api
+        // these values were tested with test/xmlEntities.js
         return value.replace(/&quot;/g, '"')  // convert quote back before converting amp
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
-          .replace(/'/g, '&apos;')
       }
     }, argv.dryRun ? { spaces: 2 } : {}))
 
