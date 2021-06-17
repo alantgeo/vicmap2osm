@@ -32,11 +32,11 @@ Convert to GeoJSON (_prepare_ stage):
 
 The following steps are built into the _build vicmap_ stage.
 
-Next, convert into [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at `bin/vicmap2osm.js`):
+Next, convert into [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at [`bin/vicmap2osm.js`](bin/vicmap2osm.js)):
 
     make dist/vicmap-osm.geojson
 
-Next, remove duplicates where all address attributes match at the same location or within a small proximity (code at `bin/reduceDuplicates.js`, see [_Removing duplicates_](#removing-duplicates)):
+Next, remove duplicates where all address attributes match at the same location or within a small proximity (code at [`bin/reduceDuplicates.js`](bin/reduceDuplicates.js), see [_Removing duplicates_](#removing-duplicates)):
 
     make dist/vicmap-osm-uniq.geojson
 
@@ -48,7 +48,7 @@ Two debug outputs are produced from this step.
 
 ![multiCluster example](img/reduceDuplicates_multiCluster.png)
 
-Next, reduce some address points with the exact same coordinates but different address attributes (see [_Removing duplicates_](#removing-duplicates) below) (code at `bin/reduceOverlap.js`):
+Next, reduce some address points with the exact same coordinates but different address attributes (see [_Removing duplicates_](#removing-duplicates) below) (code at [`bin/reduceOverlap.js`](bin/reduceOverlap.js)):
 
     make dist/vicmap-osm-uniq-flats.geojson
 
@@ -58,7 +58,7 @@ Three debug outputs are produced from this step.
 2. oneUnitOneNonUnit - where there is one address without a unit and one with a unit at the same point, with all the same address attributes except unit. In this case we just drop the non-unit address and keep the addr:unit one.
 3. sameGeometry
 
-Next, drop address ranges where the range endpoints are separately mapped (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at `bin/reduceRangeDuplicates.js`).
+Next, drop address ranges where the range endpoints are separately mapped (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at [`bin/reduceRangeDuplicates.js`](bin/reduceRangeDuplicates.js)).
 
     make dist/vicmap-osm-uniq-flats-withinrange.geojson
 
@@ -72,7 +72,7 @@ Source addresses are omitted:
 
 2. where, if the address has a building unit type, the building unit type must match a whitelisted type. For example this includes unit and shop numbers but excludes things like car space numbers.
 
-These rules are defined in `lib/filterOSM.js` and `lib/filterSource.js`.
+These rules are defined in [`lib/filterOSM.js`](lib/filterOSM.js) and [`lib/filterSource.js`](lib/filterSource.js).
 
 #### Duplicates through mixed range and points
 
@@ -95,7 +95,7 @@ The following tags were originally coded to support, but are currently set to be
 - `addr:postcode` is as supplied.
 - `addr:state` is as supplied and should always be `VIC`.
 
-The schema mapping mostly happens in `lib/toOSM.js`.
+The schema mapping mostly happens in [`lib/toOSM.js`](lib/toOSM.js).
 
 ### addr:suburb
 
@@ -104,12 +104,12 @@ Vicmap locality data sometimes includes a suffix placename to a locality for exa
  - Hillside Greater Melbourne
  - Hillside Bairnsdale
 
-These are converted into simply "Hillside", the full list of special cases is in `lib/toOSM.js`.
+These are converted into simply "Hillside", the full list of special cases is in [`lib/toOSM.js`](lib/toOSM.js).
 
 ### Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`
 Some within the OSM community advocate including full address attributes `addr:suburb`, `addr:postcode`, `addr:state` on all address objects even when they can be derived from a `boundary` object already mapped. Others advocate excluding these attributes from each address object where they can be derived from the `boundary` object.
 
-I undertook analysis (see `bin/compareSuburb.js` and the _build compareSuburb_ stage) to see how consistent Vicmap `addr:suburb` was with OSM `admin_level=10` boundaries and `addr:postcode` with a potential `postal_code` tag on each OSM level 10 boundary.
+I undertook analysis (see [`bin/compareSuburb.js`](bin/compareSuburb.js) and the _build compareSuburb_ stage) to see how consistent Vicmap `addr:suburb` was with OSM `admin_level=10` boundaries and `addr:postcode` with a potential `postal_code` tag on each OSM level 10 boundary.
 
 After excluding some special cases, there were 62 Vicmap addresses with a reported suburb/locality different to what would be derived from the OSM admin boundary. It looks like a bunch are bad Vicmap data, most of the rest are address points practically on the admin boundary line, there's only a [small handful otherwise to deal with](https://gitlab.com/alantgeo/vicmap2osm/-/jobs/1279647817/artifacts/raw/dist/vicmapSuburbDiffersWithOSM.geojson).
 
@@ -135,7 +135,7 @@ After lengthy engagement with the local community, we opt to omit these tags in 
 
 Source address data contains many address points overlapping or within a close proximity.
 
-1. Where all the OSM tags are the same, and the points have the exact same geometry within a close proximity, all the duplicates are omitted and the centroid location is used. This happens in `bin/reduceDuplicates.js` during `make dist/vicmap-osm-uniq.geojson`.
+1. Where all the OSM tags are the same, and the points have the exact same geometry within a close proximity, all the duplicates are omitted and the centroid location is used. This happens in [`bin/reduceDuplicates.js`](bin/reduceDuplicates.js) during `make dist/vicmap-osm-uniq.geojson`.
 
 ![reduceDuplicates in action](img/reduceDuplicates_singleCluster.png)
 
@@ -168,9 +168,9 @@ There are about 40,000 of these names.
 
 So while there is value including property names, building names, farm names as part of the address, since we can't do this reliably, the building / property name is not included in this import, however it could be a useful point of reference for mappers considering manually adding this data at a later stage.
 
-`bin/vicmap2osm.js` outputs `dist/vicmap-building.geojson` which contains all the building name features.
+[`bin/vicmap2osm.js`](bin/vicmap2osm.js) outputs `dist/vicmap-building.geojson` which contains all the building name features.
 
-The script at `bin/building.js` tests to see whether this building / property name is matching a nearby OSM object.
+The script at [`bin/building.js`](bin/building.js) tests to see whether this building / property name is matching a nearby OSM object.
 
 This outputs a bunch of files into `dist/vicmap-building-conflation` including, three MapRoulette challenges:
 
@@ -185,9 +185,9 @@ Source data sometimes includes a complex name, for example _CHADSTONE SHOPPING C
 
 While there is ~55,000 Vicmap points with a complex name, there are only ~2000 uniq names.
 
-`bin/vicmap2osm.js` outputs `dist/vicmap-complex.geojson` which contains all the complex name features.
+[`bin/vicmap2osm.js`](bin/vicmap2osm.js) outputs `dist/vicmap-complex.geojson` which contains all the complex name features.
 
-The script at `bin/complex.js` processes this to:
+The script at [`bin/complex.js`](bin/complex.js) processes this to:
 
 - Group nearby complex features with the same name into a single centroid point
 - Tests to see whether this complex name is matching a nearby OSM object
@@ -316,18 +316,24 @@ For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`
 
 Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org/wiki/Key:postal_code) will be added to the existing Victorian `admin_level=10` boundaries using the postcode derived from Vicmap Addresses. Except for Melbourne suburb because there are two postal codes in use, and the `postal_code` boundaries are already mapped.
 
-The tag changes are created by `bin/compareSuburb.js` which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
+The tag changes are created by [`bin/compareSuburb.js`](bin/compareSuburb.js) which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
+
+- [ ] Changeset not yet uploaded
 
 ### Stage 2 - Set unit from housenumber
 During the conflation stage, Vicmap addresses which were deemed to match OSM addresses where in OSM it was represented as `addr:housenumber=X/Y` whereas in Vicmap it was represented as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
 
 This will be a single Victoria wide changeset.
 
-`bin/mr2osc.mjs` is the script which creates the OsmChange and uploads it as a changeset from the tag changes outputted from the _conflate_ stage as a MapRoulette `setTags` operation.
+[`bin/mr2osc.mjs`](bin/mr2osc.mjs) is the script which creates the OsmChange and uploads it as a changeset from the tag changes outputted from the _conflate_ stage as a MapRoulette `setTags` operation.
 
-### Stage 3 - New addresses without conflicts
+- [ ] Changeset not yet uploaded
 
-`bin/upload.sh` is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
+### Stage 3 - New addresses in blocks without any existing addresses
+
+Conflation script will be re-run after stage 2.
+
+[`bin/upload.sh`](bin/upload.sh) is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
 
 This makes it easier for anyone to review uploads in OSMCha and other tools.
 
