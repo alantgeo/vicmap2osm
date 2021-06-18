@@ -62,10 +62,6 @@ Next, drop address ranges where the range endpoints are separately mapped (see [
 
     make dist/vicmap-osm-uniq-flats-withinrange.geojson
 
-Even if we are lacking the intermediate address points within the range, we still drop the range as software can interpolate intermediate addresses from the two endpoints.
-
-Also where one of the range endpoints is mapped with `addr:flats` and the range itself has no `addr:flats` then the range is removed (for example at _116 Anderson Street, South Yarra_).
-
 ### Omitted addresses
 
 Source addresses are omitted:
@@ -82,7 +78,9 @@ Some addresses appear as both a range and individual points. For example one add
 
 Where the endpoints of the range match existing non-range address points, and where the unit value is the same, and where the individual points have different geometries the range address is dropped in favour of the individual points.
 
-Where the individual points share the same geometry as each other, then the range is favoured and the individual points are dropped.
+Where the individual points share the same geometry as each other, then the range is favoured and the individual points are dropped, unless one of the range endpoints is mapped with `addr:flats` and the range itself has no `addr:flats` then the range is removed (for example at _116 Anderson Street, South Yarra_).
+
+Even if we are lacking the intermediate address points within the range, we still drop the range as software can interpolate intermediate addresses from the two endpoints.
 
 ### OSM schema
 
@@ -141,7 +139,7 @@ Source address data contains many address points overlapping or within a close p
 
 ![reduceDuplicates in action](img/reduceDuplicates_singleCluster.png)
 
-2. Where each of the housenumber, street (previously also including suburb, postcode, state) are the same for each of the strictly overlapping points, but only the unit value differs we attempt to reduce these to a single address point without `addr:unit` but instead using [`addr:flats`](https://wiki.openstreetmap.org/wiki/Key:addr:flats).
+2. Where each of the housenumber, street, suburb, postcode, state are the same for each of the strictly overlapping points, but only the unit value differs we attempt to reduce these to a single address point without `addr:unit` but instead using [`addr:flats`](https://wiki.openstreetmap.org/wiki/Key:addr:flats).
 
 `addr:flats` is the documented tag for describing the unit numbers at an address.
 
@@ -156,6 +154,8 @@ Multiple points overlapping don't add any extra value to the OSM data and are ar
 Data consumers can still easily explode `addr:flats` out into overlapping nodes with varying `addr:unit` if desired.
 
 Because OSM tag values are limited to 255 characters, if the constructed `addr:flats` exceeds this it is split across `addr:flats`, `addr:flats1`, etc. While not ideal I don't see any other option.
+
+3. Where all the overlapping points have no units and the same street, suburb, state, postcode but different housenumbers, the housenumbers are combined into a range.
 
 ### null values
 

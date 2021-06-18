@@ -80,18 +80,18 @@ const reduce = new Transform({
       }
     }
 
-    var groupedFeatures = features[key]
+    var overlappingFeatures = features[key]
 
-    if (groupedFeatures.length === 1) {
+    if (overlappingFeatures.length === 1) {
       // only one feature with this geometry, nothing to reduce, output as is
-      this.push(groupedFeatures[0])
+      this.push(overlappingFeatures[0])
     } else {
       // multiple features with the same geometry
 
       // group by housenumber, street, suburb, state, postcode to reduce units into addr:flats
-      // groupedFeatures is all the features at the same point
+      // overlappingFeatures is all the features at the same point
       const featuresGroupByNonUnit = {}
-      groupedFeatures.forEach(feature => {
+      overlappingFeatures.forEach(feature => {
         const key = [
           feature.properties['addr:housenumber'],
           feature.properties['addr:street'],
@@ -107,71 +107,94 @@ const reduce = new Transform({
         featuresGroupByNonUnit[key].push(feature)
       })
 
-      Object.values(featuresGroupByNonUnit).forEach(featureGroup => {
-        if (featureGroup.length > 1) {
-          const hasNonUnit = featureGroup.map(f => 'addr:unit' in f.properties).includes(false)
+      const noUnits = !overlappingFeatures.filter(f => 'addr:unit' in f.properties).length
+      const sameNonHousenumber = overlappingFeatures.map(feature => [
+        feature.properties['addr:street'],
+        feature.properties['addr:suburb'],
+        feature.properties['addr:state'],
+        feature.properties['addr:postcode']
+      ].join('|'))
+        .every( (val, i, arr) => val === arr[0] ) // check if all values are the same
 
-          if (hasNonUnit) {
-            // all have same housenumber, street, suburb, state, postcode and there is a non-unit feature
-            const nonUnitFeatures = featureGroup.filter(f => (!('addr:unit' in f.properties)))
-            if (nonUnitFeatures.length > 1) {
-              // multiple non-unit features, unsure how to reduce
-              // TODO should these still be output to be picked up by ranges
-              if (argv.debug) {
-                featureGroup.forEach(feature => {
-                  debugStreams.multipleNonUnit.write(feature)
-                })
-              }
-            } else {
-              // a single non-unit feature exists
-              const nonUnitFeature = cloneDeep(nonUnitFeatures[0])
+      const firstNumber = noUnits && sameNonHousenumber ? overlappingFeatures.map(f => f.properties['addr:housenumber']).reduce((acc, cur) => {
+        return (cur < acc) ? cur : acc
+      }) : null
 
-              // place all the other addr:unit into addr:flats on the non-unit feature
-              const allOtherUnits = featureGroup.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
+      const lastNumber = noUnits && sameNonHousenumber ? overlappingFeatures.map(f => f.properties['addr:housenumber']).reduce((acc, cur) => {
+        return (cur > acc) ? cur : acc
+      }) : null
 
-              // if allOtherUnits.length is one then that means we have one address without a unit and one with a unit at the same point
-              // in this case we just drop the non-unit address and keep the addr:unit one
-              if (allOtherUnits.length === 1) {
+      if (noUnits && sameNonHousenumber && firstNumber && lastNumber) {
+        const featureAsRange = overlappingFeatures[0]
+        featureAsRange.properties['addr:housenumber'] = `${firstNumber}-${lastNumber}`
+        this.push(featureAsRange)
+      } else {
+        Object.values(featuresGroupByNonUnit).forEach(featureGroup => {
+          if (featureGroup.length > 1) {
+            const hasNonUnit = featureGroup.map(f => 'addr:unit' in f.properties).includes(false)
+
+            if (hasNonUnit) {
+              // all have same housenumber, street, suburb, state, postcode and there is a non-unit feature
+              const nonUnitFeatures = featureGroup.filter(f => (!('addr:unit' in f.properties)))
+              if (nonUnitFeatures.length > 1) {
+                // multiple non-unit features, unsure how to reduce
+                // TODO should these still be output to be picked up by ranges
                 if (argv.debug) {
                   featureGroup.forEach(feature => {
-                    debugStreams.oneUnitOneNonUnit.write(feature)
+                    debugStreams.multipleNonUnit.write(feature)
                   })
                 }
-                this.push(featureGroup.filter(f => 'addr:unit' in f.properties)[0])
               } else {
-                const flats = unitsToRanges(allOtherUnits, argv.verbose && featureGroup)
-                nonUnitFeature.properties['addr:flats'] = flats
-                this.push(nonUnitFeature)
+                // a single non-unit feature exists
+                const nonUnitFeature = cloneDeep(nonUnitFeatures[0])
+
+                // place all the other addr:unit into addr:flats on the non-unit feature
+                const allOtherUnits = featureGroup.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
+
+                // if allOtherUnits.length is one then that means we have one address without a unit and one with a unit at the same point
+                // in this case we just drop the non-unit address and keep the addr:unit one
+                if (allOtherUnits.length === 1) {
+                  if (argv.debug) {
+                    featureGroup.forEach(feature => {
+                      debugStreams.oneUnitOneNonUnit.write(feature)
+                    })
+                  }
+                  this.push(featureGroup.filter(f => 'addr:unit' in f.properties)[0])
+                } else {
+                  const flats = unitsToRanges(allOtherUnits, argv.verbose && featureGroup)
+                  nonUnitFeature.properties['addr:flats'] = flats
+                  this.push(nonUnitFeature)
+                }
               }
+            } else {
+              // all have same housenumber, street, suburb, state, postcode but no non-unit, ie. all with different unit values
+              // combine all the addr:unit into addr:flats and then drop addr:unit
+              const units = featureGroup.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
+
+              if (units.length <= 1) {
+                console.log(`all have same housenumber, street, suburb, state, postcode with no non-unit, but only found ${units.length} units`, units)
+                process.exit(1)
+              }
+
+              const feature = cloneDeep(featureGroup[0])
+              delete feature.properties['addr:unit']
+
+              const flats = unitsToRanges(units, argv.verbose && featureGroup)
+              feature.properties['addr:flats'] = flats
+              this.push(feature)
             }
-          } else {
-            // all have same housenumber, street, suburb, state, postcode but no non-unit, ie. all with different unit values
-            // combine all the addr:unit into addr:flats and then drop addr:unit
-            const units = featureGroup.filter(f => 'addr:unit' in f.properties).map(f => f.properties['addr:unit'])
-
-            if (units.length <= 1) {
-              console.log(`all have same housenumber, street, suburb, state, postcode with no non-unit, but only found ${units.length} units`, units)
-              process.exit(1)
-            }
-
-            const feature = cloneDeep(featureGroup[0])
-            delete feature.properties['addr:unit']
-
-            const flats = unitsToRanges(units, argv.verbose && featureGroup)
-            feature.properties['addr:flats'] = flats
+          } else if (featureGroup.length === 1) {
+            // while other features share the same geometry, this one is unique in it's housenumber,street,suburb,state,postcode
+            // so output this feature, and we deal with the overlap at another stage
+            const feature = featureGroup[0]
             this.push(feature)
-          }
-        } else if (featureGroup.length === 1) {
-          // while other features share the same geometry, this one is unique in it's housenumber,street,suburb,state,postcode
-          // so output this feature, and we deal with the overlap at another stage
-          const feature = featureGroup[0]
-          this.push(feature)
 
-          if (argv.debug) {
-            debugStreams.sameGeometry.write(feature)
+            if (argv.debug) {
+              debugStreams.sameGeometry.write(feature)
+            }
           }
-        }
-      })
+        })
+      }
     }
 
     callback()
