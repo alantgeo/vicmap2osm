@@ -64,6 +64,8 @@ Next, drop address ranges where the range endpoints are separately mapped (see [
 
 Even if we are lacking the intermediate address points within the range, we still drop the range as software can interpolate intermediate addresses from the two endpoints.
 
+Also where one of the range endpoints is mapped with `addr:flats` and the range itself has no `addr:flats` then the range is removed (for example at _116 Anderson Street, South Yarra_).
+
 ### Omitted addresses
 
 Source addresses are omitted:

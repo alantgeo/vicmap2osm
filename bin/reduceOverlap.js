@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+/**
+ * Reduce overlapping features which can be combined together into a single feature.
+ */
+
 const fs = require('fs')
 const { Readable, Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
@@ -85,7 +89,7 @@ const reduce = new Transform({
       // multiple features with the same geometry
 
       // group by housenumber, street, suburb, state, postcode to reduce units into addr:flats
-      // groupedFeatures all all the features at the same point
+      // groupedFeatures is all the features at the same point
       const featuresGroupByNonUnit = {}
       groupedFeatures.forEach(feature => {
         const key = [
@@ -175,7 +179,9 @@ const reduce = new Transform({
 })
 
 /**
- * limit values
+ * Per https://wiki.openstreetmap.org/wiki/API_v0.6#Maximum_string_lengths
+ * tag values are limited to 255 characters. Because some addr:flats values can
+ * exceed this, they are split into addr:flatsN tags.
  */
 let limitValuesIndex = 0
 const limitValues = new Transform({

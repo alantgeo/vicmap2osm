@@ -134,6 +134,9 @@ const reduceRange = new Transform({
         let foundStart = false
         let foundEnd = false
 
+        let matchedStart
+        let matchedEnd
+
         let startNum
         let endNum
         let pre = ''
@@ -142,6 +145,7 @@ const reduceRange = new Transform({
         for (const matchCandidate of matchCandidates) {
           if (!foundStart && start === matchCandidate.properties['addr:housenumber']) {
             foundStart = true
+            matchedStart = matchCandidate
 
             const match = start.match(regexp)
             if (match && match.groups) {
@@ -152,6 +156,7 @@ const reduceRange = new Transform({
           }
           if (!foundEnd && end === matchCandidate.properties['addr:housenumber']) {
             foundEnd = true
+            matchedEnd = matchCandidate
 
             const match = end.match(regexp)
             if (match && match.groups) {
@@ -203,8 +208,22 @@ const reduceRange = new Transform({
           // keep track of removed features for filter B, so we don't double remove both range and midpoints
           rangesRemovedInFilterA[hash(feature)] = true
         } else {
-          // since not both start and end found, then still include the range
-          this.push(feature)
+          // not both start and end found,
+          // if one of start or end found and that start/end has addr:flats...
+          if (foundStart || foundEnd) {
+            // ...if the range has no flats AND the non-range has addr:flats
+            if (!feature.properties['addr:flats'] && (
+              (matchedStart && matchedStart.properties['addr:flats']) || (matchedEnd && matchedEnd.properties['addr:flats'])
+            )) {
+              // drop the range, eg "112-116 Anderson Street, South Yarra"
+            } else {
+              // then still include the range
+              this.push(feature)
+            }
+          } else {
+            // then still include the range
+            this.push(feature)
+          }
         }
       } else {
         // there are no non-ranges on this street so still include the range
