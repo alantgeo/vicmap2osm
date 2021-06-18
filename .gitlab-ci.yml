@@ -133,6 +133,8 @@ build vicmap:
     - time make dist/vicmap-osm-uniq.geojson
     - time make dist/vicmap-osm-uniq-flats.geojson
     - time make dist/vicmap-osm-uniq-flats-withinrange.geojson
+    - time make dist/vicmap-osm-overlapping.geojson
+    - wc -l dist/*.geojson
   when: manual
   artifacts:
     name: "build vicmap"

@@ -61,6 +61,9 @@ dist/vicmap-osm-uniq-flats-withinrange.geojson: dist/vicmap-osm-uniq-flats.geojs
 	mkdir -p debug/reduceRangeDuplicates
 	node --max_old_space_size=4096 ./bin/reduceRangeDuplicates.js --debug $< $@
 
+dist/vicmap-osm-overlapping.geojson: dist/vicmap-osm-uniq-flats-withinrange.geojson
+	node --max_old_space_size=4096 ./bin/reportOverlap.js $< $@
+
 convertGeoJSONResultsToFGB:
 	ogr2ogr -f FlatGeobuf dist/vicmap-osm.fgb dist/vicmap-osm.geojson
 	ogr2ogr -f FlatGeobuf dist/vicmap-osm-with-suburb.fgb dist/vicmap-osm-with-suburb.geojson
