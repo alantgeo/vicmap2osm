@@ -9,6 +9,8 @@ const { Readable, Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
 const cluster = require('../lib/cluster.js')
 const cloneDeep = require('clone-deep')
+const xml = require('xml-js')
+const _ = require('lodash')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {
@@ -160,8 +162,29 @@ const reduce = new Transform({
               // output candidate feature
               debugStreams.multiCluster.write(feature)
             })
-            // output a web connecting the canidates for visualisation
+            // output a web connecting the candidates for visualisation
             debugStreams.multiCluster.write(webOfMatches)
+
+            // output as a MapRoulette task
+            const task = {
+              type: 'FeatureCollection',
+              features: [
+                ...groupedFeatures
+              ],
+              cooperativeWork: {
+                meta: {
+                  version: 2,
+                  type: 2
+                },
+                file: {
+                  type: 'xml',
+                  format: 'osc',
+                  encoding: 'base64',
+                  content: Buffer.from(featureToOsc(groupedFeatures[0])).toString('base64') // the base64-encoded osc file
+                }
+              }
+            }
+            debugStreams.mr_duplicateAddressFarApart.write(task)
           }
         }
       }
@@ -171,8 +194,53 @@ const reduce = new Transform({
   }
 })
 
+function featureToOsc(feature) {
+  return xml.json2xml({
+    _declaration: {
+      _attributes: {
+        version: "1.0",
+        encoding: "UTF-8"
+      }
+    },
+    osmChange: {
+      _attributes: {
+        version: '0.6',
+        generator: 'alantgeo/vicmap2osm'
+      },
+      create: {
+        node: {
+          _attributes: {
+            id: -1,
+            version: 1,
+            lat: feature.geometry.coordinates[1],
+            lon: feature.geometry.coordinates[0]
+          },
+          tag: Object.keys(_.omit(feature.properties, ['_pfi'])).map(key => {
+            return {
+              _attributes: {
+                k: key,
+                v: feature.properties[key]
+              }
+            }
+          })
+        }
+      }
+    }
+  }, Object.assign({
+    compact: true,
+    attributeValueFn: value => {
+      // these values were tested with test/xmlEntities.js
+      return value.replace(/&quot;/g, '"')  // convert quote back before converting amp
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+    }
+  }, argv.dryRun ? { spaces: 2 } : {}))
+}
+
 // ndjson streams to output debug features
-const debugKeys = ['singleCluster', 'multiCluster']
+const debugKeys = ['singleCluster', 'multiCluster', 'mr_duplicateAddressFarApart']
 const debugStreams = {}
 const debugStreamOutputs = {}
 
