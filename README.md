@@ -36,7 +36,7 @@ The following steps are built into the _build vicmap_ stage.
 
 Next, convert into [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at [`bin/vicmap2osm.js`](bin/vicmap2osm.js)):
 
-    make dist/vicmap-osm.geojson
+    make dist/vicmap-osm-with-suburb.geojson
 
 Next, remove duplicates where all address attributes match at the same location or within a small proximity (code at [`bin/reduceDuplicates.js`](bin/reduceDuplicates.js), see [_Removing duplicates_](#removing-duplicates)):
 
