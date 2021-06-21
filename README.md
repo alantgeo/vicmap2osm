@@ -1,5 +1,7 @@
 # vicmap2osm
 
+[[_TOC_]]
+
 Prepares [Vicmap Address](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-address) data for [import](https://wiki.openstreetmap.org/wiki/Import/Guidelines) into OpenStreetMap.
 
 Vicmap Address data © State of Victoria (Department of Environment, Land, Water and Planning), CC BY 4.0, with an [OSMF LWG CC waiver](https://wiki.openstreetmap.org/wiki/File:Vicmap_CCBYPermission_OSM_Final_Jan2018_Ltr.pdf).
