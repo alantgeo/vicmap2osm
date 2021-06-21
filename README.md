@@ -129,9 +129,9 @@ My analysis supports adding `postal_code` to the level 10 admin boundary is safe
 
 At the time of writing 360 `admin_level=10` boundaries have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eU) (`(type=boundary and boundary=administrative and admin_level=10 and postal_code=*) in "VIC, AU"`), 2613 `admin_level=10` boundaries don't have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eV) (`(type=boundary and boundary=administrative and admin_level=10 and postal_code is null) in "VIC, AU"`).
 
-As part of this import, `postal_code` will be added to `admin_level=10` boundaries derived from Vicmap, see XXX.
+As part of this import, `postal_code` will be added to `admin_level=10` boundaries derived from Vicmap, see [Stage 1 - postal_code](#stage-1-postal_code).
 
-After lengthy engagement with the local community, we opt to omit these tags in the current import.
+After lengthy engagement with the local community, we opt to omit `addr:suburb`, `addr:postcode`, `addr:state` tags in the current import.
 
 ### Removing duplicates
 
