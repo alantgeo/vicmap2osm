@@ -181,7 +181,7 @@ const conflate = new Transform({
             // ignoring case
             // ignoring differences between "Foo - Bar Street" and "Foo-Bar Street", these kinds of names are common in country victoria
             const isMatched = feature.properties['addr:street'] && osmStreet
-              && feature.properties['addr:street'].toLowerCase().replaceAll(' - ', '-') === osmStreet.toLowerCase().replaceAll(' - ', '-')
+              && feature.properties['addr:street'].toLowerCase().replaceAll(' - ', '-').replaceAll('-', '') === osmStreet.toLowerCase().replaceAll(' - ', '-').replaceAll('-', '')
               && osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '').toLowerCase() === osmHouseNumber.replaceAll(' ', '').toLowerCase()
               && (vicmapUnit === osmUnit)
 
