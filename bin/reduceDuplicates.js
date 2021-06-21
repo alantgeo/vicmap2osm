@@ -87,6 +87,11 @@ const reduce = new Transform({
       if (sameCoordinates) {
         // features have same properties and same geometry, so they are true duplicates which can safely be reduced to one
         this.push(groupedFeatures[0])
+        if (argv.debug) {
+          for (const feature of groupedFeatures.slice(1)) {
+            debugStreams.droppedSameCoordinates.write(feature)
+          }
+        }
       } else {
         // features have same properties but not all with the same geometry
 
@@ -101,6 +106,9 @@ const reduce = new Transform({
             groupedFeatures.map(f => f.geometry.coordinates[1]).reduce((acc, cur) => acc + cur) / groupedFeatures.length
           ]
           const averageFeature = cloneDeep(groupedFeatures[0])
+          if (averageFeature.properties._pfi) {
+            averageFeature.properties._pfi = groupedFeatures.map(f => f.properties._pfi).join(',')
+          }
           averageFeature.geometry.coordinates = averageCoordinates
 
           if (argv.debug) {
@@ -143,6 +151,9 @@ const reduce = new Transform({
                 cluster.map(f => f.geometry.coordinates[1]).reduce((acc, cur) => acc + cur) / cluster.length
               ]
               const averageFeature = cloneDeep(cluster[0])
+              if (averageFeature.properties._pfi) {
+                averageFeature.properties._pfi = groupedFeatures.map(f => f.properties._pfi).join(',')
+              }
               averageFeature.geometry.coordinates = averageCoordinates
               return averageFeature
             }
@@ -152,7 +163,11 @@ const reduce = new Transform({
           if (argv.debug) {
             const webOfMatches = {
               type: 'Feature',
-              properties: Object.assign({ '_type': 'Multi Cluster' }, clusterAverages[0].properties),
+              properties: Object.assign(
+                { '_type': 'Multi Cluster' },
+                clusterAverages[0].properties,
+                clusterAverages[0].properties._pfi ? { _pfi: clusterAverages.map(f => f.properties._pfi).join(',')} : {}
+              ),
               geometry: {
                 type: 'LineString',
                 coordinates: clusterAverages.map(p => p.geometry.coordinates)
@@ -240,7 +255,7 @@ function featureToOsc(feature) {
 }
 
 // ndjson streams to output debug features
-const debugKeys = ['singleCluster', 'multiCluster', 'mr_duplicateAddressFarApart']
+const debugKeys = ['singleCluster', 'multiCluster', 'droppedSameCoordinates', 'mr_duplicateAddressFarApart']
 const debugStreams = {}
 const debugStreamOutputs = {}
 
