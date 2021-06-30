@@ -127,6 +127,9 @@ const reduce = new Transform({
       if (noUnits && sameNonHousenumber && firstNumber && lastNumber) {
         const featureAsRange = overlappingFeatures[0]
         featureAsRange.properties['addr:housenumber'] = `${firstNumber}-${lastNumber}`
+        if (featureAsRange.properties._pfi) {
+          featureAsRange.properties._pfi = overlappingFeatures.map(f => f.properties._pfi).join(',')
+        }
         this.push(featureAsRange)
       } else {
         Object.values(featuresGroupByNonUnit).forEach(featureGroup => {
@@ -137,13 +140,9 @@ const reduce = new Transform({
               // all have same housenumber, street, suburb, state, postcode and there is a non-unit feature
               const nonUnitFeatures = featureGroup.filter(f => (!('addr:unit' in f.properties)))
               if (nonUnitFeatures.length > 1) {
-                // multiple non-unit features, unsure how to reduce
-                // TODO should these still be output to be picked up by ranges
-                if (argv.debug) {
-                  featureGroup.forEach(feature => {
-                    debugStreams.multipleNonUnit.write(feature)
-                  })
-                }
+                // multiple non-unit features shouldn't actually occur
+                console.log("Multiple non-unit features, this shouldn't occur.", nonUnitFeatures)
+                process.exit(1)
               } else {
                 // a single non-unit feature exists
                 const nonUnitFeature = cloneDeep(nonUnitFeatures[0])
@@ -159,10 +158,17 @@ const reduce = new Transform({
                       debugStreams.oneUnitOneNonUnit.write(feature)
                     })
                   }
-                  this.push(featureGroup.filter(f => 'addr:unit' in f.properties)[0])
+                  const retainedFeature = featureGroup.filter(f => 'addr:unit' in f.properties)[0]
+                  if (retainedFeature.properties._pfi) {
+                    retainedFeature.properties._pfi = featureGroup.map(f => f.properties._pfi).join(',')
+                  }
+                  this.push(retainedFeature)
                 } else {
                   const flats = unitsToRanges(allOtherUnits, argv.verbose && featureGroup)
                   nonUnitFeature.properties['addr:flats'] = flats
+                  if (nonUnitFeature.properties._pfi) {
+                    nonUnitFeature.properties._pfi = featureGroup.map(f => f.properties._pfi).join(',')
+                  }
                   this.push(nonUnitFeature)
                 }
               }
@@ -181,6 +187,9 @@ const reduce = new Transform({
 
               const flats = unitsToRanges(units, argv.verbose && featureGroup)
               feature.properties['addr:flats'] = flats
+              if (feature.properties._pfi) {
+                feature.properties._pfi = featureGroup.map(f => f.properties._pfi).join(',')
+              }
               this.push(feature)
             }
           } else if (featureGroup.length === 1) {
@@ -223,7 +232,7 @@ const limitValues = new Transform({
   }
 })
 
-const debugKeys = ['multipleNonUnit', 'oneUnitOneNonUnit', 'sameGeometry']
+const debugKeys = ['oneUnitOneNonUnit', 'sameGeometry']
 const debugStreams = {}
 const debugStreamOutputs = {}
 
