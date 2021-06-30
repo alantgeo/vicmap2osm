@@ -18,7 +18,7 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
   })
   .option('verbose', {
     type: 'boolean',
-    description: ''
+    description: 'Verbose logging'
   })
   .argv
 

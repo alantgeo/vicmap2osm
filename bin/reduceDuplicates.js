@@ -75,9 +75,10 @@ const reduce = new Transform({
       process.stdout.write(` ${reduceIndex.toLocaleString()} / ${sourceCount.toLocaleString()} (${Math.round(reduceIndex / sourceCount * 100)}%)\r`)
     }
 
+    // groupedFeatures is a list of features which all shared the same attributes, these may or may not share the same geometry
     const groupedFeatures = features[key]
     if (groupedFeatures.length === 1) {
-      // address not duplicated
+      // address not duplicated, pass through as unique
 
       this.push(groupedFeatures[0])
     } else {
