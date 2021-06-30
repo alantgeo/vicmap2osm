@@ -287,11 +287,12 @@ const reduceNonRange = new Transform({
       ].join('/')
 
       let dropFeature = false
+      let dropReason
       if (key in rangesByStreet) {
         for (let i = 0; i < rangesByStreet[key].length; i++) {
           const range = rangesByStreet[key][i]
           // if the range wasn't just removed in filter A, and the feature is within the range
-          if (!(hash(range) in rangesRemovedInFilterA) && withinRange(feature, range)) {
+          if (!(hash(range) in rangesRemovedInFilterA) && withinRange(feature, range, { matchParity: true })) {
             // found within a range, drop feature unless would drop addr:unit or addr:flats information
             if ('addr:unit' in feature.properties || 'addr:flats' in feature.properties) {
               // safe to drop if the same addr:unit and addr:flats is also on the range
@@ -299,6 +300,7 @@ const reduceNonRange = new Transform({
                 'addr:unit' in feature.properties ? ('addr:unit' in range.properties && feature.properties['addr:unit'] === range.properties['addr:unit']) : true &&
                 'addr:flats' in feature.properties ? ('addr:flats' in range.properties && feature.properties['addr:flats'] === range.properties['addr:flats']) : true
                 ) {
+                  dropReason = `Dropped due to existing range ${range.properties['addr:housenumber']} ${range.properties['addr:street']} ${range.properties._pfi ? '(' + range.properties._pfi + ')' : ''} where flats and unit match`
                   dropFeature = true
                 } else {
                   // since the non-range feature has a unit that the range doesn't have, don't drop it
@@ -319,6 +321,7 @@ const reduceNonRange = new Transform({
                 }
             } else {
               // no addr:unit or addr:flats on the feature to safe to drop
+              dropReason = `Dropped due to existing range ${range.properties['addr:housenumber']} ${range.properties['addr:street']} ${range.properties._pfi ? '(' + range.properties._pfi + ')' : ''} without flats or unit to check`
               dropFeature = true
             }
             break
@@ -333,6 +336,7 @@ const reduceNonRange = new Transform({
           console.log(`Filter B: Dropping ${feature.properties['addr:housenumber']}`)
         }
         if (argv.debug) {
+          feature.properties._dropReason = dropReason
           debugStreams['filterB'].write(feature)
         }
       }

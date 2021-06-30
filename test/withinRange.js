@@ -131,5 +131,17 @@ test('withinRange', t => {
     '12C not within 118-120'
   )
 
+  t.same(
+    withinRange(B, AC, { matchParity: true }),
+    false,
+    'B not within AC when matching parity'
+  )
+
+  t.same(
+    withinRange(A, AC, { matchParity: true }),
+    true,
+    'A within AC when matching parity'
+  )
+
   t.end()
 })
