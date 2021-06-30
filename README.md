@@ -44,9 +44,9 @@ Next, remove duplicates where all address attributes match at the same location 
 
 Two debug outputs are produced from this step.
 
-1. singleCluster - visualises where all addresses with the same address properties are combined into a single "cluster" based on a 25 meter maximum threshold distance. In this case it's safe to reduce all the points into a single centroid point.
+1. _singleCluster_ - visualises where all addresses with the same address properties are combined into a single "cluster" based on a 25 meter maximum threshold distance. In this case it's safe to reduce all the points into a single centroid point.
 
-2. multiCluster - visualises where all addresses with the same address properties exceed the 25 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be reviewed for manual import. A MapRoulette challenge is outputted at debug/reduceDuplicates/mr_duplicateAddressFarApart.geojson, however because this is before the conflation stage, many of these may already exist in OSM. It's a TODO for these to be conflated so that only missing from OSM addresses are asked to be checked in MapRoulette.
+2. _multiCluster_ - visualises where all addresses with the same address properties exceed the 25 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be reviewed for manual import. A MapRoulette challenge is outputted at `debug/reduceDuplicates/mr_duplicateAddressFarApart.geojson`, however because this is before the conflation stage, many of these may already exist in OSM. It's a TODO for these to be conflated so that only missing from OSM addresses are asked to be checked in MapRoulette.
 
 ![multiCluster example](img/reduceDuplicates_multiCluster.png)
 
@@ -54,10 +54,10 @@ Next, reduce some address points with the exact same coordinates but different a
 
     make dist/vicmap-osm-uniq-flats.geojson
 
-Three debug outputs are produced from this step.
+Two debug outputs are produced from this step.
 
-2. oneUnitOneNonUnit - where there is one address without a unit and one with a unit at the same point, with all the same address attributes except unit. In this case we just drop the non-unit address and keep the addr:unit one.
-3. sameGeometry - where other features shared the same geometry, but this one is unique in it's housenumber,street,suburb,state,postcode
+1. _oneUnitOneNonUnit_ - where there is one address without a unit and one with a unit at the same point, with all the same address attributes except unit. In this case we just drop the non-unit address and keep the addr:unit one.
+2. _sameGeometry_ - where other features shared the same geometry, but this one is unique in it's housenumber,street,suburb,state,postcode
 
 Next, drop address ranges where the range endpoints are separately mapped (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at [`bin/reduceRangeDuplicates.js`](bin/reduceRangeDuplicates.js)).
 
@@ -260,7 +260,7 @@ Sort blocks into containing some OSM addresses or containing no OSM addresses:
 
     make dist/blocksByOSMAddr.fgb
 
-Conflate Vicmap addresses with OSM:
+Conflate Vicmap addresses with OSM (code at [`bin/conflate.js`](bin/conflate.js)):
 
     make dist/conflate
 
