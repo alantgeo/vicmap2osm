@@ -1,0 +1,117 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "reduceOverlap",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/reduceOverlap.js",
+            "args": ["--debug", "dist/vicmap-osm-uniq.geojson", "dist/vicmap-osm-uniq-flats.geojson"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "reduceOverlap AndersonStreet",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/reduceOverlap.js",
+            "args": ["--debug", "test/fixtures/reduceOverlap/AndersonStreet.geojson", "/tmp/AndersonStreetOutput.geojson"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "test unitsToRanges",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/node_modules/.bin/tape",
+            "args": ["test/unitsToRanges.js"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "test valueLimits",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/node_modules/.bin/tape",
+            "args": ["test/valueLimits.js"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "test withinRange",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/node_modules/.bin/tape",
+            "args": ["test/withinRange.js"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "bin/reduceRangeDuplicates",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/reduceRangeDuplicates.js",
+            "args": ["/tmp/input_POZXt.geojson", "/tmp/output/0OIov.geojson"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "bin/conflate",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/conflate.js",
+            "args": ["dist/vicmap-osm-uniq-flats.geojson", "data/victoria-addr.osm.geojson", "dist/blocksByOSMAddr.geojson", "dist/conflate"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "bin/compareSuburb",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/compareSuburb.js",
+            "args": ["dist/vicmap-osm.geojson", "data/victoria-admin-level10.osm.geojson", "dist/vicmapSuburbDiffersWithOSM.geojson", "dist/suburbsWithPostcodeCounts.geojson"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "bin/candidates",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/candidates.js",
+            "args": ["data/victoria-admin-level10.osm.geojson", "dist/conflate", "dist/candidates"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "bin/complex",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/complex.js",
+            "args": ["dist/vicmap-complex.geojson", "dist/vicmap-complex-site.geojson"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "bin/mr2osc",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/mr2osc.mjs",
+            "args": ["dist/conflate/mr_explodeUnitFromNumber.geojson"]
+    ]
+}
