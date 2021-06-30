@@ -59,7 +59,7 @@ Two debug outputs are produced from this step.
 1. _oneUnitOneNonUnit_ - where there is one address without a unit and one with a unit at the same point, with all the same address attributes except unit. In this case we just drop the non-unit address and keep the addr:unit one.
 2. _sameGeometry_ - where other features shared the same geometry, but this one is unique in it's housenumber,street,suburb,state,postcode
 
-Next, drop address ranges where the range endpoints are separately mapped (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at [`bin/reduceRangeDuplicates.js`](bin/reduceRangeDuplicates.js)).
+Next, drop some duplicate addresses created by ranges being expressed both as a single range and as individual points (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at [`bin/reduceRangeDuplicates.js`](bin/reduceRangeDuplicates.js)).
 
     make dist/vicmap-osm-uniq-flats-withinrange.geojson
 
