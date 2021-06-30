@@ -41,6 +41,8 @@ if (!fs.existsSync(inputFile)) {
   process.exit(1)
 }
 
+const intermediateFile = `${outputFile}-intermediate.json`
+
 function hash(feature) {
   return [
     feature.properties['addr:housenumber'],
@@ -95,11 +97,13 @@ const index = new Transform({
 const regexp = /^(?<pre>\D*)(?<num>\d*)(?<suf>\D*)$/
 
 /*
-* second pass, filter A removes ranges where each endpoint of the range exists separately
+* First pass, filter A removes ranges where each endpoint of the range exists separately
 * eg.
 *  - 304-306 Cardigan Street Carlton - range can be removed since each individual address exists
 *  - 304 Cardigan Street Calton
 *  - 306 Cardigan Street Calton
+*
+*  Conditional on the individual addresses not sharing the same geometry, if they do then they are dropped in favour of the range
 * 
 *  - 249-263 Faraday Street
 *  - 251 Faraday Street - removed since not all addresses from the range exist, but this one is covered by the range
@@ -200,13 +204,25 @@ const reduceRange = new Transform({
             }
           }
 
-          // can be removed, feature not pushed
-          if (argv.verbose) {
-            console.log(`Filter A: ${feature.properties['addr:housenumber']} can be removed`)
-          }
+          // if matched start and end point have the same coordinates, then to avoid overlapping points, favour range so retain it
+          if (matchedStart.geometry.coordinates.join(',') === (matchedEnd.geometry.coordinates.join(','))) {
+            if (argv.verbose) {
+              console.log(`Filter A: ${feature.properties['addr:housenumber']} ${feature.properties['addr:street']} ${feature.properties['addr:suburb']} retained because while endpoints exist they share the same geometry`)
+            }
+            this.push(feature)
+          } else {
+            // can be removed, feature not pushed
+            if (argv.verbose) {
+              console.log(`Filter A: ${feature.properties['addr:housenumber']} ${feature.properties['addr:street']} ${feature.properties['addr:suburb']} can be removed`)
+            }
 
-          // keep track of removed features for filter B, so we don't double remove both range and midpoints
-          rangesRemovedInFilterA[hash(feature)] = true
+            // keep track of removed features for filter B, so we don't double remove both range and midpoints
+            rangesRemovedInFilterA[hash(feature)] = true
+
+            if (argv.debug) {
+              debugStreams['filterA_dropRange'].write(feature)
+            }
+          }
         } else {
           // not both start and end found,
           // if one of start or end found and that start/end has addr:flats...
@@ -216,6 +232,9 @@ const reduceRange = new Transform({
               (matchedStart && matchedStart.properties['addr:flats']) || (matchedEnd && matchedEnd.properties['addr:flats'])
             )) {
               // drop the range, eg "112-116 Anderson Street, South Yarra"
+              if (argv.debug) {
+                debugStreams['filterA_dropRangeRangeNoFlatsNonRangeHasFlats'].write(feature)
+              }
             } else {
               // then still include the range
               this.push(feature)
@@ -285,8 +304,17 @@ const reduceNonRange = new Transform({
                   // since the non-range feature has a unit that the range doesn't have, don't drop it
                   dropFeature = false
                   if (argv.debug) {
-                    debugStreams['addrInRangeDifferentUnits'].write(feature)
-                    debugStreams['addrInRangeDifferentUnits'].write(range)
+                    debugStreams.addrInRangeDifferentUnits.write(feature)
+                    debugStreams.addrInRangeDifferentUnits.write(range)
+
+                    debugStreams.addrInRangeDifferentUnits.write({
+                      type: 'Feature',
+                      properties: feature.properties,
+                      geometry: {
+                        type: 'LineString',
+                        coordinates: [feature.geometry.coordinates, range.geometry.coordinates]
+                      }
+                    })
                   }
                 }
             } else {
@@ -297,11 +325,15 @@ const reduceNonRange = new Transform({
           }
         }
       }
+
       if (!dropFeature) {
         this.push(feature)
       } else {
         if (argv.verbose) {
           console.log(`Filter B: Dropping ${feature.properties['addr:housenumber']}`)
+        }
+        if (argv.debug) {
+          debugStreams['filterB'].write(feature)
         }
       }
     } else {
@@ -313,7 +345,7 @@ const reduceNonRange = new Transform({
 })
 
 // ndjson streams to output debug features
-const debugKeys = ['addrInRangeDifferentUnits']
+const debugKeys = ['addrInRangeDifferentUnits', 'filterA_dropRangeRangeNoFlatsNonRangeHasFlats', 'filterA_dropRange', 'filterB']
 const debugStreams = {}
 const debugStreamOutputs = {}
 
@@ -335,39 +367,54 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
-      // second pass to remove range duplicates
-      console.log('Pass 2/2: remove range duplicates')
+      // second pass to remove range duplicates part A
+      console.log('Pass 2/3: remove range duplicates part A ranges')
       pipeline(
         fs.createReadStream(inputFile),
         ndjson.parse(),
         reduceRange,
-        reduceNonRange,
         ndjson.stringify(),
-        fs.createWriteStream(outputFile),
+        fs.createWriteStream(intermediateFile),
         err => {
           if (err) {
             console.log(err)
             process.exit(1)
           } else {
-            if (argv.debug) {
-              debugKeys.forEach(key => {
-                debugStreams[key].end()
-              })
+            console.log('Pass 3/3: remove range duplicates part B endpoints')
+            pipeline(
+              fs.createReadStream(intermediateFile),
+              ndjson.parse(),
+              reduceNonRange,
+              ndjson.stringify(),
+              fs.createWriteStream(outputFile),
+              err => {
+                fs.unlinkSync(intermediateFile)
+                if (err) {
+                  console.log(err)
+                  process.exit(1)
+                } else {
+                  if (argv.debug) {
+                    debugKeys.forEach(key => {
+                      debugStreams[key].end()
+                    })
 
-              Promise.all(debugKeys.map(key => {
-                return new Promise(resolve => {
-                  debugStreamOutputs[key].on('finish', () => {
-                    console.log(`saved debug/reduceRangeDuplicates/${key}.geojson`)
-                    resolve()
-                  })
-                })
-              }))
-                .then(() => {
-                  process.exit(0)
-                })
-            } else {
-              process.exit(0)
-            }
+                    Promise.all(debugKeys.map(key => {
+                      return new Promise(resolve => {
+                        debugStreamOutputs[key].on('finish', () => {
+                          console.log(`saved debug/reduceRangeDuplicates/${key}.geojson`)
+                          resolve()
+                        })
+                      })
+                    }))
+                      .then(() => {
+                        process.exit(0)
+                      })
+                  } else {
+                    process.exit(0)
+                  }
+                }
+              }
+            )
           }
         }
       )

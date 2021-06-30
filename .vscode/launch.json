@@ -61,8 +61,18 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
+            "program": "${workspaceFolder}/node_modules/.bin/tape",
+            "args": ["test/reduceRangeDuplicates.js"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "bin/reduceRangeDuplicates fixture1",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
             "program": "${workspaceFolder}/bin/reduceRangeDuplicates.js",
-            "args": ["/tmp/input_POZXt.geojson", "/tmp/output/0OIov.geojson"]
+            "args": ["test/fixtures/reduceRangeDuplicates/input1.geojson", "test/fixtures/reduceRangeDuplicates/actualOutput1.geojson"]
         },
         {
             "type": "pwa-node",
