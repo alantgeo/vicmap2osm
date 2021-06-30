@@ -70,6 +70,29 @@ const AC_2 = {
   }
 }
 
+const subNumber = {
+  "type": "Feature",
+  "properties": {
+    "addr:housenumber": "12C",
+    "addr:street": "Main Street"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [0, 0]
+  }
+}
+const rangeOutsideSub = {
+  "type": "Feature",
+  "properties": {
+    "addr:housenumber": "118-120",
+    "addr:street": "Main Street"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [0, 0]
+  }
+}
+
 
 test('withinRange', t => {
   t.same(
@@ -101,6 +124,11 @@ test('withinRange', t => {
     withinRange(A, AC_2),
     false,
     'A Main Street not within AC Secondary Street'
+  )
+  t.same(
+    withinRange(subNumber, rangeOutsideSub),
+    false,
+    '12C not within 118-120'
   )
 
   t.end()
