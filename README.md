@@ -306,6 +306,10 @@ After conflation, import candidate .osm files are produced with
 
 Split into the following candidate categories, then again split into suburb/locality (`admin_level=10`).
 
+Prepare unitFromNumber changeset to QA before uploading
+
+    make dist/unitFromNumber.osc
+
 ### Candidate Categories
 1. `newAddressesWithoutConflicts` - new addresses from Vicmap where it's unlikely to conflict with existing OSM addresses, can be imported automatically.
 2. `existingAddressesWithNewTagsOnly` - existing OSM addresses where we add new tags from Vicmap (no modifying or removing tags) and no geometry changes, can be imported automatically.

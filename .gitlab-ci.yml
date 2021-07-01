@@ -204,6 +204,7 @@ candidate:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - make dist/candidate
+    - make dist/unitFromNumber.osc
   when: manual
   artifacts:
     name: "candidate"

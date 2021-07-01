@@ -197,7 +197,7 @@ dist/conflate:
 	./bin/conflate.js dist/vicmap-osm-uniq-flats-withinrange.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson $@
 
 dist/unitFromNumber.osc: dist/conflate/mr_explodeUnitFromNumber.geojson
-	./bin/mr2osc.mjs --dry-run $< $@
+	./bin/mr2osc.mjs --dry-run --changeset-comment "Vicmap Import separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number" $< $@
 
 convertConflationResultsToFGB:
 	ogr2ogr -f FlatGeobuf dist/conflate/withinExistingOSMAddressPoly.fgb dist/conflate/withinExistingOSMAddressPoly.geojson
