@@ -357,6 +357,23 @@ The changeset comment used is
 
     Vicmap Import CANDIDATE_CATEGORY_DESCRIPTION: SUBURB_NAME. See https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address
 
+- [ ] Changeset not yet uploaded
+
+### Stage 4 - New addresses in blocks with existing addresses
+
+
+### Stage 5 - Complete incomplete existing addresses
+
+Adding `addr:street` and other tags where none exists but the `addr:housenumber` matches.
+
+Flag whether within the same property parcel or not.
+
+### Stage 6 - Matched addresses with conflicting attributes
+
+Adding `addr:street` where none exists but the `addr:housenumber` matches, it's within the same property parcel.
+
+### Stage 6 - Delete addr:interpolation ways
+
 ### Changeset tags
 
 - `source=Vicmap Address`
