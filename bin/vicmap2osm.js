@@ -56,7 +56,7 @@ const transform = new Transform({
     sourceCount++
 
     if (!argv.quiet) {
-      if (process.stdout.isTTY && sourceCount % 10000 === 0) {
+      if (process.stdout.isTTY && sourceCount % 1000 === 0) {
         process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
       }
     }
