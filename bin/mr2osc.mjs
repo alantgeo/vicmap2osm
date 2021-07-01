@@ -427,7 +427,6 @@ async function run() {
 
   console.log('Step 3/4: Create changes')
   createChanges()
-  console.log(changes)
 
   console.log('Step 4/4: Upload changes')
   await uploadChanges()
