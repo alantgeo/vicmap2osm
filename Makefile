@@ -206,6 +206,8 @@ convertConflationResultsToFGB:
 	ogr2ogr -f FlatGeobuf dist/conflate/exactMatchLines.fgb dist/conflate/exactMatchLines.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/noExactMatch.fgb dist/conflate/noExactMatch.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/noOSMAddressWithinBlock.fgb dist/conflate/noOSMAddressWithinBlock.geojson
+	ogr2ogr -f FlatGeobuf dist/conflate/fuzzyStreetMatchesSingle.fgb dist/conflate/fuzzyStreetMatchesSingle.geojson
+	ogr2ogr -f FlatGeobuf dist/conflate/fuzzyStreetMatchesMultiple.fgb dist/conflate/fuzzyStreetMatchesMultiple.geojson
 
 dist/vicmap-complex-conflation: dist/vicmap-complex.geojson
 	mkdirp -p $@

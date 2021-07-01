@@ -10,9 +10,11 @@ const ndjson = require('ndjson')
 const PolygonLookup = require('polygon-lookup')
 const Flatbush = require('flatbush')
 const bbox = require('@turf/bbox').default
-const multiLineString = require('@turf/helpers').multiLineString
+const { lineString, multiLineString } = require('@turf/helpers')
 const centroid = require('@turf/centroid').default
 const booleanIntersects = require('@turf/boolean-intersects').default
+const distance = require('@turf/distance').default
+const { lcs } = require('string-comparison')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {
@@ -107,7 +109,6 @@ const filterOSMAddrPoly = new Transform({
           osmAddrPoints[0].push(feature)
         }
       } else if (feature.geometry.type === 'LineString') {
-        // TODO also index by block, but could be a few blocks
         osmAddrLines.push(feature)
       } else {
         console.log(`Unsupported geometry type ${feature.geometry.type} for ${feature.properties['@type']}/${feature.properties['@id']}`)
@@ -227,42 +228,170 @@ const conflate = new Transform({
             const exactMatchLine = multiLineString(matches.map(match => [feature.geometry.coordinates, centroid(match).geometry.coordinates]), feature.properties)
             outputStreams.exactMatchLines.write(exactMatchLine)
           } else {
-            // no exact match see if containing within an existing OSM address polygon
-            const results = lookupOSMAddressPoly.search(...feature.geometry.coordinates.slice(0, 2), 1)
-            const osmPoly = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
-            if (osmPoly) {
-              // address found within an existing OSM address polygon
-              if (argv.debug) {
-                feature.properties._osm = `${osmPoly.properties['@type']}/${osmPoly.properties['@id']}`
-              }
+            // no exact match, try with fuzzy street match so that OSM missing street or different street type still matches
+            const fuzzyStreetMatches = osmAddrWithinBlock.filter(osmAddr => {
+              const osmStreet = osmAddr.properties['addr:street']
 
-              outputStreams.withinExistingOSMAddressPoly.write(feature)
+              // where someone has used unit/number style values for addr:housenumber, only compare the number component
+              const osmHouseNumber = 'addr:housenumber' in osmAddr.properties ? (osmAddr.properties['addr:housenumber'].split('/').length > 1 ? osmAddr.properties['addr:housenumber'].split('/')[1] : osmAddr.properties['addr:housenumber']) : null
 
-              // MapRoulette task
-              const task = {
-                type: 'FeatureCollection',
-                features: [ feature, osmPoly ],
-                cooperativeWork: {
-                  meta: {
-                    version: 2,
-                    type: 1 // tag fix type
-                  },
-                  operations: [{
-                    operationType: 'modifyElement',
-                    data: {
-                      id: `${osmPoly.properties['@type']}/${osmPoly.properties['@id']}`,
-                      operations: [{
-                        operation: 'setTags',
-                        data: feature.properties
-                      }]
-                    }
-                  }]
+              const osmUnit = 'addr:unit' in osmAddr.properties
+                ? osmAddr.properties['addr:unit'].toLowerCase().replaceAll(' ', '')
+                : (
+                  'addr:housenumber' in osmAddr.properties && osmAddr.properties['addr:housenumber'].split('/').length > 1
+                  ? osmAddr.properties['addr:housenumber'].split('/')[0].toLowerCase().replaceAll(' ', '')
+                  : null
+                )
+
+              const vicmapUnit = 'addr:unit' in feature.properties ? feature.properties['addr:unit'].toLowerCase().replaceAll(' ', '') : null
+
+              // see if unit, number matches and either has similar street name or no street name but within 50 meters
+              // ignoring whitespace when comparing house numbers
+              // ignoring case
+              const d = distance(centroid(feature), centroid(osmAddr), { units: 'meters' })
+              const isMatched = osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '').toLowerCase() === osmHouseNumber.replaceAll(' ', '').toLowerCase()
+                && (vicmapUnit === osmUnit)
+                // if osm address has a street, then check if similar to the vicmap street, otherwise check if within 50m
+                && (osmStreet ? lcs.similarity(osmStreet.toLowerCase(), feature.properties['addr:street'].toLowerCase()) > 0.8 : d <= 50)
+
+              // if matched but the match came from exploding X/Y into Unit X, Number Y, then suggest a MapRoulette tag fix, but since the street this to be changed in OSM
+              if (isMatched && osmAddr.properties['addr:housenumber'].split('/').length > 1) {
+                // MapRoulette task
+                const task = {
+                  type: 'FeatureCollection',
+                  features: [ osmAddr ],
+                  cooperativeWork: {
+                    meta: {
+                      version: 2,
+                      type: 1 // tag fix type
+                    },
+                    operations: [{
+                      operationType: 'modifyElement',
+                      data: {
+                        id: `${osmAddr.properties['@type']}/${osmAddr.properties['@id']}`,
+                        operations: [{
+                          operation: 'setTags',
+                          data: {
+                            'addr:unit': osmUnit,
+                            'addr:housenumber': osmHouseNumber,
+                            'addr:street': feature.properties['addr:street']
+                          }
+                        }]
+                      }
+                    }]
+                  }
                 }
+                outputStreams.mr_explodeUnitFromNumberFuzzyStreet.write(task)
               }
-              outputStreams.mr_withinExistingOSMAddressPoly.write(task)
+
+              return isMatched
+            })
+
+            if (fuzzyStreetMatches.length) {
+              if (argv.debug) {
+                feature.properties._matches = fuzzyStreetMatches.map(match => `${match.properties['@type']}/${match.properties['@id']}`).join(',')
+              }
+
+              if (fuzzyStreetMatches.length === 1) {
+                outputStreams.fuzzyStreetMatchesSingle.write(feature)
+
+                const fuzzyStreetMatchesSingleLine = lineString([fuzzyStreetMatches[0].geometry.coordinates, feature.geometry.coordinates], feature.properties)
+                outputStreams.fuzzyStreetMatchesSingleLines.write(fuzzyStreetMatchesSingleLine)
+
+                // MapRoulette task
+                const task = {
+                  type: 'FeatureCollection',
+                  features: [ feature, ...fuzzyStreetMatches ],
+                  cooperativeWork: {
+                    meta: {
+                      version: 2,
+                      type: 1 // tag fix type
+                    },
+                    operations: [{
+                      operationType: 'modifyElement',
+                      data: {
+                        id: `${fuzzyStreetMatches[0].properties['@type']}/${fuzzyStreetMatches[0].properties['@id']}`,
+                        operations: [{
+                          operation: 'setTags',
+                          data: feature.properties
+                        }]
+                      }
+                    }]
+                  }
+                }
+                outputStreams.mr_fuzzyStreetMatchesSingle.write(task)
+              } else {
+                outputStreams.fuzzyStreetMatchesMultiple.write(feature)
+
+                const spiderWeb = []
+                fuzzyStreetMatches.forEach(match => {
+                  spiderWeb.push([feature.geometry.coordinates, centroid(match).geometry.coordinates])
+                })
+
+                const fuzzyStreetMatchesMultipleLine = multiLineString(spiderWeb, feature.properties)
+                outputStreams.fuzzyStreetMatchesMultipleLines.write(fuzzyStreetMatchesMultipleLine)
+
+                // MapRoulette task
+                const task = {
+                  type: 'FeatureCollection',
+                  features: [ feature, ...fuzzyStreetMatches ],
+                  cooperativeWork: {
+                    meta: {
+                      version: 2,
+                      type: 1 // tag fix type
+                    },
+                    operations: [{
+                      operationType: 'modifyElement',
+                      data: {
+                        id: `${fuzzyStreetMatches[0].properties['@type']}/${fuzzyStreetMatches[0].properties['@id']}`,
+                        operations: [{
+                          operation: 'setTags',
+                          data: feature.properties
+                        }]
+                      }
+                    }]
+                  }
+                }
+                outputStreams.mr_fuzzyStreetMatchesMultiple.write(task)
+              }
             } else {
-              // address not found within an existing OSM address polygon
-              outputStreams.noExactMatch.write(feature)
+              // no exact match see if containing within an existing OSM address polygon
+              const results = lookupOSMAddressPoly.search(...feature.geometry.coordinates.slice(0, 2), 1)
+              const osmPoly = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
+              if (osmPoly) {
+                // address found within an existing OSM address polygon
+                if (argv.debug) {
+                  feature.properties._osm = `${osmPoly.properties['@type']}/${osmPoly.properties['@id']}`
+                }
+
+                outputStreams.withinExistingOSMAddressPoly.write(feature)
+
+                // MapRoulette task
+                const task = {
+                  type: 'FeatureCollection',
+                  features: [ feature, osmPoly ],
+                  cooperativeWork: {
+                    meta: {
+                      version: 2,
+                      type: 1 // tag fix type
+                    },
+                    operations: [{
+                      operationType: 'modifyElement',
+                      data: {
+                        id: `${osmPoly.properties['@type']}/${osmPoly.properties['@id']}`,
+                        operations: [{
+                          operation: 'setTags',
+                          data: feature.properties
+                        }]
+                      }
+                    }]
+                  }
+                }
+                outputStreams.mr_withinExistingOSMAddressPoly.write(task)
+              } else {
+                // address not found within an existing OSM address polygon
+                outputStreams.noExactMatch.write(feature)
+              }
             }
           }
         } else {
@@ -283,7 +412,23 @@ const conflate = new Transform({
 })
 
 // ndjson streams to output features
-const outputKeys = ['notFoundInBlocks', 'noExactMatch', 'exactMatch', 'exactMatchLines', 'mr_explodeUnitFromNumber', 'mr_withinExistingOSMAddressPoly', 'withinExistingOSMAddressPoly', 'noOSMAddressWithinBlock']
+const outputKeys = [
+  'notFoundInBlocks',
+  'noExactMatch',
+  'exactMatch',
+  'exactMatchLines',
+  'mr_explodeUnitFromNumber',
+  'mr_withinExistingOSMAddressPoly',
+  'withinExistingOSMAddressPoly',
+  'noOSMAddressWithinBlock',
+  'fuzzyStreetMatchesSingle',
+  'fuzzyStreetMatchesSingleLines',
+  'mr_fuzzyStreetMatchesSingle',
+  'fuzzyStreetMatchesMultiple',
+  'fuzzyStreetMatchesMultipleLines',
+  'mr_fuzzyStreetMatchesMultiple',
+  'mr_explodeUnitFromNumberFuzzyStreet',
+]
 const outputStreams = {}
 const outputStreamOutputs = {}
 

@@ -271,6 +271,8 @@ This produces outputs in `dist/conflate`:
 3. `notFoundInBlocks` - some areas of the state didn't have blocks created, particularly in the coastal region, so these are handled manually.
 4. `exactMatch` - `addr:housenumber` and `addr:street` match an existing address within the same block. These should be reviewed for import.
 5. `noExactMatch` - the Vicmap addresses exists within a block with existing OSM addresses, however no exact match on the `addr:housenumber` and `addr:street` was found. This likely can be imported automatically, but may want to be manually reviewed.
+6. `fuzzyStreetMatchesSingle` - matched an existing address within the same block, however it was not an exact match, so these are reviewed for import.
+7. `fuzzyStreetMatchesMultiple` - matched multiple existing addresses within the same block and these weren't exact matches, so reviewed for import.
 
 Some addresses in OSM are mapped with `addr:housenumber=unit/number`, in the conflation process where matched with a corresponding unit/number/street, then the OSM address is modified into `addr:unit=unit`, `addr:housenumber=number`.
 

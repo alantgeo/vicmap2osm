@@ -13,6 +13,7 @@
     "@turf/boolean-intersects": "^6.3.0",
     "@turf/centroid": "^6.3.0",
     "@turf/convex": "^6.3.0",
+    "@turf/distance": "^6.3.0",
     "@turf/helpers": "^6.3.0",
     "capital-case": "^1.0.4",
     "cheap-ruler": "^3.0.1",
