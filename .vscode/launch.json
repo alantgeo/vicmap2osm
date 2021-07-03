@@ -123,5 +123,16 @@
             ],
             "program": "${workspaceFolder}/bin/mr2osc.mjs",
             "args": ["dist/conflate/mr_explodeUnitFromNumber.geojson"]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "bin/mCoopDiff",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/mrCoopDiff.js",
+            "args": ["dist/conflate/mr_explodeUnitFromNumber.geojson", "dist/conflate/mr_explodeUnitFromNumber.html"]
+        }
     ]
 }
