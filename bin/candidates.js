@@ -59,7 +59,7 @@ const suburbName = {
 }
 
 // suburb point in polygon index
-let suburbLookup
+let lookupSuburbs
 
 const outsideVicSuburb = {
   type: 'Feature',
@@ -110,6 +110,9 @@ const candidates = new Transform({
     if (process.stdout.isTTY && sourceCount % 1000 === 0) {
       process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
     }
+
+    // remove tracing properties
+    delete feature.properties._pfi
 
     // find which suburb this address is in
     const results = lookupSuburbs.search(...feature.geometry.coordinates.slice(0, 2), 1)
