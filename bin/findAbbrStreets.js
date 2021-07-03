@@ -26,9 +26,14 @@ const streetTypes = {
   'ave': 'Avenue',
   'av': 'Avenue',
   'ln': 'Lane',
-  'cl': 'Close',
   'hwy': 'Highway',
-  'pl': 'Place'
+  'pl': 'Place',
+  'fwy': 'Freeway',
+  'pde': 'Parade',
+  'dr': 'Drive',
+  'cr': 'Crescent',
+  'cl': 'Close',
+  'ct': 'Court'
 }
 
 if (!fs.existsSync(inputFile)) {
@@ -37,6 +42,7 @@ if (!fs.existsSync(inputFile)) {
 }
 
 let index = 0
+let tasks = 0
 const checkStreet = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
@@ -51,11 +57,11 @@ const checkStreet = new Transform({
       const street = feature.properties['addr:street'].toLowerCase()
       const streetEndsWithAbbr = abbreviatedTypes.map(ab => street.endsWith(` ${ab}`)).reduce((acc, cur) => acc || cur)
       if (streetEndsWithAbbr) {
-        const matches = street.match(/ (rd|st|ave|av|ln|cl|hwy|pl)$/)
+        const matches = street.match(/ (rd|st|ave|av|ln|cl|hwy|pl|fwy|pde|dr|cr|cl|ct)$/)
         if (matches.length) {
           const ab = matches[1]
           const expandedStreetType = streetTypes[ab]
-          const fullStreetName = feature.properties['addr:street'].replace(/ (rd|st|ave|av|ln|cl|hwy|pl)$/i, ` ${expandedStreetType}`)
+          const fullStreetName = feature.properties['addr:street'].replace(/ (rd|st|ave|av|ln|cl|hwy|pl|fwy|pde|dr|cr|cl|ct)$/i, ` ${expandedStreetType}`)
 
           // MapRoulette task
           const task = {
@@ -80,9 +86,9 @@ const checkStreet = new Transform({
               }]
             }
           }
+          tasks++
           this.push(task)
         }
-        // this.push(feature)
       }
     }
 
@@ -101,6 +107,7 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
+      console.log(`${tasks} tasks`)
       process.exit(0)
     }
   }
