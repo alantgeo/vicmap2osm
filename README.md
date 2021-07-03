@@ -301,16 +301,15 @@ These outputs are described in the [Building Name](#building-name) and [Complex 
 - `openstreetmap-carto` currently renders `addr:flats` as a label which would create poor rendering based on how we are planning on populating `addr:flats`. This issue is with `openstreetmap-carto` to fix as our tagging matches current practice and the wiki. See https://github.com/gravitystorm/openstreetmap-carto/issues/4160.
 
 ## Prepare Final Import Candidates
+1. Prepare split `addr:unit` / `addr:housenumber` changeset to QA before uploading
 
-After conflation, import candidate .osm files are produced with
+    make dist/unitFromNumber.osc
+
+2. After conflation, import candidate .osm files are produced with
 
     make dist/candidates
 
-Split into the following candidate categories, then again split into suburb/locality (`admin_level=10`).
-
-Prepare unitFromNumber changeset to QA before uploading
-
-    make dist/unitFromNumber.osc
+This will split the conflation results into the following import candidate categories, then again split into suburb/locality (`admin_level=10`).
 
 ### Candidate Categories
 1. `newAddressesWithoutConflicts` - new addresses from Vicmap where it's unlikely to conflict with existing OSM addresses, can be imported automatically.
@@ -334,7 +333,7 @@ Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org
 
 The tag changes are created by [`bin/compareSuburb.js`](bin/compareSuburb.js) which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
 
-- [ ] Changeset not yet uploaded
+- [ ] Changeset uploaded at XXX
 
 ### Stage 2 - Set unit from housenumber
 During the conflation stage, Vicmap addresses which were deemed to match OSM addresses where in OSM it was represented as `addr:housenumber=X/Y` whereas in Vicmap it was represented as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
@@ -343,7 +342,17 @@ This will be a single Victoria wide changeset.
 
 [`bin/mr2osc.mjs`](bin/mr2osc.mjs) is the script which creates the OsmChange and uploads it as a changeset from the tag changes outputted from the _conflate_ stage as a MapRoulette `setTags` operation.
 
-- [ ] Changeset not yet uploaded
+You can visualise the tag changes with `bin/mrCoopDiff.js` and `www/mrPreview.html`.
+
+The actual changeset will be created with:
+
+    ./bin/mr2osc.mjs --changeset-comment "Vicmap Import separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_explodeUnitFromNumber.geojson dist/uploadedUnitFromNumber.osc
+
+- [ ] Changeset uploaded at XXX
+
+A further manual MapRoulette challenge built from `dist/conflate/mr_explodeUnitFromNumberFuzzyStreet.geojson` will be completed to set the unit from housenumber based on fuzzy street matches, since the automated prior change was based on exact matches only. Where the street name differs in a typo like way, and the Vicmap name matches the OSM road, then `addr:street` will also be corrected.
+
+- [ ] MapRoulette challenge completed at XXX
 
 ### Stage 3 - New addresses in blocks without any existing addresses
 
