@@ -42,6 +42,10 @@
         })
     function renderChanges(changes) {
         const content = document.getElementById('content')
+        const headerText = document.createElement('p')
+        headerText.textContent = `${Object.keys(changes).length} features with changes`
+        content.appendChild(headerText)
+
         for (const [id, change] of Object.entries(changes)) {
             const header = document.createElement('h2')
             header.textContent = id
