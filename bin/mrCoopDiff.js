@@ -34,6 +34,11 @@ const applyOperations = new Transform({
   transform(challenge, encoding, callback) {
     challengeCount++
 
+    if (argv.n && challengeCount > argv.n) {
+      callback()
+      return
+    }
+
     if (!argv.quiet) {
       if (process.stdout.isTTY && challengeCount % 1000 === 0) {
         process.stdout.write(` ${challengeCount.toLocaleString()}\r`)
