@@ -35,7 +35,12 @@
 <body>
     <div id="content"></div>
 <script>
-    fetch('changes.json')
+    const q = new URLSearchParams(window.location.search)
+    let tagAddCount = 0
+    let tagModifyCount = 0
+    let tagRemoveCount = 0
+
+    fetch(q.get('changes') || 'changes.json')
         .then(res => res.json())
         .then(changes => {
             renderChanges(changes)
@@ -43,7 +48,6 @@
     function renderChanges(changes) {
         const content = document.getElementById('content')
         const headerText = document.createElement('p')
-        headerText.textContent = `${Object.keys(changes).length} features with changes`
         content.appendChild(headerText)
 
         for (const [id, change] of Object.entries(changes)) {
@@ -70,6 +74,10 @@
 
             table.appendChild(headerRow)
 
+            let tagsModified = false
+            let tagsAdded = false
+            let tagsRemoved = false
+
             // properties
             const distinctKeys = [...new Set([...Object.keys(change.before.properties), ...Object.keys(change.after.properties)])]
             for (const key of distinctKeys) {
@@ -89,14 +97,23 @@
                 if (beforeValue && afterValue && beforeValue !== afterValue) {
                     tdBefore.classList.add('modify')
                     tdAfter.classList.add('modify')
+
+                    tagsModified = true
+                    tagModifyCount++
                 }
 
                 if (!beforeValue && afterValue) {
                     tdAfter.classList.add('add')
+
+                    tagsAdded = true
+                    tagAddCount++
                 }
 
                 if (beforeValue && !afterValue) {
                     tdAfter.classList.add('remove')
+
+                    tagsRemoved = true
+                    tagRemoveCount++
                 }
 
                 tr.appendChild(tdKey)
@@ -105,9 +122,11 @@
 
                 table.appendChild(tr)
             }
+            header.textContent = `${id} ${tagsAdded ? 'Added' : ''} ${tagsModified ? 'Modified' : ''} ${tagsRemoved ? 'Removed' : ''}`
 
             content.appendChild(table)
         }
+        headerText.textContent = `${Object.keys(changes).length} features with changes. ${tagAddCount} new tags, ${tagRemoveCount} removed tags, ${tagModifyCount} changed tags.`
     }
 </script>
 </body>
