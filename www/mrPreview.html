@@ -4,9 +4,10 @@
     <meta charset='utf-8' />
     <title>MapRoulette Preview</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.css' rel='stylesheet' />
     <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
+        #map { height: 80vh; width: 100%; }
 
         tr:nth-child(odd) {
             background-color: #eee
@@ -33,8 +34,33 @@
     </style>
 </head>
 <body>
+    <div id="map"></div>
     <div id="content"></div>
 <script>
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: {
+            version: 8,
+            sources: {
+                osm: {
+                    type: 'raster',
+                    tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                    tileSize: 256,
+                    attribution: '© OpenStreetMap contributors'
+                }
+            },
+            layers: [
+                {
+                    id: 'osm',
+                    source: 'osm',
+                    type: 'raster'
+                }
+            ]
+        },
+        center: [144.597, -37.344],
+        zoom: 7
+    })
+
     const q = new URLSearchParams(window.location.search)
     let tagAddCount = 0
     let tagModifyCount = 0
@@ -43,6 +69,34 @@
     fetch(q.get('changes') || 'changes.json')
         .then(res => res.json())
         .then(changes => {
+            map.on('load', () => {
+                const changeFeatures = Object.values(changes).map(change => change.before)
+                map.addSource('features', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: changeFeatures
+                    }
+                })
+                map.addLayer({
+                    id: 'features',
+                    source: 'features',
+                    type: 'circle',
+                    paint: {
+                        'circle-color': 'blue',
+                        'circle-stroke-color': 'white',
+                        'circle-stroke-width': 1,
+                        'circle-radius': 5
+                    }
+                })
+
+                map.on('click', 'features', e => {
+                    const feature = e.features[0]
+                    const id = `${feature.properties['@type']}/${feature.properties['@id']}`
+                    document.getElementById(id).scrollIntoView()
+                })
+            })
+
             renderChanges(changes)
         })
     function renderChanges(changes) {
@@ -51,9 +105,12 @@
         content.appendChild(headerText)
 
         for (const [id, change] of Object.entries(changes)) {
+            const section = document.createElement('section')
+            section.setAttribute('id', id)
+
             const header = document.createElement('h2')
             header.textContent = id
-            content.appendChild(header)
+            section.appendChild(header)
 
             const table = document.createElement('table')
 
@@ -122,9 +179,10 @@
 
                 table.appendChild(tr)
             }
-            header.textContent = `${id} ${tagsAdded ? 'Added' : ''} ${tagsModified ? 'Modified' : ''} ${tagsRemoved ? 'Removed' : ''}`
+            header.textContent = `${id} (${tagsAdded ? 'Added' : ''} ${tagsModified ? 'Modified' : ''} ${tagsRemoved ? 'Removed' : ''})`
 
-            content.appendChild(table)
+            section.appendChild(table)
+            content.appendChild(section)
         }
         headerText.textContent = `${Object.keys(changes).length} features with changes. ${tagAddCount} new tags, ${tagRemoveCount} removed tags, ${tagModifyCount} changed tags.`
     }
