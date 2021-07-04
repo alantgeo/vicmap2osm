@@ -233,8 +233,47 @@ const conflate = new Transform({
             }
             outputStreams.exactMatch.write(feature)
 
-            const exactMatchLine = multiLineString(matches.map(match => [feature.geometry.coordinates, centroid(match).geometry.coordinates]), feature.properties)
-            outputStreams.exactMatchLines.write(exactMatchLine)
+            if (matches.length === 1) {
+              const match = matches[0]
+              const exactMatchLine = lineString([feature.geometry.coordinates, centroid(match).geometry.coordinates], feature.properties)
+              outputStreams.exactMatchSingleLines.write(exactMatchLine)
+
+              // only report a MR modifyElement when there are tag differences, and the Vicmap feature has addr:flats and OSM doesn't have addr:flats to avoid modifying existing mapped addr:flats
+              // though we only found node/6132032112 which differed
+              if (hasTagDifference(match, feature) && feature.properties['addr:flats'] && !osm.properties['add:flats']) {
+                const setProperties = {}
+                for (const [key, value] of Object.entries(feature.properties)) {
+                  if (key.startsWith('addr:flats')) {
+                    setProperties[key] = value
+                  }
+                }
+                const task = {
+                  type: 'FeatureCollection',
+                  features: [ match ],
+                  cooperativeWork: {
+                    meta: {
+                      version: 2,
+                      type: 1 // tag fix type
+                    },
+                    operations: [{
+                      operationType: 'modifyElement',
+                      data: {
+                        id: `${match.properties['@type']}/${match.properties['@id']}`,
+                        operations: [{
+                          operation: 'setTags',
+                          data: setProperties
+                        }]
+                      }
+                    }]
+                  }
+                }
+                outputStreams.mr_exactMatchSetFlats.write(task)
+              }
+
+            } else {
+              const exactMatchLine = multiLineString(matches.map(match => [feature.geometry.coordinates, centroid(match).geometry.coordinates]), feature.properties)
+              outputStreams.exactMatchMultipleLines.write(exactMatchLine)
+            }
           } else {
             // no exact match, try with fuzzy street match so that OSM missing street or different street type still matches
             const fuzzyStreetMatches = osmAddrWithinBlock.filter(osmAddr => {
@@ -424,7 +463,9 @@ const outputKeys = [
   'notFoundInBlocks',
   'noExactMatch',
   'exactMatch',
-  'exactMatchLines',
+  'exactMatchSingleLines',
+  'exactMatchMultipleLines',
+  'mr_exactMatchSetFlats',
   'mr_explodeUnitFromNumber',
   'mr_withinExistingOSMAddressPoly',
   'withinExistingOSMAddressPoly',
@@ -444,6 +485,21 @@ outputKeys.forEach(key => {
   outputStreams[key] = ndjson.stringify()
   outputStreamOutputs[key] = outputStreams[key].pipe(fs.createWriteStream(`${outputPath}/${key}.geojson`))
 })
+
+function hasTagDifference(osm, vicmap) {
+  const keysToCompare = [
+    'addr:flats',
+    'addr:unit',
+    'addr:housenumber',
+    'addr:street'
+  ]
+
+  // ignore tag differences solely due to a unit split from housenumber
+  const unitHousenumberSplit = osm.properties['addr:housenumber'] === `${vicmap.properties['addr:unit']}/${vicmap.properties['addr:housenumber']}`
+  const allValuesMatch = keysToCompare.map(keyToCompare => (osm.properties[keyToCompare] || '').toLowerCase() === (vicmap.properties[keyToCompare] || '').toLowerCase()).reduce((acc, cur) => acc && cur, true) || unitHousenumberSplit
+
+  return !allValuesMatch
+}
 
 // first pass to index by geometry
 console.log('Pass 1/2: Find OSM addresses represented as areas and store them in memory')
