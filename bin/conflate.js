@@ -131,6 +131,14 @@ const conflate = new Transform({
       process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
     }
 
+    // remove tracing properties
+    delete feature.properties._pfi
+
+    // remove all addr:* attributes which there was some opposition to including on talk-au
+    delete feature.properties['addr:suburb']
+    delete feature.properties['addr:postcode']
+    delete feature.properties['addr:state']
+
     // find which block this vicmap address is in
     const results = lookupBlocks.search(...feature.geometry.coordinates.slice(0, 2), 1)
     const block = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : null) : results) : null
