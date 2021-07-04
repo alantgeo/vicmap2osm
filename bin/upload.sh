@@ -7,11 +7,11 @@ mkdir -p uploadLog
 IMPORT_DOC="https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address"
 
 i=0
-totalFiles=`ls -1 dist/candidates/newAddressWithoutConflicts/*.osm | wc -l`
-for f in dist/candidates/newAddressWithoutConflicts/*.osm; do
+totalFiles=`ls -1 dist/candidates/newAddressesInBlocksWithoutAnyExisting/*.osm | wc -l`
+for f in dist/candidates/newAddressesInBlocksWithoutAnyExisting/*.osm; do
     i=$(($i + 1))
-
-    categoryMessage="adding new addresses not found in OSM"
+    categoryMessage="New addresses in blocks without any existing addresses"
+    stage="Stage 3"
     d=`dirname "$f"`
     b=`basename "$f" .osm`
     id=`echo "$b" | cut -d'_' -f1`
@@ -31,7 +31,7 @@ for f in dist/candidates/newAddressWithoutConflicts/*.osm; do
             -u 'vicmap_import' \
             -p "${OSM_DEV_PASSWORD}" \
             -c yes \
-            -m "Vicmap Import $categoryMessage: $name. See $IMPORT_DOC" \
+            -m "Vicmap Address Import - $stage - $categoryMessage: $name. See $IMPORT_DOC" \
             -y 'Vicmap Address' \
             "$d/$b.osc"
         echo "$f" >> uploadLog/uploaded.txt

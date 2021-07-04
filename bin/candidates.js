@@ -39,8 +39,7 @@ if (!fs.existsSync(conflatePath)) {
 
 // output GeoJSON Features by layer by suburb ID
 const outputFeatures = {
-  'newAddressWithoutConflicts': {},
-  'addrUnitFromHousenumber': {}
+  'newAddressesInBlocksWithoutAnyExisting': {}
 }
 
 for (const layer of Object.keys(outputFeatures)) {
@@ -99,9 +98,18 @@ const readSuburbs = new Transform({
   }
 })
 
+function findSuburb(feature) {
+  // find which suburb this address is in
+  const results = lookupSuburbs.search(...feature.geometry.coordinates.slice(0, 2), 1)
+  const suburb = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : outsideVicSuburb) : results[0]) : outsideVicSuburb
+
+  return suburb
+}
+
+
 // produce import candidates
 let sourceCount = 0
-const candidates = new Transform({
+const candidatesNewAddressesInBlocksWithoutAnyExisting = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
   transform(feature, encoding, callback) {
@@ -114,11 +122,9 @@ const candidates = new Transform({
     // remove tracing properties
     delete feature.properties._pfi
 
-    // find which suburb this address is in
-    const results = lookupSuburbs.search(...feature.geometry.coordinates.slice(0, 2), 1)
-    const suburb = results ? (results.type === 'FeatureCollection' ? (results.features ? results.features[0] : outsideVicSuburb) : results[0]) : outsideVicSuburb
+    const suburb = findSuburb(feature)
 
-    outputFeatures['newAddressWithoutConflicts'][suburb.id].push(feature)
+    outputFeatures['newAddressesInBlocksWithoutAnyExisting'][suburb.id].push(feature)
 
     callback()
   }
@@ -168,13 +174,14 @@ pipeline(
       pipeline(
         fs.createReadStream(path.join(conflatePath, 'noOSMAddressWithinBlock.geojson')),
         ndjson.parse(),
-        candidates,
+        candidatesNewAddressesInBlocksWithoutAnyExisting,
         err => {
           if (err) {
             console.log(err)
             process.exit(1)
           } else {
 
+            /*
             console.log('Step 4/4: noExactMatch')
             pipeline(
               fs.createReadStream(path.join(conflatePath, 'noExactMatch.geojson')),
@@ -185,12 +192,15 @@ pipeline(
                   console.log(err)
                   process.exit(1)
                 } else {
+                  */
                   console.log('Output candidate .osm files')
                   outputCandidates()
                   process.exit(0)
+                  /*
                 }
               }
             )
+            */
           }
         }
       )

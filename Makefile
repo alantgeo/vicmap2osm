@@ -244,5 +244,5 @@ dist/candidates: data/victoria-admin-level10.osm.geojson dist/conflate
 	./bin/candidates.js $^ $@
 
 testUploadCandidates:
-	./upload/osm2change.py dist/candidates/newAddressWithoutConflicts/a4755005_Wodonga.osm
-	./upload/upload.py -u 'vicmap_import' -p "${OSM_DEV_PASSWORD}" -c yes -m 'Vicmap Import Test Changeset' -y 'Vicmap Address' dist/candidates/newAddressWithoutConflicts/a4755005_Wodonga.osm
+	./upload/osm2change.py dist/candidates/newAddressesInBlocksWithoutAnyExisting/a4755005_Wodonga.osm
+	./upload/upload.py -u 'vicmap_import' -p "${OSM_DEV_PASSWORD}" -c yes -m 'Vicmap Import Test Changeset' -y 'Vicmap Address' dist/candidates/newAddressesInBlocksWithoutAnyExisting/a4755005_Wodonga.osm
