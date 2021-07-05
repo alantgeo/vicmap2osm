@@ -153,7 +153,7 @@ const reduce = new Transform({
               const nonUnitFeatures = featureGroup.filter(f => (!('addr:unit' in f.properties)))
               if (nonUnitFeatures.length > 1) {
                 // multiple non-unit features shouldn't actually occur
-                console.log("Multiple non-unit features, this shouldn't occur.", nonUnitFeatures)
+                console.log("Multiple non-unit features, this shouldn't occur, because reduceDuplicates should have address this already.", nonUnitFeatures)
                 process.exit(1)
               } else {
                 // a single non-unit feature exists
