@@ -15,6 +15,7 @@ const centroid = require('@turf/centroid').default
 const booleanIntersects = require('@turf/boolean-intersects').default
 const distance = require('@turf/distance').default
 const { lcs } = require('string-comparison')
+const withinRange = require('../lib/withinRange')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {
@@ -191,7 +192,14 @@ const conflate = new Transform({
             // ignoring differences between "Foo - Bar Street" and "Foo-Bar Street", these kinds of names are common in country victoria
             const isMatched = feature.properties['addr:street'] && osmStreet
               && feature.properties['addr:street'].toLowerCase().replaceAll(' - ', '-').replaceAll('-', '') === osmStreet.toLowerCase().replaceAll(' - ', '-').replaceAll('-', '')
-              && osmHouseNumber !== null && feature.properties['addr:housenumber'].replaceAll(' ', '').toLowerCase() === osmHouseNumber.replaceAll(' ', '').toLowerCase()
+              && osmHouseNumber !== null
+              && (
+                // housenumber can be an exact match
+                feature.properties['addr:housenumber'].replaceAll(' ', '').toLowerCase() === osmHouseNumber.replaceAll(' ', '').toLowerCase()
+                // or it can just intersect the range
+                // eg 182 St Georges Road Fitzroy North
+                || withinRange(feature, osmAddr, { checkStreet: false, checkHigherOrderAddrKeys: false })
+              )
               && (vicmapUnit === osmUnit)
 
             // if matched but the match came from exploding X/Y into Unit X, Number Y, then automate this to be changed in OSM

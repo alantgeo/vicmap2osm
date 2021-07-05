@@ -7,7 +7,7 @@
         {
             "type": "pwa-node",
             "request": "launch",
-            "name": "reduceOverlap",
+            "name": "bin/reduceOverlap",
             "skipFiles": [
                 "<node_internals>/**"
             ],
@@ -17,7 +17,7 @@
         {
             "type": "pwa-node",
             "request": "launch",
-            "name": "reduceOverlap AndersonStreet",
+            "name": "bin/reduceOverlap AndersonStreet",
             "skipFiles": [
                 "<node_internals>/**"
             ],

@@ -120,12 +120,18 @@ const reduce = new Transform({
         if (cur && cur.split('-').length === 2) {
           cur = cur.split('-')[0]
         }
+        if (acc && acc.split('-').length === 2) {
+          acc = acc.split('-')[0]
+        }
         return (cur < acc) ? cur : acc
       }) : null
 
       const lastNumber = noUnits && sameNonHousenumber ? overlappingFeatures.map(f => f.properties['addr:housenumber']).reduce((acc, cur) => {
         if (cur && cur.split('-').length === 2) {
           cur = cur.split('-')[1]
+        }
+        if (acc && acc.split('-').length === 2) {
+          acc = acc.split('-')[1]
         }
         return (cur > acc) ? cur : acc
       }) : null
