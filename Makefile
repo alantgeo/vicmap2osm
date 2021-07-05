@@ -195,6 +195,7 @@ summariseBlocksByOSMAddr: dist/blocksByOSMAddr.geojson
 dist/conflate:
 	mkdir -p $@
 	./bin/conflate.js dist/vicmap-osm-uniq-flats-withinrange.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson $@
+	./bin/mrCoopDiff.js $@/mr_exactMatchSetFlats.geojson $@/mr_exactMatch.changes.json
 
 dist/unitFromNumber.osc: dist/conflate/mr_explodeUnitFromNumber.geojson
 	./bin/mr2osc.mjs --dry-run --changeset-comment "Vicmap Import separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number" $< $@
