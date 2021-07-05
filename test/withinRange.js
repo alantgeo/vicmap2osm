@@ -93,6 +93,75 @@ const rangeOutsideSub = {
   }
 }
 
+const B_withSuburb = {
+  "type": "Feature",
+  "properties": {
+    "addr:housenumber": "2",
+    "addr:street": "Main Street",
+    "addr:suburb": "Suburb A"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [0, 0]
+  }
+}
+const AC_withDifferentSuburb = {
+  "type": "Feature",
+  "properties": {
+    "addr:housenumber": "1-3",
+    "addr:street": "Main Street",
+    "addr:suburb": "Suburb B"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [0, 0]
+  }
+}
+
+const AD = {
+  "type": "Feature",
+  "properties": {
+    "addr:housenumber": "1-4",
+    "addr:street": "Main Street"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [0, 0]
+  }
+}
+const BC = {
+  "type": "Feature",
+  "properties": {
+    "addr:housenumber": "2-3",
+    "addr:street": "Main Street"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [0, 0]
+  }
+}
+const CE = {
+  "type": "Feature",
+  "properties": {
+    "addr:housenumber": "3-5",
+    "addr:street": "Main Street"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [0, 0]
+  }
+}
+const DE = {
+  "type": "Feature",
+  "properties": {
+    "addr:housenumber": "4-5",
+    "addr:street": "Main Street"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [0, 0]
+  }
+}
 
 test('withinRange', t => {
   t.same(
@@ -138,9 +207,33 @@ test('withinRange', t => {
   )
 
   t.same(
-    withinRange(A, AC, { matchParity: true }),
+    withinRange(B_withSuburb, AC_withDifferentSuburb),
+    false,
+    'by default checks suburbs match for within to pass'
+  )
+
+  t.same(
+    withinRange(B_withSuburb, AC_withDifferentSuburb, {
+      checkHigherOrderAddrKeys: false
+    }),
     true,
-    'A within AC when matching parity'
+    'within range when ignoring higher order addr keys'
+  )
+
+  t.same(
+    withinRange(BC, AD),
+    true,
+    'range completely within range'
+  )
+  t.same(
+    withinRange(CE, AD),
+    true,
+    'range overlapping within range'
+  )
+  t.same(
+    withinRange(DE, AD),
+    true,
+    'range touching endpoints of range'
   )
 
   t.end()
