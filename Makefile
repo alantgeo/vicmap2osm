@@ -220,10 +220,10 @@ dist/vicmap-building-conflation: dist/vicmap-building.geojson
 
 # extract admin_level=10 from OSM
 data/victoria-admin.osm.pbf: data/victoria.osm.pbf
-	osmium tags-filter --remove-tags --output=$@ $< r/boundary=administrative
+	osmium tags-filter --remove-tags --overwrite --output=$@ $< r/boundary=administrative
 
 data/victoria-admin-level10.osm.pbf: data/victoria-admin.osm.pbf
-	osmium tags-filter --remove-tags --output=$@ $< r/admin_level=10
+	osmium tags-filter --remove-tags --overwrite --output=$@ $< r/admin_level=10
 
 data/victoria-admin-level10.osm.geojson: data/victoria-admin-level10.osm.pbf
 	osmium export --overwrite --config=config/osmium-export-config-adminlevel10.json --geometry-types=polygon --add-unique-id=type_id --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
