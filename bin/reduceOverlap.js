@@ -117,14 +117,20 @@ const reduce = new Transform({
         .every( (val, i, arr) => val === arr[0] ) // check if all values are the same
 
       const firstNumber = noUnits && sameNonHousenumber ? overlappingFeatures.map(f => f.properties['addr:housenumber']).reduce((acc, cur) => {
+        if (cur && cur.split('-').length === 2) {
+          cur = cur.split('-')[0]
+        }
         return (cur < acc) ? cur : acc
       }) : null
 
       const lastNumber = noUnits && sameNonHousenumber ? overlappingFeatures.map(f => f.properties['addr:housenumber']).reduce((acc, cur) => {
+        if (cur && cur.split('-').length === 2) {
+          cur = cur.split('-')[1]
+        }
         return (cur > acc) ? cur : acc
       }) : null
 
-      if (noUnits && sameNonHousenumber && firstNumber && lastNumber) {
+      if (noUnits && sameNonHousenumber && firstNumber && lastNumber && (firstNumber !== lastNumber)) {
         const featureAsRange = overlappingFeatures[0]
         featureAsRange.properties['addr:housenumber'] = `${firstNumber}-${lastNumber}`
         if (featureAsRange.properties._pfi) {

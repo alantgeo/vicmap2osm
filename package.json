@@ -6,7 +6,7 @@
   "author": "Andrew Harvey <andrew@alantgeo.com.au>",
   "license": "MIT",
   "scripts": {
-    "test": "./node_modules/.bin/tape test/toOSM.js test/cluster.js test/unitsToRanges.js test/withinRange.js test/valueLimits.js test/reduceRangeDuplicates.js"
+    "test": "./node_modules/.bin/tape test/toOSM.js test/cluster.js test/unitsToRanges.js test/withinRange.js test/valueLimits.js test/reduceRangeDuplicates.js test/reduceOverlap.js"
   },
   "dependencies": {
     "@turf/bbox": "^6.3.0",
