@@ -85,12 +85,12 @@ dist/vicmap-osm.fgb: dist/vicmap-osm.geojson
 
 # useful for development to be able to query a database
 loadPgAdd: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
-	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vmadd
+	ogr2ogr -f PostgreSQL PG: $< -nln vmadd
 	# index all columns for faster queries during development
 	psql -f src/createIndexQuery.sql --tuples-only | psql
 
 loadPgProp: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp
-	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vmprop -nlt MULTIPOLYGON
+	ogr2ogr -f PostgreSQL PG: $< -nln vmprop -nlt MULTIPOLYGON
 
 data/victoria.osm.pbf:
 	wget --no-verbose --directory-prefix=data http://download.openstreetmap.fr/extracts/oceania/australia/victoria.osm.pbf
