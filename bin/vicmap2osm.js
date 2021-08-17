@@ -25,6 +25,7 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
     default: false,
     description: 'If set, preserves addr:suburb, addr:postcode, addr:state, otherwise omits them'
   })
+  .demandCommand(2)
   .argv
 
 if (argv._.length < 2) {
