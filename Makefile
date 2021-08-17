@@ -132,9 +132,12 @@ data/mb.geojson:
 data/mb.fgb: data/mb.geojson
 	ogr2ogr -f FlatGeobuf $@ $<
 
+data/victoria-extract.osm.pbf: data/victoria.osm.pbf
+	osmium extract --bbox 144.95366,-37.80284,145.00272,-37.77482 --output=$@ --overwrite $<
+
 # extract roads from OSM
 data/victoria-roads.osm.pbf: data/victoria.osm.pbf
-	osmium tags-filter --remove-tags --output=$@ $< w/highway=motorway,trunk,primary,secondary,tertiary,unclassified,residential,living_street,road,service
+	osmium tags-filter --remove-tags --overwrite --output=$@ $< w/highway=motorway,trunk,primary,secondary,tertiary,unclassified,residential,living_street,road,service
 
 # extract road lines into geojson
 data/victoria-roads.geojson: data/victoria-roads.osm.pbf
@@ -183,6 +186,7 @@ data/coastStripSplitBySuburb.fgb: data/coastalStrip.fgb data/suburbLinesInCoasta
 
 # count OSM addresses by block, those with no OSM addresses we can import all the candidate addresses without conflation issues
 dist/blocksByOSMAddr.fgb: data/victoria-addr.osm.centroids.fgb data/blocksWithCoastalStripSplit.fgb
+	mkdir -p dist
 	qgis_process run native:countpointsinpolygon -- POINTS=$< POLYGONS='data/blocksWithCoastalStripSplit.fgb' FIELD=NUMPOINTS OUTPUT=$@
 
 dist/blocksByOSMAddr.geojson: dist/blocksByOSMAddr.fgb
