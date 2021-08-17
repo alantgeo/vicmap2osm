@@ -11,6 +11,8 @@ const cluster = require('../lib/cluster.js')
 const cloneDeep = require('clone-deep')
 const xml = require('xml-js')
 const _ = require('lodash')
+const { default: centroid } = require('@turf/centroid')
+const { default: distance } = require('@turf/distance')
 
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('debug', {
@@ -20,17 +22,51 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
   .argv
 
 if (argv._.length < 2) {
-  console.error("Usage: ./reduceDuplicates.js input.geojson output.geojson")
+  console.error("Usage: ./reduceDuplicates.js input.geojson osmFile.geojson output.geojson")
   process.exit(1)
 }
 
 const inputFile = argv._[0]
-const outputFile = argv._[1]
+const osmFile = argv._[1]
+const outputFile = argv._[2]
 
 if (!fs.existsSync(inputFile)) {
   console.error(`${inputFile} not found`)
   process.exit(1)
 }
+
+if (!fs.existsSync(osmFile)) {
+  console.error(`${osmFile} not found`)
+  process.exit(1)
+}
+
+const osmAddressKeys = {}
+
+let osmAddrCount = 0
+const indexOSM = new Transform({
+  readableObjectMode: true,
+  writableObjectMode: true,
+  transform(feature, encoding, callback) {
+    osmAddrCount++
+
+    if (process.stdout.isTTY && osmAddrCount % 10000 === 0) {
+      process.stdout.write(` ${osmAddrCount.toLocaleString()}\r`)
+    }
+
+    if (feature && feature.properties) {
+      const key = [
+        feature.properties['addr:housenumber'],
+        feature.properties['addr:street']
+      ].join('|')
+      if (!(key in osmAddressKeys)) {
+        osmAddressKeys[key] = []
+      }
+      osmAddressKeys[key].push(centroid(feature))
+    }
+
+    callback()
+  }
+})
 
 let sourceCount = 0
 const features = {}
@@ -182,25 +218,47 @@ const reduce = new Transform({
             debugStreams.multiCluster.write(webOfMatches)
 
             // output as a MapRoulette task
-            const task = {
-              type: 'FeatureCollection',
-              features: [
-                ...groupedFeatures
-              ],
-              cooperativeWork: {
-                meta: {
-                  version: 2,
-                  type: 2
-                },
-                file: {
-                  type: 'xml',
-                  format: 'osc',
-                  encoding: 'base64',
-                  content: Buffer.from(featureToOsc(groupedFeatures[0])).toString('base64') // the base64-encoded osc file
-                }
+            const firstGroupedFeature = groupedFeatures[0]
+            const firstGroupedFeatureKey = [
+                firstGroupedFeature.properties['addr:housenumber'],
+                firstGroupedFeature.properties['addr:street']
+              ].join('|')
+
+            let foundInOSM = false
+            if (firstGroupedFeatureKey in osmAddressKeys) {
+              // already found in OSM skipping
+              const closestDistance = osmAddressKeys[firstGroupedFeatureKey].map(osm => {
+                return distance(osm, centroid(firstGroupedFeature))
+              })
+                .sort((a, b) => b - a)
+                .pop()
+
+              if (closestDistance < 50) {
+                foundInOSM = true
               }
             }
-            debugStreams.mr_duplicateAddressFarApart.write(task)
+            if (!foundInOSM) {
+              // output
+              const task = {
+                type: 'FeatureCollection',
+                features: [
+                  ...groupedFeatures
+                ],
+                cooperativeWork: {
+                  meta: {
+                    version: 2,
+                    type: 2
+                  },
+                  file: {
+                    type: 'xml',
+                    format: 'osc',
+                    encoding: 'base64',
+                    content: Buffer.from(featureToOsc(groupedFeatures[0])).toString('base64') // the base64-encoded osc file
+                  }
+                }
+              }
+              debugStreams.mr_duplicateAddressFarApart.write(task)
+            }
           }
         }
       }
@@ -267,52 +325,65 @@ if (argv.debug) {
   })
 }
 
-// first pass to index by geometry
-console.log('Pass 1/2: index by address properties')
+// first pass to index existing OSM addresses
+console.log('Pass 1/3: Store existing OSM addresses')
 pipeline(
-  fs.createReadStream(inputFile),
+  fs.createReadStream(osmFile),
   ndjson.parse(),
-  index,
+  indexOSM,
   err => {
     if (err) {
       console.log(err)
       process.exit(1)
     } else {
-      console.log(`  of ${sourceCount.toLocaleString()} features found ${Object.keys(features).length.toLocaleString()} unique addresses`)
-      // second pass to reduce duplicate features
-      console.log('Pass 2/2: reduce duplicate features')
+      // second pass to index by geometry
+      console.log('Pass 2/3: index by address properties')
       pipeline(
-        Readable.from(Object.keys(features)),
-        reduce,
-        ndjson.stringify(),
-        fs.createWriteStream(outputFile),
+        fs.createReadStream(inputFile),
+        ndjson.parse(),
+        index,
         err => {
           if (err) {
             console.log(err)
             process.exit(1)
           } else {
-            if (argv.debug) {
-              debugKeys.forEach(key => {
-                debugStreams[key].end()
-              })
+            console.log(`  of ${sourceCount.toLocaleString()} features found ${Object.keys(features).length.toLocaleString()} unique addresses`)
+            // third pass to reduce duplicate features
+            console.log('Pass 3/3: reduce duplicate features')
+            pipeline(
+              Readable.from(Object.keys(features)),
+              reduce,
+              ndjson.stringify(),
+              fs.createWriteStream(outputFile),
+              err => {
+                if (err) {
+                  console.log(err)
+                  process.exit(1)
+                } else {
+                  if (argv.debug) {
+                    debugKeys.forEach(key => {
+                      debugStreams[key].end()
+                    })
 
-              Promise.all(debugKeys.map(key => {
-                return new Promise(resolve => {
-                  debugStreamOutputs[key].on('finish', () => {
-                    console.log(`saved debug/reduceDuplicates/${key}.geojson`)
-                    resolve()
-                  })
-                })
-              }))
-                .then(() => {
-                  process.exit(0)
-                })
-            } else {
-              process.exit(0)
-            }
+                    Promise.all(debugKeys.map(key => {
+                      return new Promise(resolve => {
+                        debugStreamOutputs[key].on('finish', () => {
+                          console.log(`saved debug/reduceDuplicates/${key}.geojson`)
+                          resolve()
+                        })
+                      })
+                    }))
+                      .then(() => {
+                        process.exit(0)
+                      })
+                  } else {
+                    process.exit(0)
+                  }
+                }
+              }
+            )
           }
         }
       )
     }
-  }
-)
+  })

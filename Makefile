@@ -49,9 +49,9 @@ dist/vicmap-osm-with-suburb.geojson: data/vicmap.geojson
 dist/vicmap-osm.mbtiles: dist/vicmap-osm.geojson
 	tippecanoe --force -o $@ --minimum-zoom=12 --maximum-zoom=12 --no-feature-limit --no-tile-size-limit --no-tile-stats --read-parallel $<
 
-dist/vicmap-osm-uniq.geojson: dist/vicmap-osm-with-suburb.geojson
+dist/vicmap-osm-uniq.geojson: dist/vicmap-osm-with-suburb.geojson data/victoria-addr.osm.geojson
 	mkdir -p debug/reduceDuplicates
-	node --max_old_space_size=4096 ./bin/reduceDuplicates.js --debug $< $@
+	node --max_old_space_size=4096 ./bin/reduceDuplicates.js --debug $^ $@
 
 dist/vicmap-osm-uniq-flats.geojson: dist/vicmap-osm-uniq.geojson
 	mkdir -p debug/reduceOverlap

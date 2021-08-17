@@ -46,7 +46,7 @@ Two debug outputs are produced from this step.
 
 1. _singleCluster_ - visualises where all addresses with the same address properties are combined into a single "cluster" based on a 25 meter maximum threshold distance. In this case it's safe to reduce all the points into a single centroid point.
 
-2. _multiCluster_ - visualises where all addresses with the same address properties exceed the 25 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be reviewed for manual import. A MapRoulette challenge is outputted at `debug/reduceDuplicates/mr_duplicateAddressFarApart.geojson`, however because this is before the conflation stage, many of these may already exist in OSM. It's a TODO for these to be conflated so that only missing from OSM addresses are asked to be checked in MapRoulette.
+2. _multiCluster_ - visualises where all addresses with the same address properties exceed the 25 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be reviewed for manual import. A MapRoulette challenge is outputted at `debug/reduceDuplicates/mr_duplicateAddressFarApart.geojson`, which includes those missing from OSM with a rough conflation pass.
 
 ![multiCluster example](img/reduceDuplicates_multiCluster.png)
 
