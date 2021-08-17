@@ -8,10 +8,10 @@ IMPORT_DOC="https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address"
 
 i=0
 totalFiles=`ls -1 dist/candidates/newAddressesInBlocksWithoutAnyExisting/*.osm | wc -l`
+categoryMessage="New addresses in blocks without any existing addresses"
+stage="Stage 3"
 for f in dist/candidates/newAddressesInBlocksWithoutAnyExisting/*.osm; do
     i=$(($i + 1))
-    categoryMessage="New addresses in blocks without any existing addresses"
-    stage="Stage 3"
     d=`dirname "$f"`
     b=`basename "$f" .osm`
     id=`echo "$b" | cut -d'_' -f1`

@@ -324,7 +324,7 @@ The dedicated import account used for the import is [`vicmap_import`](https://ww
 ### Stage 0 - Find abbreviated addr:street on existing addresses
 `make data/abbrStreetsMR.geojson` generates a MapRoulette challenge file with possible abbreviated street names in existing `addr:street` tags in OSM and suggests fixes. Where the suggested fix matched the unabbreviated road name then this can be safely applied.
 
-- [x] MapRoulette challenge completed [https://maproulette.org/admin/project/42479/challenge/18696](https://maproulette.org/admin/project/42479/challenge/18696)
+- [x] MapRoulette challenge completed [https://maproulette.org/admin/project/42479/challenge/18696](https://maproulette.org/admin/project/42479/challenge/18696) (~230 features)
 
 ### Stage 1 - postal_code
 For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`](#inclusion-of-addrsuburb-addrpostcode-and-addrstate).
@@ -333,7 +333,7 @@ Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org
 
 The tag changes are created by [`bin/compareSuburb.js`](bin/compareSuburb.js) which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
 
-- [ ] Changeset uploaded at XXX
+- [ ] Changeset uploaded at XXX (~2559 features)
 
 ### Stage 2 - Set unit from housenumber
 During the conflation stage, Vicmap addresses which were deemed to match OSM addresses where in OSM it was represented as `addr:housenumber=X/Y` whereas in Vicmap it was represented as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
@@ -346,17 +346,17 @@ You can visualise the tag changes with `bin/mrCoopDiff.js` and `www/mrPreview.ht
 
 The actual changeset will be created with:
 
-    ./bin/mr2osc.mjs --changeset-comment "Vicmap Import separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_explodeUnitFromNumber.geojson dist/uploadedUnitFromNumber.osc
+    ./bin/mr2osc.mjs --changeset-comment "Vicmap Address Import - Stage 2 - Separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_explodeUnitFromNumber.geojson dist/uploads/Stage2_SetUnitFromHousenumber.osc
 
-- [ ] Changeset uploaded at XXX
+- [ ] Changeset uploaded at XXX (~9832 features)
 
 A further manual MapRoulette challenge built from `dist/conflate/mr_explodeUnitFromNumberFuzzyStreet.geojson` will be completed to set the unit from housenumber based on fuzzy street matches, since the automated prior change was based on exact matches only. Where the street name differs in a typo like way, and the Vicmap name matches the OSM road, then `addr:street` will also be corrected.
 
-- [ ] MapRoulette challenge completed at XXX
+- [ ] MapRoulette challenge completed at XXX (~115 features)
 
 ### Stage 3 - New addresses in blocks without any existing addresses
 
-Conflation script will be re-run after stage 2.
+Conflation script will be re-run after stage 2 to incorporate the exploded units.
 
 [`bin/upload.sh`](bin/upload.sh) is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
 
@@ -364,24 +364,32 @@ This makes it easier for anyone to review uploads in OSMCha and other tools.
 
 The changeset comment used is
 
-    Vicmap Import CANDIDATE_CATEGORY_DESCRIPTION: SUBURB_NAME. See https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address
+    Vicmap Address Import - Stage 3 - New addresses in blocks without any existing addresses: SUBURB_NAME. See https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address
+
+- [ ] Changesets not yet uploaded (~1,843,909 features)
+
+### Stage 4 - Matched addresses adding addr:flats
+
+Where a Vicmap address matched an OSM address, set `addr:flats` as derived from Vicmap.
+
+    ./bin/mr2osc.mjs --changeset-comment "Vicmap Address Import - Stage 4 - Add addr:flats to existing addresses. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_exactMatchSetFlats.geojson dist/uploads/Stage4_MatchedAddressAddingAddrFlats.osc
+
+Because `addr:flats` may be tagged on an entrance node denoting which units are accessible from which entrance, in these cases in OSM we should not add `addr:flats` to the way. https://overpass-turbo.eu/s/196m shows there are only 8 existing cases of this, so these are manually removed from the import before executing.
+
+- [ ] Changeset not yet uploaded (~3360 features)
+
+### Stage 5 - New addresses in blocks with existing addresses
+
+Similar process to Stage 3.
 
 - [ ] Changeset not yet uploaded
 
-### Stage 4 - New addresses in blocks with existing addresses
 
-
-### Stage 5 - Complete incomplete existing addresses
+### Stage 6 - Complete incomplete existing addresses
 
 Adding `addr:street` and other tags where none exists but the `addr:housenumber` matches.
 
 Flag whether within the same property parcel or not.
-
-### Stage 6 - Matched addresses with conflicting attributes
-
-Adding `addr:street` where none exists but the `addr:housenumber` matches, it's within the same property parcel.
-
-### Stage 6 - Delete addr:interpolation ways
 
 ### Changeset tags
 
