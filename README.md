@@ -36,17 +36,17 @@ The following steps are built into the _build vicmap_ stage.
 
 Next, convert into [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at [`bin/vicmap2osm.js`](bin/vicmap2osm.js)):
 
-    make dist/vicmap-osm-with-suburb.geojson
+    make dist/vicmap-osm-with-suburb.geojson (3,529,928 features)
 
-Next, remove duplicates where all address attributes match at the same location or within a small proximity (code at [`bin/reduceDuplicates.js`](bin/reduceDuplicates.js), see [_Removing duplicates_](#removing-duplicates)):
+Next, remove duplicates where all address attributes match at the same location or within a small proximity (code at [`bin/reduceDuplicates.js`](bin/reduceDuplicates.js), see [_Removing duplicates_](#removing-duplicates)): (3,393,050 features)
 
     make dist/vicmap-osm-uniq.geojson
 
 Two debug outputs are produced from this step.
 
-1. _singleCluster_ - visualises where all addresses with the same address properties are combined into a single "cluster" based on a 25 meter maximum threshold distance. In this case it's safe to reduce all the points into a single centroid point.
+1. _singleCluster_ - visualises where all addresses with the same address properties are combined into a single "cluster" based on a 40 meter maximum threshold distance. In this case it's safe to reduce all the points into a single centroid point.
 
-2. _multiCluster_ - visualises where all addresses with the same address properties exceed the 25 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be reviewed for manual import. A MapRoulette challenge is outputted at `debug/reduceDuplicates/mr_duplicateAddressFarApart.geojson`, which includes those missing from OSM with a rough conflation pass.
+2. _multiCluster_ - visualises where all addresses with the same address properties exceed the 40 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be reviewed for manual import. A MapRoulette challenge is outputted at `debug/reduceDuplicates/mr_duplicateAddressFarApart_NotFoundInOSM.geojson`, which includes those missing from OSM with a rough conflation pass.
 
 ![multiCluster example](img/reduceDuplicates_multiCluster.png)
 
@@ -390,6 +390,10 @@ Similar process to Stage 3.
 Adding `addr:street` and other tags where none exists but the `addr:housenumber` matches.
 
 Flag whether within the same property parcel or not.
+
+### Stage X - Duplicate addresses from Vicmap needing manual review
+
+`mr_duplicateAddressFarApart_NotFoundInOSM.geojson` was used to created the MapRoulette challenge at https://maproulette.org/browse/challenges/21226.
 
 ### Changeset tags
 

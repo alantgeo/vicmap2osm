@@ -132,11 +132,11 @@ const reduce = new Transform({
       } else {
         // features have same properties but not all with the same geometry
 
-        // cluster features with a threshold of 25m
-        const clusters = cluster(groupedFeatures, 25)
+        // cluster features with a threshold of 40m
+        const clusters = cluster(groupedFeatures, 40)
 
         // if clustered into a single cluster, then output a single average feature
-        // this should be safe to use as within 25m
+        // this should be safe to use as within 40m
         if (clusters.length === 1) {
           const averageCoordinates = [
             groupedFeatures.map(f => f.geometry.coordinates[0]).reduce((acc, cur) => acc + cur) / groupedFeatures.length,
@@ -219,6 +219,11 @@ const reduce = new Transform({
 
             // output as a MapRoulette task
             const firstGroupedFeature = groupedFeatures[0]
+
+            delete firstGroupedFeature.properties['addr:suburb']
+            delete firstGroupedFeature.properties['addr:postcode']
+            delete firstGroupedFeature.properties['addr:state']
+
             const firstGroupedFeatureKey = [
                 firstGroupedFeature.properties['addr:housenumber'],
                 firstGroupedFeature.properties['addr:street']
@@ -237,27 +242,29 @@ const reduce = new Transform({
                 foundInOSM = true
               }
             }
-            if (!foundInOSM) {
-              // output
-              const task = {
-                type: 'FeatureCollection',
-                features: [
-                  ...groupedFeatures
-                ],
-                cooperativeWork: {
-                  meta: {
-                    version: 2,
-                    type: 2
-                  },
-                  file: {
-                    type: 'xml',
-                    format: 'osc',
-                    encoding: 'base64',
-                    content: Buffer.from(featureToOsc(groupedFeatures[0])).toString('base64') // the base64-encoded osc file
-                  }
+            // output
+            const task = {
+              type: 'FeatureCollection',
+              features: [
+                ...groupedFeatures
+              ],
+              cooperativeWork: {
+                meta: {
+                  version: 2,
+                  type: 2
+                },
+                file: {
+                  type: 'xml',
+                  format: 'osc',
+                  encoding: 'base64',
+                  content: Buffer.from(featuresToOsc(groupedFeatures)).toString('base64') // the base64-encoded osc file
                 }
               }
-              debugStreams.mr_duplicateAddressFarApart.write(task)
+            }
+            if (foundInOSM) {
+              debugStreams.mr_duplicateAddressFarApart_FoundInOSM.write(task)
+            } else {
+              debugStreams.mr_duplicateAddressFarApart_NotFoundInOSM.write(task)
             }
           }
         }
@@ -268,7 +275,7 @@ const reduce = new Transform({
   }
 })
 
-function featureToOsc(feature) {
+function featuresToOsc(features) {
   return xml.json2xml({
     _declaration: {
       _attributes: {
@@ -282,22 +289,24 @@ function featureToOsc(feature) {
         generator: 'alantgeo/vicmap2osm'
       },
       create: {
-        node: {
-          _attributes: {
-            id: -1,
-            version: 1,
-            lat: feature.geometry.coordinates[1],
-            lon: feature.geometry.coordinates[0]
-          },
-          tag: Object.keys(_.omit(feature.properties, ['_pfi'])).map(key => {
-            return {
-              _attributes: {
-                k: key,
-                v: feature.properties[key]
+        node: features.map((feature, index) => {
+          return {
+            _attributes: {
+              id: 0 - (index + 1),
+              version: 1,
+              lat: feature.geometry.coordinates[1],
+              lon: feature.geometry.coordinates[0]
+            },
+            tag: Object.keys(_.omit(feature.properties, ['_pfi', 'addr:suburb', 'addr:postcode', 'addr:state'])).map(key => {
+              return {
+                _attributes: {
+                  k: key,
+                  v: feature.properties[key]
+                }
               }
-            }
-          })
-        }
+            })
+          }
+        })
       }
     }
   }, Object.assign({
@@ -314,7 +323,7 @@ function featureToOsc(feature) {
 }
 
 // ndjson streams to output debug features
-const debugKeys = ['singleCluster', 'multiCluster', 'droppedSameCoordinates', 'mr_duplicateAddressFarApart']
+const debugKeys = ['singleCluster', 'multiCluster', 'droppedSameCoordinates', 'mr_duplicateAddressFarApart_FoundInOSM', 'mr_duplicateAddressFarApart_NotFoundInOSM']
 const debugStreams = {}
 const debugStreamOutputs = {}
 
