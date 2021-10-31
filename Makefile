@@ -36,6 +36,9 @@ vicmapExtract:
 cleanDist:
 	rm -rf dist
 
+clean:
+	rm -rf dist debug data
+
 dist/vicmap-osm.geojson: data/vicmap.geojson
 	mkdir -p dist
 	./bin/vicmap2osm.js $< $@
