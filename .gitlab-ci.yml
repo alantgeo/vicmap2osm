@@ -114,6 +114,8 @@ build vicmap:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -133,11 +135,9 @@ build vicmap:
     - time make dist/vicmap-osm-overlapping.geojson
     - wc -l dist/*.geojson
   when: manual
-  artifacts:
-    name: "build vicmap"
-    paths:
-      - dist
-      - debug
+  after_script:
+    - b2 sync --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --noProgress debug b2://vicmap2osm/debug
 
 build osm:
   stage: build
@@ -145,6 +145,8 @@ build osm:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --noProgress vicmap2osm .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -160,10 +162,8 @@ build osm:
     - make data/victoria-admin-level10.osm.geojson
     - make summariseBlocksByOSMAddr
   when: manual
-  artifacts:
-    name: "build osm"
-    paths:
-      - dist
+  after_script:
+    - b2 sync --noProgress dist b2://vicmap2osm/dist
 
 conflate:
   stage: conflate
@@ -171,6 +171,8 @@ conflate:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --noProgress vicmap2osm .
   cache:
     <<: *global_cache
     policy: pull
@@ -183,10 +185,8 @@ conflate:
     - wc -l dist/conflate/*.geojson
     - wc -l dist/vicmap-*-conflation/*.geojson
   when: manual
-  artifacts:
-    name: "conflate"
-    paths:
-      - dist
+  after_script:
+    - b2 sync --noProgress dist b2://vicmap2osm/dist
 
 candidate:
   stage: candidate
@@ -194,6 +194,8 @@ candidate:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --noProgress vicmap2osm .
   cache:
     <<: *global_cache
     policy: pull
@@ -203,10 +205,8 @@ candidate:
     - make dist/candidate
     - make dist/unitFromNumber.osc
   when: manual
-  artifacts:
-    name: "candidate"
-    paths:
-      - dist
+  after_script:
+    - b2 sync --noProgress dist b2://vicmap2osm/dist
 
 upload dev:
   stage: upload
@@ -214,6 +214,8 @@ upload dev:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --noProgress vicmap2osm .
   cache:
     <<: *global_cache
     policy: pull
@@ -233,6 +235,8 @@ build compareSuburb:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --noProgress vicmap2osm .
   cache:
     <<: *global_cache
     policy: pull
@@ -249,8 +253,6 @@ build compareSuburb:
     - rm -f dist/vicmap-osm-with-suburb.geojson
     - make printDifferentSuburbs
   when: manual
-  artifacts:
-    name: "build compareSuburb"
-    paths:
-      - dist
-      - debug
+  after_script:
+    - b2 sync --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --noProgress debug b2://vicmap2osm/debug
