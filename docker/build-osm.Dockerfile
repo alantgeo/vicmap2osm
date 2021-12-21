@@ -8,3 +8,4 @@ RUN wget -qO - https://qgis.org/downloads/qgis-2020.gpg.key | gpg --no-default-k
 RUN chmod a+r /etc/apt/trusted.gpg.d/qgis-archive.gpg
 RUN add-apt-repository "deb https://qgis.org/debian unstable main"
 RUN apt-get -y update && apt-get -y install qgis
+RUN wget -qO /usr/bin/b2 'https://github.com/Backblaze/B2_Command_Line_Tool/releases/latest/download/b2-linux' && chmod +x /usr/bin/b2
