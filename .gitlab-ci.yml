@@ -94,7 +94,7 @@ prepare:
   image: "registry.gitlab.com/alantgeo/vicmap2osm:prepare"
   before_script:
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --noProgress b2://vicmap2osm/ .
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: push
@@ -115,7 +115,7 @@ build vicmap:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --noProgress b2://vicmap2osm/ .
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -136,8 +136,8 @@ build vicmap:
     - wc -l dist/*.geojson
   when: manual
   after_script:
-    - b2 sync --noProgress dist b2://vicmap2osm/dist
-    - b2 sync --noProgress debug b2://vicmap2osm/debug
+    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
 
 build osm:
   stage: build
@@ -146,7 +146,7 @@ build osm:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --noProgress b2://vicmap2osm/ .
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -163,7 +163,7 @@ build osm:
     - make summariseBlocksByOSMAddr
   when: manual
   after_script:
-    - b2 sync --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 conflate:
   stage: conflate
@@ -172,7 +172,7 @@ conflate:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --noProgress b2://vicmap2osm/ .
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -186,7 +186,7 @@ conflate:
     - wc -l dist/vicmap-*-conflation/*.geojson
   when: manual
   after_script:
-    - b2 sync --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 candidate:
   stage: candidate
@@ -195,7 +195,7 @@ candidate:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --noProgress b2://vicmap2osm/ .
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -206,7 +206,7 @@ candidate:
     - make dist/unitFromNumber.osc
   when: manual
   after_script:
-    - b2 sync --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 upload dev:
   stage: upload
@@ -215,7 +215,7 @@ upload dev:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --noProgress b2://vicmap2osm/ .
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -236,7 +236,7 @@ build compareSuburb:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --noProgress b2://vicmap2osm/ .
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -254,5 +254,5 @@ build compareSuburb:
     - make printDifferentSuburbs
   when: manual
   after_script:
-    - b2 sync --noProgress dist b2://vicmap2osm/dist
-    - b2 sync --noProgress debug b2://vicmap2osm/debug
+    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
