@@ -26,7 +26,7 @@ We use GitLab CI/CD to automate data processing.
 
 Download source Vicmap data (_prepare_ stage):
 
-    make data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
+    make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
 
 Convert to GeoJSON (_prepare_ stage):
 
