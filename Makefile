@@ -3,12 +3,12 @@
 # it's a mirror of the upstream VICMAP data with split shp files reduced to a single shp file
 data/VICMAP_ADDRESS.zip:
 	mkdir -p data
-	wget --no-verbose --directory-prefix=data https://www.alantgeo.com.au/share/VICMAP_ADDRESS.zip
+	wget --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_BGJ5MV.zip
 
 # cadastre used for debugging
 data/VICMAP_PROPERTY.zip:
 	mkdir -p data
-	wget --no-verbose --directory-prefix=data https://www.alantgeo.com.au/share/VICMAP_PROPERTY.zip
+	wget --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_OTL5B2.zip
 
 data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb: data/VICMAP_ADDRESS.zip
 	mkdir -p data/vicmap
@@ -16,13 +16,13 @@ data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb: dat
 	# update mtime so that Make doesn't see it as outdated
 	touch --no-create $@
 
-data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp: data/VICMAP_PROPERTY.zip
+data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMPROP.gdb: data/VICMAP_PROPERTY.zip
 	mkdir -p data/vicmap
 	unzip -d data/vicmap -n $<
 	touch --no-create $@
 
-data/vicmap-property.fgb: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp
-	ogr2ogr -f FlatGeobuf -nlt PROMOTE_TO_MULTI $@ $<
+data/vicmap-property.fgb: data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMPROP.gdb
+	ogr2ogr -f FlatGeobuf -nlt PROMOTE_TO_MULTI $@ $< PARCEL_VIEW
 
 data/vicmap.geojson:
 	ogr2ogr -f GeoJSONSeq -mapFieldType DateTime=String $@ data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
