@@ -103,6 +103,7 @@ prepare:
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist
     - make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+    - rm -rf data/vicmap.geojson
     - make data/vicmap.geojson
   after_script:
     - b2 upload-file --noProgress vicmap2osm data/vicmap.geojson data/vicmap.geojson
