@@ -102,7 +102,7 @@ prepare:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist
-    - make data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
+    - make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
     - make data/vicmap.geojson
   after_script:
     - b2 upload-file --noProgress vicmap2osm data/vicmap.geojson data/vicmap.geojson
@@ -124,9 +124,9 @@ build vicmap:
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - yarn run test
     - mkdir -p dist data
-    - mkdir -p data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer
+    - mkdir -p data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria
     - touch data/VICMAP_ADDRESS.zip
-    - touch data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
+    - touch data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
     - touch --no-create data/vicmap.geojson
     - time make dist/vicmap-osm.geojson
     - time make dist/vicmap-osm-uniq.geojson
@@ -159,7 +159,7 @@ build osm:
     - make data/victoria-named-features.osm.geojson
     - make dist/blocksByOSMAddr.fgb
     - make dist/blocksByOSMAddr.geojson
-    - make data/victoria-admin-level10.osm.geojson
+    - make data/victoria-admin-level9.osm.geojson
     - make summariseBlocksByOSMAddr
   when: manual
   after_script:
@@ -244,9 +244,9 @@ build compareSuburb:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist data
-    - mkdir -p data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer
+    - mkdir -p data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria
     - touch data/VICMAP_ADDRESS.zip
-    - touch data/vicmap/ll_gda94/sde_shape/whole/VIC/VMADD/layer/address.shp
+    - touch data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
     - touch --no-create data/vicmap.geojson
     - time make dist/vicmap-osm-with-suburb.geojson
     - time make dist/vicmapSuburbDiffersWithOSM.geojson
