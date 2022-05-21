@@ -62,12 +62,12 @@ const transform = new Transform({
       }
     }
 
-    if (feature.properties.COMPLEX) {
+    if (feature.properties.COMPLEX_NAME) {
       const complexFeature = {
         type: 'Feature',
         id: `${feature.properties.PFI}`,
         properties: {
-          name: feature.properties.COMPLEX
+          name: feature.properties.COMPLEX_NAME
         },
         geometry: feature.geometry
       }
@@ -81,12 +81,12 @@ const transform = new Transform({
       includeDerivableProperties: argv.preserveDerivableProperties
     })
 
-    if (feature.properties.BUILDING) {
+    if (feature.properties.BUILDING_NAME) {
       const buildingFeature = {
         type: 'Feature',
         id: `${feature.properties.PFI}`,
         properties: Object.assign({}, osm.properties, {
-          name: feature.properties.BUILDING
+          name: feature.properties.BUILDING_NAME
         }),
         geometry: osm.geometry
       }
