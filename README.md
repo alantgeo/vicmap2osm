@@ -264,7 +264,7 @@ Where there contains some addresses already in OSM for the block, then it will e
 
     make dist/blocksByOSMAddr.geojson
 
-Conflate Vicmap addresses with OSM (code at [`bin/conflate.js`](bin/conflate.js)):
+4. Conflate Vicmap addresses with OSM (code at [`bin/conflate.js`](bin/conflate.js)):
 
     make dist/conflate
 
@@ -286,7 +286,7 @@ These results are in GeoJSON format, for easier viewing in QGIS convert to FGB w
 
     make convertConflationResultsToFGB
 
-Further processing to conflate Vicmap complex and building names with OSM can be done via:
+5. Further processing to conflate Vicmap complex and building names with OSM can be done via:
 
     make data/victoria-named-features.osm.geojson
     make dist/vicmap-complex-conflation
@@ -294,8 +294,11 @@ Further processing to conflate Vicmap complex and building names with OSM can be
 
 These outputs are described in the [Building Name](#building-name) and [Complex Name](#complex-name) sections.
 
-- [ ] we need to deal with addresses represented in OSM as interpolation ways. If there is community consensus to replace these existing interpolation ways with individual point nodes or leave the existing interpolation ways.
-- [ ] we need a better way to review matches where some attributes differ, potentially as a quick fix MapRoulette for tricky cases, or done as a bulk import for easy cases (eg. simply adding `addr:suburb`, `addr:state` and `addr:postcode`)
+Currently there are around 1,934 `addr:interpolation` ways in Victoria ([`addr:interpolation=* in "VIC, AU"`](https://overpass-turbo.eu/s/18mq)). Per consultation on talk-au these should be replaced with individually mapped address points. Existing way nodes with housenumebers will be retained where matched but the way should be deleted if both endpoints of the interpolation way match. The actual deletion is not handled as part of this import and would need to be address manually post-import.
+
+There exists interpolation ways where every individual address point is mapped, eg https://www.openstreetmap.org/way/116678304 these should be retained.
+
+A better way to review matches where some attributes differ, potentially as a quick fix MapRoulette for tricky cases, or done as a bulk import for easy cases (eg. simply adding `addr:suburb`, `addr:state` and `addr:postcode`) would have made this import better, but is not included.
 
 ### Limitations
 
@@ -335,9 +338,12 @@ For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`
 
 Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org/wiki/Key:postal_code) will be added to the existing Victorian `admin_level=9` boundaries using the postcode derived from Vicmap Addresses. Except for Melbourne suburb because there are two postal codes in use, and the `postal_code` boundaries are already mapped.
 
+    make printDifferentSuburbs
+
 The tag changes are created by [`bin/compareSuburb.js`](bin/compareSuburb.js) which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
 
-- [ ] Changeset uploaded at XXX (~2559 features)
+
+- [ ] Changeset uploaded at XXX (~2473 features)
 
 ### Stage 2 - Set unit from housenumber
 During the conflation stage, Vicmap addresses which were deemed to match OSM addresses where in OSM it was represented as `addr:housenumber=X/Y` whereas in Vicmap it was represented as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
@@ -406,8 +412,10 @@ Flag whether within the same property parcel or not.
 
 ## Future Work
 
-- Tracking new Vicmap addresses
-- Monitoring changes over time
+### Tracking new Vicmap addresses
+Not covered within this import scope, however a suggested way to address this is via a scheduled extraction of new addresses each week/month/quarter. These can then be manually updated in OSM after reviewing for conflicts.
+
+- Monitoring for modified and deleted addresses from Vicmap
 
 ## Community Feedback
 
