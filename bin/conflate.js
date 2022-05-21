@@ -246,9 +246,11 @@ const conflate = new Transform({
               const exactMatchLine = lineString([feature.geometry.coordinates, centroid(match).geometry.coordinates], feature.properties)
               outputStreams.exactMatchSingleLines.write(exactMatchLine)
 
-              // only report a MR modifyElement when there are tag differences, and the Vicmap feature has addr:flats and OSM doesn't have addr:flats to avoid modifying existing mapped addr:flats
+              // only report a MR modifyElement when there are tag differences,
+              // and the Vicmap feature has addr:flats,
+              // and OSM doesn't have addr:flats to avoid modifying existing mapped addr:flats
               // though we only found node/6132032112 which differed
-              if (hasTagDifference(match, feature) && feature.properties['addr:flats'] && !osm.properties['add:flats']) {
+              if (hasTagDifference(match, feature) && feature.properties['addr:flats'] && !match.properties['add:flats']) {
                 const setProperties = {}
                 for (const [key, value] of Object.entries(feature.properties)) {
                   if (key.startsWith('addr:flats')) {
