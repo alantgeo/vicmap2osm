@@ -24,44 +24,48 @@ We use GitLab CI/CD to automate data processing.
 
 ## Build candidate files (pre-conflation)
 
-Download source Vicmap data (_prepare_ stage):
+1. Download source Vicmap data (_prepare_ stage):
 
     make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
 
-Convert to GeoJSON (_prepare_ stage):
+2. Convert to GeoJSON (_prepare_ stage):
 
     make data/vicmap.geojson
 
 The following steps are built into the _build vicmap_ stage.
 
-Next, convert into [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at [`bin/vicmap2osm.js`](bin/vicmap2osm.js)):
+3. Convert into the [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at [`bin/vicmap2osm.js`](bin/vicmap2osm.js)):
 
-    make dist/vicmap-osm-with-suburb.geojson (3,529,928 features)
+    make dist/vicmap-osm-with-suburb.geojson
 
-Next, remove duplicates where all address attributes match at the same location or within a small proximity (code at [`bin/reduceDuplicates.js`](bin/reduceDuplicates.js), see [_Removing duplicates_](#removing-duplicates)): (3,393,050 features)
+4. Remove duplicates where all address attributes match at the same location or within a small proximity (code at [`bin/reduceDuplicates.js`](bin/reduceDuplicates.js), see [_Removing duplicates_](#removing-duplicates)):
 
     make dist/vicmap-osm-uniq.geojson
 
 Two debug outputs are produced from this step.
 
-1. _singleCluster_ - visualises where all addresses with the same address properties are combined into a single "cluster" based on a 40 meter maximum threshold distance. In this case it's safe to reduce all the points into a single centroid point.
+a) _singleCluster_ - visualises where all addresses with the same address properties are combined into a single "cluster" based on a 40 meter maximum threshold distance. In this case it's safe to reduce all the points into a single centroid point.
 
-2. _multiCluster_ - visualises where all addresses with the same address properties exceed the 40 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be reviewed for manual import. A MapRoulette challenge is outputted at `debug/reduceDuplicates/mr_duplicateAddressFarApart_NotFoundInOSM.geojson`, which includes those missing from OSM with a rough conflation pass.
+b) _multiCluster_ - visualises where all addresses with the same address properties exceed the 40 meter cluster threshold and are unable to be reduced to a single point. These are not included in the import and need to be reviewed for manual import. A MapRoulette challenge is outputted at `debug/reduceDuplicates/mr_duplicateAddressFarApart_NotFoundInOSM.geojson`, which includes those missing from OSM with a rough conflation pass.
 
 ![multiCluster example](img/reduceDuplicates_multiCluster.png)
 
-Next, reduce some address points with the exact same coordinates but different address attributes (see [_Removing duplicates_](#removing-duplicates) below) (code at [`bin/reduceOverlap.js`](bin/reduceOverlap.js)):
+5. Reduce some address points with the exact same coordinates but different address attributes (see [_Removing duplicates_](#removing-duplicates) below) (code at [`bin/reduceOverlap.js`](bin/reduceOverlap.js)):
 
     make dist/vicmap-osm-uniq-flats.geojson
 
 Two debug outputs are produced from this step.
 
-1. _oneUnitOneNonUnit_ - where there is one address without a unit and one with a unit at the same point, with all the same address attributes except unit. In this case we just drop the non-unit address and keep the addr:unit one.
-2. _sameGeometry_ - where other features shared the same geometry, but this one is unique in it's housenumber,street,suburb,state,postcode
+a) _oneUnitOneNonUnit_ - where there is one address without a unit and one with a unit at the same point, with all the same address attributes except unit. In this case we just drop the non-unit address and keep the addr:unit one.
+b) _sameGeometry_ - where other features shared the same geometry, but this one is unique in it's housenumber,street,suburb,state,postcode
 
-Next, drop some duplicate addresses created by ranges being expressed both as a single range and as individual points (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at [`bin/reduceRangeDuplicates.js`](bin/reduceRangeDuplicates.js)).
+6. Drop some duplicate addresses created by ranges being expressed both as a single range and as individual points (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at [`bin/reduceRangeDuplicates.js`](bin/reduceRangeDuplicates.js)).
 
     make dist/vicmap-osm-uniq-flats-withinrange.geojson
+
+These results are in GeoJSON format, for easier viewing in QGIS convert to FGB with:
+
+    make convertGeoJSONResultsToFGB
 
 ### Omitted addresses
 
@@ -247,18 +251,18 @@ Given some addresses are already mapped in OSM we first break the state down int
 
 Where there contains some addresses already in OSM for the block, then it will either need further conflation or need to be manually reviewed prior to importing.
 
-Generate the latest view of address data in OSM:
+1. Generate the latest view of address data in OSM:
 
     make data/victoria-addr.osm.fgb
     make data/victoria-addr.osm.centroids.fgb
 
-Generate city blocks:
+2. Generate city blocks:
 
     make data/blocks.fgb
 
-Sort blocks into containing some OSM addresses or containing no OSM addresses:
+3. Sort blocks into containing some OSM addresses or containing no OSM addresses:
 
-    make dist/blocksByOSMAddr.fgb
+    make dist/blocksByOSMAddr.geojson
 
 Conflate Vicmap addresses with OSM (code at [`bin/conflate.js`](bin/conflate.js)):
 
