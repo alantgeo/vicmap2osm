@@ -158,7 +158,7 @@ Multiple points overlapping don't add any extra value to the OSM data and are ar
 
 Data consumers can still easily explode `addr:flats` out into overlapping nodes with varying `addr:unit` if desired.
 
-Because OSM tag values are limited to 255 characters, if the constructed `addr:flats` exceeds this it is split across `addr:flats`, `addr:flats1`, etc. While not ideal I don't see any other option.
+However to avoid creating too many immediate problems, given OSM Carto will include `addr:flats` as a map label, without truncating long strings, if the flats range includes more than 3 then `addr:flats` is ommitted. This is not ideal, but is more conservative given this is a bulk import.
 
 3. Where all the overlapping points have no units and the same street, suburb, state, postcode but different housenumbers, the housenumbers are combined into a range.
 

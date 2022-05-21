@@ -177,7 +177,10 @@ const reduce = new Transform({
                   this.push(retainedFeature)
                 } else {
                   const flats = unitsToRanges(allOtherUnits, argv.verbose && featureGroup)
-                  nonUnitFeature.properties['addr:flats'] = flats
+                  // because OSM carto will render addr:flats regardless of length for the time being if there would be too many flat ranges then don't include addr:flats at all
+                  if (flats.split(';').length <= 2) {
+                    nonUnitFeature.properties['addr:flats'] = flats
+                  }
                   if (nonUnitFeature.properties._pfi) {
                     nonUnitFeature.properties._pfi = featureGroup.map(f => f.properties._pfi).join(',')
                   }
