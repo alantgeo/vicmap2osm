@@ -3,7 +3,7 @@
 /**
  * Compare the addr:suburb reported from Vicmap with the corresponding suburb/locality boundary existing in OSM
  * to report any Vicmap addresses where addr:suburb conflicts with OSM's boundaries
- * 
+ *
  * For each OSM suburb/locality, report the distribution of Vicmap addr:postcode's falling with the boundary.
  */
 
@@ -20,7 +20,7 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
   .argv
 
 if (argv._.length < 6) {
-  console.error("Usage: ./compareSuburb.js vicmap-osm.geojson osm_admin_level_10.geojson dist/vicmapSuburbDiffersWithOSM.geojson dist/suburbsWithPostcodeCounts.geojson dist/postalCodeInstructions.json dist/postalCodeURLs.txt")
+  console.error("Usage: ./compareSuburb.js vicmap-osm.geojson osm_admin_level_9.geojson dist/vicmapSuburbDiffersWithOSM.geojson dist/suburbsWithPostcodeCounts.geojson dist/postalCodeInstructions.json dist/postalCodeURLs.txt")
   process.exit(1)
 }
 
@@ -93,7 +93,7 @@ const compare = new Transform({
     if (osmFeature) {
       // address within an OSM suburb
       if (feature.properties['addr:suburb'] !== osmFeature.properties['name']) {
-        // Vicmap suburb different to OSM admin_level=10
+        // Vicmap suburb different to OSM admin_level=9
         // console.log('Suburb differs', feature.properties['addr:suburb'], osmFeature.properties['name'])
         feature.properties._osmSuburb = osmFeature.properties['name']
         this.push(feature)

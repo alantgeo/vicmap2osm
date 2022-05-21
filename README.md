@@ -110,13 +110,13 @@ These are converted into simply "Hillside", the full list of special cases is in
 ### Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`
 Some within the OSM community advocate including full address attributes `addr:suburb`, `addr:postcode`, `addr:state` on all address objects even when they can be derived from a `boundary` object already mapped. Others advocate excluding these attributes from each address object where they can be derived from the `boundary` object.
 
-I undertook analysis (see [`bin/compareSuburb.js`](bin/compareSuburb.js) and the _build compareSuburb_ stage) to see how consistent Vicmap `addr:suburb` was with OSM `admin_level=10` boundaries and `addr:postcode` with a potential `postal_code` tag on each OSM level 10 boundary.
+I undertook analysis (see [`bin/compareSuburb.js`](bin/compareSuburb.js) and the _build compareSuburb_ stage) to see how consistent Vicmap `addr:suburb` was with OSM `admin_level=9` boundaries and `addr:postcode` with a potential `postal_code` tag on each OSM level 9 boundary.
 
 After excluding some special cases, there were 62 Vicmap addresses with a reported suburb/locality different to what would be derived from the OSM admin boundary. It looks like a bunch are bad Vicmap data, most of the rest are address points practically on the admin boundary line, there's only a [small handful otherwise to deal with](https://gitlab.com/alantgeo/vicmap2osm/-/jobs/1279647817/artifacts/raw/dist/vicmapSuburbDiffersWithOSM.geojson).
 
-This analysis supports it is mostly fine from a data consistency point of view to rely on the `admin_level=10` suburb, except for a handful of cases (and even then it's not clear between Vicmap or OSM which is correct).
+This analysis supports it is mostly fine from a data consistency point of view to rely on the `admin_level=9` suburb, except for a handful of cases (and even then it's not clear between Vicmap or OSM which is correct).
 
-For postcodes, of the 2988 `admin_level=10` suburb/localities in OSM:
+For postcodes, of the 2988 `admin_level=9` suburb/localities in OSM:
 
 - 2912 have only one distinct postcode from Vicmap data,
 - 9 have >1 postcode from Vicmap
@@ -124,11 +124,11 @@ For postcodes, of the 2988 `admin_level=10` suburb/localities in OSM:
 
 Of the 9 that have >1 postcode, 7 have only 1 address with a different postcode, 1 has only 3 addresses with a different postcode, and one suburb/locality (Melbourne suburb) has two main postcodes 3000 with 51,458 addresses and postcode 3004 with 12,158 postcodes. In the Melbourne suburb, it's clear that the Melbourne CBD is 3000 and areas south of the Yarra River are 3004 (see img/postcodes_melbourne.png). A separate `boundary=postal_code` already exists for [3000](https://www.openstreetmap.org/relation/8383583) and [3004](https://www.openstreetmap.org/relation/3402721).
 
-My analysis supports adding `postal_code` to the level 10 admin boundary is safe for pretty much the whole state, except for Melbourne where `postal_code` boundaries [have already been mapped](https://overpass-turbo.eu/s/18eS) (`boundary=postal_code in "VIC, AU"`).
+My analysis supports adding `postal_code` to the level 9 admin boundary is safe for pretty much the whole state, except for Melbourne where `postal_code` boundaries [have already been mapped](https://overpass-turbo.eu/s/18eS) (`boundary=postal_code in "VIC, AU"`).
 
-At the time of writing 360 `admin_level=10` boundaries have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eU) (`(type=boundary and boundary=administrative and admin_level=10 and postal_code=*) in "VIC, AU"`), 2613 `admin_level=10` boundaries don't have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eV) (`(type=boundary and boundary=administrative and admin_level=10 and postal_code is null) in "VIC, AU"`).
+At the time of writing 360 `admin_level=9` boundaries have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eU) (`(type=boundary and boundary=administrative and admin_level=9 and postal_code=*) in "VIC, AU"`), 2613 `admin_level=9` boundaries don't have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eV) (`(type=boundary and boundary=administrative and admin_level=9 and postal_code is null) in "VIC, AU"`).
 
-As part of this import, `postal_code` will be added to `admin_level=10` boundaries derived from Vicmap, see [Stage 1 - postal_code](#stage-1-postal_code).
+As part of this import, `postal_code` will be added to `admin_level=9` boundaries derived from Vicmap, see [Stage 1 - postal_code](#stage-1-postal_code).
 
 After lengthy engagement with the local community, we opt to omit `addr:suburb`, `addr:postcode`, `addr:state` tags in the current import.
 
@@ -309,7 +309,7 @@ These outputs are described in the [Building Name](#building-name) and [Complex 
 
     make dist/candidates
 
-This will split the conflation results into the following import candidate categories, then again split into suburb/locality (`admin_level=10`).
+This will split the conflation results into the following import candidate categories, then again split into suburb/locality (`admin_level=9`).
 
 ### Candidate Categories
 1. `newAddressesWithoutConflicts` - new addresses from Vicmap where it's unlikely to conflict with existing OSM addresses, can be imported automatically.
@@ -329,7 +329,7 @@ The dedicated import account used for the import is [`vicmap_import`](https://ww
 ### Stage 1 - postal_code
 For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`](#inclusion-of-addrsuburb-addrpostcode-and-addrstate).
 
-Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org/wiki/Key:postal_code) will be added to the existing Victorian `admin_level=10` boundaries using the postcode derived from Vicmap Addresses. Except for Melbourne suburb because there are two postal codes in use, and the `postal_code` boundaries are already mapped.
+Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org/wiki/Key:postal_code) will be added to the existing Victorian `admin_level=9` boundaries using the postcode derived from Vicmap Addresses. Except for Melbourne suburb because there are two postal codes in use, and the `postal_code` boundaries are already mapped.
 
 The tag changes are created by [`bin/compareSuburb.js`](bin/compareSuburb.js) which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
 

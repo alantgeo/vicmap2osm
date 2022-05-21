@@ -161,12 +161,12 @@ data/blocks.fgb: data/victoria-roads.fgb
 	qgis_process run native:polygonize -- INPUT=$< KEEP_FIELDS=FALSE OUTPUT=$@
 
 # blocks from roads mostly works well, except for the coastal area where we end up with one large thin polygon along the coastline
-# we split this one up by suburb/locality boundaries (admin_level=10) to make it smaller and more manageable
+# we split this one up by suburb/locality boundaries (admin_level=9) to make it smaller and more manageable
 data/coastalStrip.fgb: data/blocks.fgb
 	qgis_process run native:extractbylocation -- INPUT='$<|layername=blocks' INTERSECT=src/pointInPortPhillipBay.geojson OUTPUT=$@ PREDICATE=0
 
-data/coastalStripBySuburb.fgb: data/coastalStrip.fgb data/victoria-admin-level10.osm.fgb
-	qgis_process run native:intersection -- INPUT='$<|layername=coastalStrip' OVERLAY='data/victoria-admin-level10.osm.fgb|layername=victoria-admin-level10.osm' OUTPUT=$@
+data/coastalStripBySuburb.fgb: data/coastalStrip.fgb data/victoria-admin-level9.osm.fgb
+	qgis_process run native:intersection -- INPUT='$<|layername=coastalStrip' OVERLAY='data/victoria-admin-level9.osm.fgb|layername=victoria-admin-level9.osm' OUTPUT=$@
 
 # replace large coastal strip in blocks with costalStripBySuburb
 data/blocksExcludingCoastalStrip.fgb: data/blocks.fgb
@@ -176,7 +176,7 @@ data/blocksWithCoastalStripSplit.fgb: data/blocksExcludingCoastalStrip.fgb data/
 	qgis_process run native:mergevectorlayers -- LAYERS='data/blocksExcludingCoastalStrip.fgb|layername=blocksExcludingCoastalStrip' LAYERS='data/coastalStripBySuburb.fgb|layername=coastalStripBySuburb' OUTPUT=$@
 
 data/osmSuburbLines.fgb:
-	qgis_process run native:polygonstolines -- INPUT=data/victoria-admin-level10.osm.geojson OUTPUT=$@
+	qgis_process run native:polygonstolines -- INPUT=data/victoria-admin-level9.osm.geojson OUTPUT=$@
 
 data/suburbLinesInCoastalStrip.fgb: data/osmSuburbLines.fgb
 	qgis_process run native:extractbylocation -- INPUT='$<|layername=osmSuburbLines' INTERSECT='data/coastalStrip.fgb|layername=coastalStrip' OUTPUT=$@ PREDICATE=0
@@ -225,20 +225,20 @@ dist/vicmap-building-conflation: dist/vicmap-building.geojson
 	mkdirp -p $@
 	./bin/building.js $< data/victoria-named-features.osm.geojson $@
 
-# extract admin_level=10 from OSM
+# extract admin_level=9 from OSM
 data/victoria-admin.osm.pbf: data/victoria.osm.pbf
 	osmium tags-filter --remove-tags --overwrite --output=$@ $< r/boundary=administrative
 
-data/victoria-admin-level10.osm.pbf: data/victoria-admin.osm.pbf
-	osmium tags-filter --remove-tags --overwrite --output=$@ $< r/admin_level=10
+data/victoria-admin-level9.osm.pbf: data/victoria-admin.osm.pbf
+	osmium tags-filter --remove-tags --overwrite --output=$@ $< r/admin_level=9
 
-data/victoria-admin-level10.osm.geojson: data/victoria-admin-level10.osm.pbf
-	osmium export --overwrite --config=config/osmium-export-config-adminlevel10.json --geometry-types=polygon --add-unique-id=type_id --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
+data/victoria-admin-level9.osm.geojson: data/victoria-admin-level9.osm.pbf
+	osmium export --overwrite --config=config/osmium-export-config-adminlevel9.json --geometry-types=polygon --add-unique-id=type_id --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
 
-data/victoria-admin-level10.osm.fgb: data/victoria-admin-level10.osm.geojson
+data/victoria-admin-level9.osm.fgb: data/victoria-admin-level9.osm.geojson
 	ogr2ogr -f FlatGeobuf $@ $<
 
-dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm-with-suburb.geojson data/victoria-admin-level10.osm.geojson
+dist/vicmapSuburbDiffersWithOSM.geojson: dist/vicmap-osm-with-suburb.geojson data/victoria-admin-level9.osm.geojson
 	rm -f dist/postalCodeURLs.txt
 	./bin/compareSuburb.js $^ $@ dist/suburbsWithPostcodeCounts.geojson dist/postalCodeInstructions.json dist/postalCodeURLs.txt
 	wc -l $@
@@ -247,7 +247,7 @@ printDifferentSuburbs: dist/vicmapSuburbDiffersWithOSM.geojson
 	echo "OSM Suburb,Vicmap Suburb"
 	ogr2ogr -f CSV -select '_osmSuburb,addr:suburb' /vsistdout/ $< | tail -n+2 | sort | uniq
 
-dist/candidates: data/victoria-admin-level10.osm.geojson dist/conflate
+dist/candidates: data/victoria-admin-level9.osm.geojson dist/conflate
 	mkdir -p $@
 	./bin/candidates.js $^ $@
 
