@@ -218,11 +218,11 @@ convertConflationResultsToFGB:
 	ogr2ogr -f FlatGeobuf dist/conflate/fuzzyStreetMatchesMultiple.fgb dist/conflate/fuzzyStreetMatchesMultiple.geojson
 
 dist/vicmap-complex-conflation: dist/vicmap-complex.geojson
-	mkdirp -p $@
+	mkdir -p $@
 	./bin/complex.js $< data/victoria-named-features.osm.geojson $@
 
 dist/vicmap-building-conflation: dist/vicmap-building.geojson
-	mkdirp -p $@
+	mkdir -p $@
 	./bin/building.js $< data/victoria-named-features.osm.geojson $@
 
 # extract admin_level=9 from OSM
