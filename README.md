@@ -342,7 +342,6 @@ Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org
 
 The tag changes are created by [`bin/compareSuburb.js`](bin/compareSuburb.js) which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
 
-
 - [ ] Changeset uploaded at XXX (~2473 features)
 
 ### Stage 2 - Set unit from housenumber
@@ -352,7 +351,7 @@ This will be a single Victoria wide changeset.
 
 [`bin/mr2osc.mjs`](bin/mr2osc.mjs) is the script which creates the OsmChange and uploads it as a changeset from the tag changes outputted from the _conflate_ stage as a MapRoulette `setTags` operation.
 
-You can visualise the tag changes with `bin/mrCoopDiff.js` and `www/mrPreview.html`.
+You can visualise the tag changes with `bin/mrCoopDiff.js` and `www/mrPreview.html` at _URL_.
 
 The actual changeset will be created with:
 
@@ -394,14 +393,13 @@ Similar process to Stage 3.
 
 - [ ] Changeset not yet uploaded
 
-
 ### Stage 6 - Complete incomplete existing addresses
 
 Adding `addr:street` and other tags where none exists but the `addr:housenumber` matches.
 
 Flag whether within the same property parcel or not.
 
-### Stage X - Duplicate addresses from Vicmap needing manual review
+### Stage 7 - Duplicate addresses from Vicmap needing manual review
 
 `mr_duplicateAddressFarApart_NotFoundInOSM.geojson` was used to created the MapRoulette challenge at https://maproulette.org/browse/challenges/21226.
 
