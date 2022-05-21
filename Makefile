@@ -210,7 +210,8 @@ convertConflationResultsToFGB:
 	ogr2ogr -f FlatGeobuf dist/conflate/withinExistingOSMAddressPoly.fgb dist/conflate/withinExistingOSMAddressPoly.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/notFoundInBlocks.fgb dist/conflate/notFoundInBlocks.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/exactMatch.fgb dist/conflate/exactMatch.geojson
-	ogr2ogr -f FlatGeobuf dist/conflate/exactMatchLines.fgb dist/conflate/exactMatchLines.geojson
+	ogr2ogr -f FlatGeobuf dist/conflate/exactMatchSingleLines.fgb dist/conflate/exactMatchSingleLines.geojson
+	ogr2ogr -f FlatGeobuf dist/conflate/exactMatchMultipleLines.fgb dist/conflate/exactMatchMultipleLines.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/noExactMatch.fgb dist/conflate/noExactMatch.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/noOSMAddressWithinBlock.fgb dist/conflate/noOSMAddressWithinBlock.geojson
 	ogr2ogr -f FlatGeobuf dist/conflate/fuzzyStreetMatchesSingle.fgb dist/conflate/fuzzyStreetMatchesSingle.geojson
