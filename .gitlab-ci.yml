@@ -95,7 +95,9 @@ prepare:
   image: "registry.gitlab.com/alantgeo/vicmap2osm:prepare"
   before_script:
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
+    - mkdir -p dist data
+    - b2 sync --allowEmptySource --noProgress --delete dist b2://vicmap2osm/dist
+    - b2 sync --allowEmptySource --noProgress --delete data b2://vicmap2osm/data
   cache:
     <<: *global_cache
     policy: push
