@@ -1,5 +1,5 @@
 FROM debian:buster-slim
-RUN apt-get -y update && apt-get -y install curl wget gnupg make
+RUN apt-get -y update && apt-get -y install curl wget gnupg make gdal-bin
 RUN curl -fsSL https://deb.nodesource.com/setup_15.x | bash -
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
