@@ -3,12 +3,12 @@
 # it's a mirror of the upstream VICMAP data with split shp files reduced to a single shp file
 data/VICMAP_ADDRESS.zip:
 	mkdir -p data
-	wget --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_BGJ5MV.zip
+	wget --no-verbose --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_BGJ5MV.zip
 
 # cadastre used for debugging
 data/VICMAP_PROPERTY.zip:
 	mkdir -p data
-	wget --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_OTL5B2.zip
+	wget --no-verbose --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_OTL5B2.zip
 
 data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb: data/VICMAP_ADDRESS.zip
 	mkdir -p data/vicmap
@@ -123,7 +123,7 @@ data/abbrStreetsMR.geojson: data/victoria-addr.osm.geojson
 	./bin/findAbbrStreets.js $< $@
 
 data/asgs.zip:
-	wget -O $@ 'https://www.abs.gov.au/AUSSTATS/subscriber.nsf/log?openagent&1270055001_ASGS_2016_vol_1_geopackage.zip&1270.0.55.001&Data%20Cubes&C406A18CE1A6A50ACA257FED00145B1D&0&July%202016&12.07.2016&Latest'
+	wget --no-verbose -O $@ 'https://www.abs.gov.au/AUSSTATS/subscriber.nsf/log?openagent&1270055001_ASGS_2016_vol_1_geopackage.zip&1270.0.55.001&Data%20Cubes&C406A18CE1A6A50ACA257FED00145B1D&0&July%202016&12.07.2016&Latest'
 
 loadMB:
 	ogr2ogr -f PostgreSQL -where 'STATE_CODE_2016 = 2' PG: /vsizip/asgs.zip/ASGS\ 2016\ Volume\ 1.gpkg -nln mb -select 'MB_CODE_2016' MB_2016_AUST
