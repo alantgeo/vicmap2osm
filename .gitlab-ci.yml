@@ -9,7 +9,8 @@ cache: &global_cache
 stages:
   - docker
   - prepare
-  - build
+  - build osm
+  - build vicmap
   - conflate
   - candidate
   - upload
@@ -110,7 +111,7 @@ prepare:
   when: manual
 
 build vicmap:
-  stage: build
+  stage: build vicmap
   image: "registry.gitlab.com/alantgeo/vicmap2osm:build-vicmap"
   before_script:
     - mkdir -p data dist
@@ -142,7 +143,7 @@ build vicmap:
     - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
 
 build osm:
-  stage: build
+  stage: build osm
   image: "registry.gitlab.com/alantgeo/vicmap2osm:build-osm"
   before_script:
     - mkdir -p data dist
@@ -167,6 +168,7 @@ build osm:
     - make summariseBlocksByOSMAddr
   when: manual
   after_script:
+    - b2 sync --allowEmptySource --noProgress data b2://vicmap2osm/data
     - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 conflate:
@@ -235,7 +237,7 @@ upload dev:
       - uploadLog
 
 build compareSuburb:
-  stage: build
+  stage: build vicmap
   image: "registry.gitlab.com/alantgeo/vicmap2osm:build-osm"
   before_script:
     - mkdir -p data dist
