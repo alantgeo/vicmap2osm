@@ -264,4 +264,3 @@ build compareSuburb:
   when: manual
   after_script:
     - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
-    - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
