@@ -108,9 +108,14 @@ prepare:
     - make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
     - rm -rf data/vicmap.geojson
     - make data/vicmap.geojson
-  after_script:
-    - b2 upload-file --noProgress vicmap2osm data/vicmap.geojson data/vicmap.geojson
   when: manual
+  artifacts:
+    name: "vicmap2osm"
+    paths:
+      - dist
+      - debug
+      - data
+
 
 build vicmap:
   stage: build vicmap
@@ -118,8 +123,6 @@ build vicmap:
   before_script:
     - mkdir -p data dist
     - ls data dist
-    - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -140,9 +143,12 @@ build vicmap:
     - time make convertGeoJSONResultsToFGB
     - wc -l dist/*.geojson
   when: manual
-  after_script:
-    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
-    - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
+  artifacts:
+    name: "vicmap2osm"
+    paths:
+      - dist
+      - debug
+      - data
 
 build osm:
   stage: build osm
@@ -150,8 +156,6 @@ build osm:
   before_script:
     - mkdir -p data dist
     - ls data dist
-    - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -169,9 +173,12 @@ build osm:
     - make data/victoria-admin-level9.osm.geojson
     - make summariseBlocksByOSMAddr
   when: manual
-  after_script:
-    - b2 sync --allowEmptySource --noProgress data b2://vicmap2osm/data
-    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+  artifacts:
+    name: "vicmap2osm"
+    paths:
+      - dist
+      - debug
+      - data
 
 conflate:
   stage: conflate
@@ -179,8 +186,6 @@ conflate:
   before_script:
     - mkdir -p data dist
     - ls data dist
-    - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -194,8 +199,12 @@ conflate:
     - wc -l dist/conflate/*.geojson
     - wc -l dist/vicmap-*-conflation/*.geojson
   when: manual
-  after_script:
-    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+  artifacts:
+    name: "vicmap2osm"
+    paths:
+      - dist
+      - debug
+      - data
 
 candidate:
   stage: candidate
@@ -204,7 +213,6 @@ candidate:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -216,6 +224,14 @@ candidate:
   when: manual
   after_script:
     - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
+    - b2 sync --allowEmptySource --noProgress data b2://vicmap2osm/data
+  artifacts:
+    name: "vicmap2osm"
+    paths:
+      - dist
+      - debug
+      - data
 
 upload dev:
   stage: upload
@@ -223,8 +239,6 @@ upload dev:
   before_script:
     - mkdir -p data dist
     - ls data dist
-    - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -244,8 +258,6 @@ build compareSuburb:
   before_script:
     - mkdir -p data dist
     - ls data dist
-    - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -262,5 +274,9 @@ build compareSuburb:
     - rm -f dist/vicmap-osm-with-suburb.geojson
     - make printDifferentSuburbs
   when: manual
-  after_script:
-    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+  artifacts:
+    name: "vicmap2osm"
+    paths:
+      - dist
+      - debug
+      - data
