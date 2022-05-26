@@ -124,7 +124,7 @@ const candidatesNewAddressesInBlocksWithoutAnyExisting = new Transform({
 
     const suburb = findSuburb(feature)
 
-    outputFeatures['newAddressesInBlocksWithoutAnyExisting'][suburb.id].push(feature)
+    outputFeatures['newAddressesInBlocksWithoutAnyExisting'][suburb ? suburb.id : 0].push(feature)
 
     callback()
   }
@@ -164,6 +164,12 @@ pipeline(
       console.log(err)
       process.exit(1)
     } else {
+      for (const layer of Object.keys(outputFeatures)) {
+        // plus one for features not within any suburb
+        outputFeatures[layer][0] = []
+      }
+      suburbName[0] = 'OUTSIDE VIC SUBURB'
+
       console.log('Step 2/4: Creating index of Suburbs')
       lookupSuburbs = new PolygonLookup({
         type: 'FeatureCollection',
