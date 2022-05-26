@@ -106,15 +106,11 @@ prepare:
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist
     - make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
-    - rm -rf data/vicmap.geojson
+    - rm -rf data/vicmap.geojson data/VICMAP_ADDRESS.zip
     - make data/vicmap.geojson
+  after_script:
+    - b2 upload-file --noProgress vicmap2osm data/vicmap.geojson data/vicmap.geojson
   when: manual
-  artifacts:
-    name: "vicmap2osm"
-    paths:
-      - dist
-      - debug
-      - data
 
 
 build osm:
@@ -123,6 +119,8 @@ build osm:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -142,13 +140,9 @@ build osm:
   needs: ['prepare']
   dependencies:
     - prepare
-  artifacts:
-    name: "vicmap2osm"
-    paths:
-      - dist
-      - debug
-      - data
-
+  after_script:
+    - b2 sync --allowEmptySource --noProgress data b2://vicmap2osm/data
+    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 build vicmap:
   stage: build vicmap
@@ -156,6 +150,8 @@ build vicmap:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -178,13 +174,9 @@ build vicmap:
   needs: ['build osm']
   dependencies:
     - build osm
-  artifacts:
-    name: "vicmap2osm"
-    paths:
-      - dist
-      - debug
-      - data
-
+  after_script:
+    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
 
 conflate:
   stage: conflate
@@ -192,6 +184,8 @@ conflate:
   before_script:
     - mkdir -p data dist
     - ls data dist
+    - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -208,12 +202,9 @@ conflate:
   dependencies:
     - build vicmap
     - build osm
-  artifacts:
-    name: "vicmap2osm"
-    paths:
-      - dist
-      - debug
-      - data
+  after_script:
+    - b2 sync --allowEmptySource --noProgress data b2://vicmap2osm/data
+    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 candidate:
   stage: candidate
@@ -222,6 +213,7 @@ candidate:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
+    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -235,14 +227,6 @@ candidate:
     - conflate
   after_script:
     - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
-    - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
-    - b2 sync --allowEmptySource --noProgress data b2://vicmap2osm/data
-  artifacts:
-    name: "vicmap2osm"
-    paths:
-      - dist
-      - debug
-      - data
 
 upload dev:
   stage: upload
@@ -291,9 +275,3 @@ build compareSuburb:
   needs: ['prepare']
   dependencies:
     - prepare
-  artifacts:
-    name: "vicmap2osm"
-    paths:
-      - dist
-      - debug
-      - data
