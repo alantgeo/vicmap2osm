@@ -12,6 +12,7 @@ import _ from 'lodash'
 import fetch from 'node-fetch'
 import xml from 'xml-js'
 import yargs from 'yargs'
+import path from 'path'
 
 const argv = yargs(process.argv.slice(2))
   .option('dry-run', {
@@ -283,7 +284,6 @@ async function uploadChanges() {
   const totalChangesets = Math.ceil(totalElements / MAXIMUM_ELEMENTS_PER_UPLOAD_REQUEST)
   if (totalChangesets > 1) {
     console.log(`${totalElements} exceeds API maximum elements of ${MAXIMUM_ELEMENTS_PER_UPLOAD_REQUEST} splitting into ${totalChangesets} changesets`)
-    process.exit(1)
   }
 
   for (let changesetIndex = 0; changesetIndex < totalChangesets; changesetIndex++) {
