@@ -374,7 +374,12 @@ make printDifferentSuburbs
 
 The tag changes are created by [`bin/compareSuburb.js`](bin/compareSuburb.js) which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
 
-- [ ] Changeset uploaded at XXX (~2473 features)
+Import procedure:
+
+- Open the first URL from `dist/postalCodeURLs.txt` and in JOSM choose to "Accept all tags from localhost for this session", "Add all tags".
+- `wget --input-file=dist/postalCodeURLs.txt --output-document=/dev/null`
+
+- [x] Changeset uploaded at https://www.openstreetmap.org/changeset/142031616 (2424 features)
 
 ### Stage 2 - Set unit from housenumber
 During the conflation stage, Vicmap addresses which were deemed to match OSM addresses where in OSM it was represented as `addr:housenumber=X/Y` whereas in Vicmap it was represented as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
