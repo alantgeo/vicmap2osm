@@ -22,10 +22,10 @@ data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMPROP.gdb: data/VICMAP
 	touch --no-create $@
 
 data/vicmap-property.fgb: data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMPROP.gdb
-	ogr2ogr -f FlatGeobuf -t_srs 'EPSG:4236' -nlt PROMOTE_TO_MULTI $@ $< PARCEL_VIEW
+	ogr2ogr -f FlatGeobuf -t_srs 'EPSG:4326' -nlt PROMOTE_TO_MULTI $@ $< PARCEL_VIEW
 
 data/vicmap.geojson:
-	ogr2ogr -f GeoJSONSeq -t_srs 'EPSG:4236' -mapFieldType DateTime=String $@ data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+	ogr2ogr -f GeoJSONSeq -t_srs 'EPSG:4326' -mapFieldType DateTime=String $@ data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
 	wc -l $@
 
 # used for quick debugging
