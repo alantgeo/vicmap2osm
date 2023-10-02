@@ -1,11 +1,9 @@
-# download VicMap source data
-# the URL here usually gets manually updated weekly though no guarantees
-# it's a mirror of the upstream VICMAP data with split shp files reduced to a single shp file
+# download Vicmap Address source data
 data/VICMAP_ADDRESS.zip:
 	mkdir -p data
 	wget --no-verbose --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_BGJ5MV.zip
 
-# cadastre used for debugging
+# download Vicmap Property cadastre (only used for debugging)
 data/VICMAP_PROPERTY.zip:
 	mkdir -p data
 	wget --no-verbose --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_OTL5B2.zip
