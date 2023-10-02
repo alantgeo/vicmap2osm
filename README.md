@@ -26,21 +26,29 @@ We use GitLab CI/CD to automate data processing.
 
 1. Download source Vicmap data (_prepare_ stage):
 
-    make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+```sh
+make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+```
 
 2. Convert to GeoJSON (_prepare_ stage):
 
-    make data/vicmap.geojson
+```sh
+make data/vicmap.geojson
+```
 
 The following steps are built into the _build vicmap_ stage.
 
 3. Convert into the [OSM address schema](https://wiki.openstreetmap.org/wiki/Key:addr), and omit addresses which don't meet our threshold for import (see [_Omitted addresses_](#omitted-addresses)) (code at [`bin/vicmap2osm.js`](bin/vicmap2osm.js)):
 
-    make dist/vicmap-osm-with-suburb.geojson
+```sh
+make dist/vicmap-osm-with-suburb.geojson
+```
 
 4. Remove duplicates where all address attributes match at the same location or within a small proximity (code at [`bin/reduceDuplicates.js`](bin/reduceDuplicates.js), see [_Removing duplicates_](#removing-duplicates)):
 
-    make dist/vicmap-osm-uniq.geojson
+```sh
+make dist/vicmap-osm-uniq.geojson
+```
 
 Two debug outputs are produced from this step.
 
@@ -52,7 +60,9 @@ b) _multiCluster_ - visualises where all addresses with the same address propert
 
 5. Reduce some address points with the exact same coordinates but different address attributes (see [_Removing duplicates_](#removing-duplicates) below) (code at [`bin/reduceOverlap.js`](bin/reduceOverlap.js)):
 
-    make dist/vicmap-osm-uniq-flats.geojson
+```sh
+make dist/vicmap-osm-uniq-flats.geojson
+```
 
 Two debug outputs are produced from this step.
 
@@ -61,11 +71,15 @@ b) _sameGeometry_ - where other features shared the same geometry, but this one 
 
 6. Drop some duplicate addresses created by ranges being expressed both as a single range and as individual points (see [_Duplicates through mixed range and points_](#duplicates-through-mixed-range-and-points) below) (code at [`bin/reduceRangeDuplicates.js`](bin/reduceRangeDuplicates.js)).
 
-    make dist/vicmap-osm-uniq-flats-withinrange.geojson
+```sh
+make dist/vicmap-osm-uniq-flats-withinrange.geojson
+```
 
 These results are in GeoJSON format, for easier viewing in QGIS convert to FGB with:
 
-    make convertGeoJSONResultsToFGB
+```sh
+make convertGeoJSONResultsToFGB
+```
 
 ### Omitted addresses
 
@@ -253,20 +267,28 @@ Where there contains some addresses already in OSM for the block, then it will e
 
 1. Generate the latest view of address data in OSM:
 
-    make data/victoria-addr.osm.fgb
-    make data/victoria-addr.osm.centroids.fgb
+```sh
+make data/victoria-addr.osm.fgb
+make data/victoria-addr.osm.centroids.fgb
+```
 
 2. Generate city blocks:
 
-    make data/blocks.fgb
+```sh
+make data/blocks.fgb
+```
 
 3. Sort blocks into containing some OSM addresses or containing no OSM addresses:
 
-    make dist/blocksByOSMAddr.geojson
+```sh
+make dist/blocksByOSMAddr.geojson
+```
 
 4. Conflate Vicmap addresses with OSM (code at [`bin/conflate.js`](bin/conflate.js)):
 
-    make dist/conflate
+```sh
+make dist/conflate
+```
 
 This produces outputs in `dist/conflate`:
 
@@ -284,13 +306,17 @@ This is outputted as a MapRoulette challenge (`dist/conflate/mr_explodeUnitFromN
 
 These results are in GeoJSON format, for easier viewing in QGIS convert to FGB with:
 
-    make convertConflationResultsToFGB
+```sh
+make convertConflationResultsToFGB
+```
 
 5. Further processing to conflate Vicmap complex and building names with OSM can be done via:
 
-    make data/victoria-named-features.osm.geojson
-    make dist/vicmap-complex-conflation
-    make dist/vicmap-building-conflation
+```sh
+make data/victoria-named-features.osm.geojson
+make dist/vicmap-complex-conflation
+make dist/vicmap-building-conflation
+```
 
 These outputs are described in the [Building Name](#building-name) and [Complex Name](#complex-name) sections.
 
@@ -310,11 +336,15 @@ A better way to review matches where some attributes differ, potentially as a qu
 ## Prepare Final Import Candidates
 1. Prepare split `addr:unit` / `addr:housenumber` changeset to QA before uploading
 
-    make dist/unitFromNumber.osc
+```sh
+make dist/unitFromNumber.osc
+```
 
 2. After conflation, import candidate .osm files are produced with
 
-    make dist/candidates
+```sh
+make dist/candidates
+```
 
 This will split the conflation results into the following import candidate categories, then again split into suburb/locality (`admin_level=9`).
 
@@ -338,7 +368,9 @@ For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`
 
 Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org/wiki/Key:postal_code) will be added to the existing Victorian `admin_level=9` boundaries using the postcode derived from Vicmap Addresses. Except for Melbourne suburb because there are two postal codes in use, and the `postal_code` boundaries are already mapped.
 
-    make printDifferentSuburbs
+```sh
+make printDifferentSuburbs
+```
 
 The tag changes are created by [`bin/compareSuburb.js`](bin/compareSuburb.js) which creates the JOSM RemoteControl URLs into the file at `dist/postalCodeURLs.txt`, [https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851](https://gitlab.com/alantgeo/vicmap2osm/-/snippets/2133851).
 
@@ -355,7 +387,9 @@ You can visualise the tag changes with `bin/mrCoopDiff.js` and `www/mrPreview.ht
 
 The actual changeset will be created with:
 
-    ./bin/mr2osc.mjs --changeset-comment "Vicmap Address Import - Stage 2 - Separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_explodeUnitFromNumber.geojson dist/uploads/Stage2_SetUnitFromHousenumber.osc
+```sh
+./bin/mr2osc.mjs --changeset-comment "Vicmap Address Import - Stage 2 - Separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_explodeUnitFromNumber.geojson dist/uploads/Stage2_SetUnitFromHousenumber.osc
+```
 
 - [ ] Changeset uploaded at XXX (~9832 features)
 
@@ -381,7 +415,9 @@ The changeset comment used is
 
 Where a Vicmap address matched an OSM address, set `addr:flats` as derived from Vicmap.
 
-    ./bin/mr2osc.mjs --changeset-comment "Vicmap Address Import - Stage 4 - Add addr:flats to existing addresses. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_exactMatchSetFlats.geojson dist/uploads/Stage4_MatchedAddressAddingAddrFlats.osc
+```sh
+./bin/mr2osc.mjs --changeset-comment "Vicmap Address Import - Stage 4 - Add addr:flats to existing addresses. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_exactMatchSetFlats.geojson dist/uploads/Stage4_MatchedAddressAddingAddrFlats.osc
+```
 
 Because `addr:flats` may be tagged on an entrance node denoting which units are accessible from which entrance, in these cases in OSM we should not add `addr:flats` to the way. https://overpass-turbo.eu/s/196m shows there are only 8 existing cases of this, so these are manually removed from the import before executing.
 
