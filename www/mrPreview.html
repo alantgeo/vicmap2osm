@@ -65,6 +65,7 @@
     let tagAddCount = 0
     let tagModifyCount = 0
     let tagRemoveCount = 0
+    console.log(`Fetch ${q.get('changes') || 'changes.json'}`)
 
     fetch(q.get('changes') || 'changes.json')
         .then(res => res.json())
