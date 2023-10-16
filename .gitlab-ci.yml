@@ -97,8 +97,8 @@ prepare:
   before_script:
     - b2 authorize-account $B2_KEYID $B2_APPKEY
     - mkdir -p dist data
-    - b2 sync --allowEmptySource --noProgress --delete dist b2://vicmap2osm/dist
-    - b2 sync --allowEmptySource --noProgress --delete data b2://vicmap2osm/data
+    - b2 sync --threads 4 --allowEmptySource --noProgress --delete dist b2://vicmap2osm/dist
+    - b2 sync --threads 4 --allowEmptySource --noProgress --delete data b2://vicmap2osm/data
   cache:
     <<: *global_cache
     policy: push
@@ -121,7 +121,7 @@ build osm:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
+    - b2 sync --threads 4 --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -142,8 +142,8 @@ build osm:
   dependencies:
     - prepare
   after_script:
-    - b2 sync --allowEmptySource --noProgress data b2://vicmap2osm/data
-    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --threads 4 --allowEmptySource --noProgress data b2://vicmap2osm/data
+    - b2 sync --threads 4 --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 build vicmap:
   stage: build vicmap
@@ -152,7 +152,7 @@ build vicmap:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
+    - b2 sync --threads 4 --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull-push
@@ -176,8 +176,8 @@ build vicmap:
   dependencies:
     - build osm
   after_script:
-    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
-    - b2 sync --allowEmptySource --noProgress debug b2://vicmap2osm/debug
+    - b2 sync --threads 4 --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --threads 4 --allowEmptySource --noProgress debug b2://vicmap2osm/debug
 
 conflate:
   stage: conflate
@@ -186,7 +186,7 @@ conflate:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
+    - b2 sync --threads 4 --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -204,8 +204,8 @@ conflate:
     - build vicmap
     - build osm
   after_script:
-    - b2 sync --allowEmptySource --noProgress data b2://vicmap2osm/data
-    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --threads 4 --allowEmptySource --noProgress data b2://vicmap2osm/data
+    - b2 sync --threads 4 --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 candidate:
   stage: candidate
@@ -214,7 +214,7 @@ candidate:
     - mkdir -p data dist
     - ls data dist
     - b2 authorize-account $B2_KEYID $B2_APPKEY
-    - b2 sync --allowEmptySource --noProgress b2://vicmap2osm/ .
+    - b2 sync --threads 4 --allowEmptySource --noProgress b2://vicmap2osm/ .
   cache:
     <<: *global_cache
     policy: pull
@@ -227,7 +227,7 @@ candidate:
   dependencies:
     - conflate
   after_script:
-    - b2 sync --allowEmptySource --noProgress dist b2://vicmap2osm/dist
+    - b2 sync --threads 4 --allowEmptySource --noProgress dist b2://vicmap2osm/dist
 
 upload dev:
   stage: upload
