@@ -1,14 +1,14 @@
 # download Vicmap Address source data
 data/VICMAP_ADDRESS.zip:
 	mkdir -p data
-	wget --no-verbose --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_BGJ5MV.zip
+	wget --no-verbose --output-document=$@ https://s3.ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_FDBZT5.zip
 
 # download Vicmap Property cadastre (only used for debugging)
 data/VICMAP_PROPERTY.zip:
 	mkdir -p data
-	wget --no-verbose --output-document=$@ https://s3-ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_OTL5B2.zip
+	wget --no-verbose --output-document=$@ https://s3.ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_EUKSRV.zip
 
-data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb: data/VICMAP_ADDRESS.zip
+data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb: data/VICMAP_ADDRESS.zip
 	mkdir -p data/vicmap
 	unzip -d data/vicmap -n $<
 	# update mtime so that Make doesn't see it as outdated
@@ -23,13 +23,13 @@ data/vicmap-property.fgb: data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victor
 	ogr2ogr -f FlatGeobuf -t_srs 'EPSG:4326' -nlt PROMOTE_TO_MULTI $@ $< PARCEL_VIEW
 
 data/vicmap.geojson:
-	ogr2ogr -f GeoJSONSeq -t_srs 'EPSG:4326' -mapFieldType DateTime=String $@ data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+	ogr2ogr -f GeoJSONSeq -t_srs 'EPSG:4326' -mapFieldType DateTime=String $@ data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb
 	wc -l $@
 
 # used for quick debugging
-# ogr2ogr -f GeoJSONSeq -clipsrc 144.95392 -37.80260 144.97298 -37.79204 data/vicmap.geojson data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+# ogr2ogr -f GeoJSONSeq -clipsrc 144.95392 -37.80260 144.97298 -37.79204 data/vicmap.geojson data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb
 vicmapExtract:
-	ogr2ogr -f GeoJSONSeq -mapFieldType DateTime=String -clipsrc 144.95366 -37.80284 145.00272 -37.77482 data/vicmap.geojson data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+	ogr2ogr -f GeoJSONSeq -mapFieldType DateTime=String -clipsrc 144.95366 -37.80284 145.00272 -37.77482 data/vicmap.geojson data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb
 
 cleanDist:
 	rm -rf dist
@@ -77,20 +77,20 @@ dist/canidates.geojson: dist/vicmap-osm-uniq-flats-withinrange.geojson
 loadPgOSM: dist/vicmap-osm.geojson
 	ogr2ogr -f PostgreSQL PG: $< -lco UNLOGGED=YES -nln vm_osm
 
-data/vicmap.fgb: data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+data/vicmap.fgb: data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb
 	ogr2ogr -f FlatGeobuf $@ $<
 
 dist/vicmap-osm.fgb: dist/vicmap-osm.geojson
 	ogr2ogr -f FlatGeobuf $@ $<
 
 # useful for development to be able to query a database
-loadPgAdd: data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+loadPgAdd: data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb
 	ogr2ogr -f PostgreSQL PG: $< -nln vmadd
 	# index all columns for faster queries during development
 	psql -f src/createIndexQuery.sql --tuples-only | psql
 
-loadPgProp: data/vicmap/ll_gda94/sde_shape/whole/VIC/VMPROP/layer/property_view.shp
-	ogr2ogr -f PostgreSQL PG: $< -nln vmprop -nlt MULTIPOLYGON
+loadPgProp: data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMPROP.gdb
+	ogr2ogr -f PostgreSQL PG: $< -nln vmprop -nlt MULTIPOLYGON PARCEL_VIEW
 
 data/victoria.osm.pbf:
 	wget --no-verbose --directory-prefix=data http://download.openstreetmap.fr/extracts/oceania/australia/victoria.osm.pbf

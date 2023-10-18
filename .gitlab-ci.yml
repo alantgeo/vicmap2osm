@@ -106,7 +106,7 @@ prepare:
     - yarn install
     - cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js
     - mkdir -p dist
-    - make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+    - make data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb
     - rm -rf data/vicmap.geojson data/VICMAP_ADDRESS.zip
     - make data/vicmap.geojson
   after_script:
@@ -163,7 +163,7 @@ build vicmap:
     - mkdir -p dist data
     - mkdir -p data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria
     - touch data/VICMAP_ADDRESS.zip
-    - touch data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+    - touch data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb
     - touch --no-create data/vicmap.geojson
     - time make dist/vicmap-osm-with-suburb.geojson
     - time make dist/vicmap-osm-uniq.geojson
@@ -266,7 +266,7 @@ build compareSuburb:
     - mkdir -p dist data
     - mkdir -p data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria
     - touch data/VICMAP_ADDRESS.zip
-    - touch data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VICMAP_ADDRESS.gdb
+    - touch data/vicmap/ll_gda2020/filegdb/whole_of_dataset/victoria/VMADD.gdb
     - touch --no-create data/vicmap.geojson
     - time make dist/vicmap-osm-with-suburb.geojson
     - time make dist/vicmapSuburbDiffersWithOSM.geojson
