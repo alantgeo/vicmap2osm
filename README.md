@@ -22,6 +22,20 @@ We use GitLab CI/CD to automate data processing.
 
 - _conflate_ takes the Vicmap OSM ready data and existing OSM address data from the _build_ stage and conflates the two into import candidates.
 
+## Vicmap Source Data
+
+The [Vicmap Address](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-address) data is downloaded from [DataShare](https://datashare.maps.vic.gov.au/) with the following configuration:
+
+- weekly recurring order
+- Dataset Name: Vicmap Address - Address Point
+- Dataset ID: 8f3e3caa-e4bd-5e43-afc4-59b71c1f27f2
+- Projection: Geographicals on GDA2020
+- Buffer: No buffer
+- File Format: ESRI File Geodatabase
+- Area: Whole dataset
+
+The generated order URL is embedded within the Makefile.
+
 ## Build candidate files (pre-conflation)
 
 1. Download source Vicmap data (_prepare_ stage):
