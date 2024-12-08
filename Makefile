@@ -1,9 +1,23 @@
 # download Vicmap Address source data
+# ## Weekly Recurring Order
+# Vicmap Address
+# ID: b9e9146d-8378-5c37-b6cd-63e3a8d05d02
+# Projection: Geographicals on GDA2020
+# Buffer: No buffer
+# File Format: ESRI File Geodatabase
+# Area: Whole dataset
 data/VICMAP_ADDRESS.zip:
 	mkdir -p data
-	wget --no-verbose --output-document=$@ https://s3.ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_FDBZT5.zip
+	wget --no-verbose --output-document=$@ https://s3.ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_6I89HS.zip
 
 # download Vicmap Property cadastre (only used for debugging)
+# ## Weekly Recurring Order
+# Vicmap Property
+# ID: 5528c2ea-cdb1-56ca-aa3f-fff9d8277b99
+# Projection: Geographicals on GDA2020
+# Buffer: No buffer
+# File Format: ESRI File Geodatabase
+# Area: Whole dataset
 data/VICMAP_PROPERTY.zip:
 	mkdir -p data
 	wget --no-verbose --output-document=$@ https://s3.ap-southeast-2.amazonaws.com/cl-isd-prd-datashare-s3-delivery/Order_EUKSRV.zip

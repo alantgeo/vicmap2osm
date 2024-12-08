@@ -27,8 +27,8 @@ We use GitLab CI/CD to automate data processing.
 The [Vicmap Address](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-address) data is downloaded from [DataShare](https://datashare.maps.vic.gov.au/) with the following configuration:
 
 - weekly recurring order
-- Dataset Name: Vicmap Address - Address Point
-- Dataset ID: 8f3e3caa-e4bd-5e43-afc4-59b71c1f27f2
+- Dataset Name: Vicmap Address
+- Dataset ID: ID: b9e9146d-8378-5c37-b6cd-63e3a8d05d02
 - Projection: Geographicals on GDA2020
 - Buffer: No buffer
 - File Format: ESRI File Geodatabase
