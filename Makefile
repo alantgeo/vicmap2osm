@@ -220,6 +220,9 @@ dist/conflate:
 	./bin/mrCoopDiff.js $@/mr_explodeUnitFromNumber.geojson $@/mr_explodeUnitFromNumber.changes.json
 	./bin/mrCoopDiff.js $@/mr_explodeUnitFromNumberFuzzyStreet.geojson $@/mr_explodeUnitFromNumberFuzzyStreet.changes.json
 
+dist/mrPreview.html: www/mrPreview.html
+	cp $< $@
+
 dist/unitFromNumber.osc: dist/conflate/mr_explodeUnitFromNumber.geojson
 	./bin/mr2osc.mjs --dry-run --changeset-comment "Vicmap Import separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number" $< $@
 
