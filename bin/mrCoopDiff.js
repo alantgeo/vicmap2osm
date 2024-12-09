@@ -5,7 +5,7 @@
  */
 
 const fs = require('fs')
-const { Readable, Transform, pipeline } = require('stream')
+const { Transform, pipeline } = require('stream')
 const ndjson = require('ndjson')
 const cloneDeep = require('clone-deep')
 
