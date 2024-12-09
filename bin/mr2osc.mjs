@@ -98,7 +98,7 @@ let taskCount = 0
 const listElements = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
-  transform(task, encoding, callback) {
+  transform(task, _encoding, callback) {
     taskCount++
 
     if (process.stdout.isTTY && taskCount % 1000 === 0) {

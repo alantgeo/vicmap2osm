@@ -31,7 +31,7 @@ const features = {}
 const applyOperations = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
-  transform(challenge, encoding, callback) {
+  transform(challenge, _encoding, callback) {
     challengeCount++
 
     if (argv.n && challengeCount > argv.n) {
