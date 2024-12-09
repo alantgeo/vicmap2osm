@@ -157,8 +157,11 @@ data/victoria-roads.osm.pbf: data/victoria.osm.pbf
 data/victoria-roads.geojson: data/victoria-roads.osm.pbf
 	osmium export --overwrite --geometry-types=linestring --output-format=geojsonseq --format-option=print_record_separator=false --output $@ $<
 
-data/victoria-boundary.geojson:
-	./node_modules/.bin/osm-geojson 2316741 | ogr2ogr -f GeoJSONSeq -explodecollections -nlt MULTILINESTRING $@ /vsistdin/
+data/victoria-boundary.osm.geojson:
+	./node_modules/.bin/osm-geojson 2316741 > $@
+
+data/victoria-boundary.geojson: data/victoria-boundary.osm.geojson
+	ogr2ogr -f GeoJSONSeq -explodecollections -nlt MULTILINESTRING $@ $<
 
 data/victoria-roads-and-boundary.geojson: data/victoria-roads.geojson data/victoria-boundary.geojson
 	cat $^ > $@
