@@ -158,7 +158,7 @@ Of the 9 that have >1 postcode, 7 have only 1 address with a different postcode,
 
 My analysis supports adding `postal_code` to the level 9 admin boundary is safe for pretty much the whole state, except for Melbourne where `postal_code` boundaries [have already been mapped](https://overpass-turbo.eu/s/18eS) (`boundary=postal_code in "VIC, AU"`).
 
-At the time of writing 360 `admin_level=9` boundaries have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eU) (`(type=boundary and boundary=administrative and admin_level=9 and postal_code=*) in "VIC, AU"`), 2613 `admin_level=9` boundaries don't have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eV) (`(type=boundary and boundary=administrative and admin_level=9 and postal_code is null) in "VIC, AU"`).
+At the time of writing 500 `admin_level=9` boundaries have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eU) (`(type=boundary and boundary=administrative and admin_level=9 and postal_code=*) in "VIC, AU"`), 2613 `admin_level=9` boundaries don't have a `postal_code` tag [see map](https://overpass-turbo.eu/s/18eV) (`(type=boundary and boundary=administrative and admin_level=9 and postal_code is null) in "VIC, AU"`).
 
 As part of this import, `postal_code` will be added to `admin_level=9` boundaries derived from Vicmap, see [Stage 1 - postal_code](#stage-1-postal_code).
 
@@ -397,21 +397,25 @@ Import procedure:
 - [x] Changeset uploaded at https://www.openstreetmap.org/changeset/142031616 (2424 features)
 
 ### Stage 2 - Set unit from housenumber
-During the conflation stage, Vicmap addresses which were deemed to match OSM addresses where in OSM it was represented as `addr:housenumber=X/Y` whereas in Vicmap it was represented as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
+During the conflation stage, Vicmap addresses which were deemed to match OSM addresses based on the OSM representation as `addr:housenumber=X/Y` and the Vicmap representation as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
 
 This will be a single Victoria wide changeset.
 
-[`bin/mr2osc.mjs`](bin/mr2osc.mjs) is the script which creates the OsmChange and uploads it as a changeset from the tag changes outputted from the _conflate_ stage as a MapRoulette `setTags` operation.
+[`bin/mr2osc.mjs`](bin/mr2osc.mjs) is the script which creates the OsmChange file and uploads it as a changeset from the tag changes outputted from the _conflate_ stage as a MapRoulette `setTags` operation.
 
-You can visualise the tag changes with `bin/mrCoopDiff.js` and `www/mrPreview.html` at _URL_.
+A visualisation of the tag changes are also created within the conflation stage and can previewed at http://localhost:8000/mrPreview.html?changes=conflate/mr_explodeUnitFromNumber.changes.json
+
+Where the street name did not exactly match, these will be handled manually as a MapRoulette challenge at XXX (TBA), and the changes can be visualised at http://localhost:8000/mrPreview.html?changes=conflate/mr_explodeUnitFromNumberFuzzyStreet.changes.json
 
 The actual changeset will be created with:
 
 ```sh
-./bin/mr2osc.mjs --changeset-comment "Vicmap Address Import - Stage 2 - Separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_explodeUnitFromNumber.geojson dist/uploads/Stage2_SetUnitFromHousenumber.osc
+ENVIRONMENT=prod ./bin/mr2osc.mjs --changeset-comment "Vicmap Address Import - Stage 2 - Separate addr:unit and addr:housenumber where matched with Vicmap and previously were combined as unit/number. See https://gitlab.com/alantgeo/vicmap2osm" dist/conflate/mr_explodeUnitFromNumber.geojson dist/uploads/Stage2_SetUnitFromHousenumber.osc
 ```
 
 - [ ] Changeset uploaded at XXX (~9832 features)
+
+** This stage was skipped as these have since been fixed external to this import **
 
 A further manual MapRoulette challenge built from `dist/conflate/mr_explodeUnitFromNumberFuzzyStreet.geojson` will be completed to set the unit from housenumber based on fuzzy street matches, since the automated prior change was based on exact matches only. Where the street name differs in a typo like way, and the Vicmap name matches the OSM road, then `addr:street` will also be corrected.
 
@@ -419,7 +423,7 @@ A further manual MapRoulette challenge built from `dist/conflate/mr_explodeUnitF
 
 ### Stage 3 - New addresses in blocks without any existing addresses
 
-Conflation script will be re-run after stage 2 to incorporate the exploded units.
+// Conflation script will be re-run after stage 2 to incorporate the exploded units.
 
 [`bin/upload.sh`](bin/upload.sh) is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
 
@@ -445,9 +449,15 @@ Because `addr:flats` may be tagged on an entrance node denoting which units are 
 
 ### Stage 5 - New addresses in blocks with existing addresses
 
-Similar process to Stage 3.
+[`bin/upload.sh`](bin/upload.sh) is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
 
-- [ ] Changeset not yet uploaded
+This makes it easier for anyone to review uploads in OSMCha and other tools.
+
+The changeset comment used is
+
+    Vicmap Address Import - Stage 5 - New addresses: SUBURB_NAME. See https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address
+
+- [ ] Changesets not yet uploaded
 
 ### Stage 6 - Complete incomplete existing addresses
 
