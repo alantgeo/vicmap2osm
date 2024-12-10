@@ -112,7 +112,7 @@ let sourceCount = 0
 const candidatesNewAddressesInBlocksWithoutAnyExisting = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
-  transform(feature, encoding, callback) {
+  transform(feature, _encoding, callback) {
     sourceCount++
 
     if (process.stdout.isTTY && sourceCount % 1000 === 0) {
@@ -125,6 +125,26 @@ const candidatesNewAddressesInBlocksWithoutAnyExisting = new Transform({
     const suburb = findSuburb(feature)
 
     outputFeatures['newAddressesInBlocksWithoutAnyExisting'][suburb ? suburb.id : 0].push(feature)
+
+    callback()
+  }
+})
+const candidatesNewAddressesWithoutConflicts = new Transform({
+  readableObjectMode: true,
+  writableObjectMode: true,
+  transform(feature, _encoding, callback) {
+    sourceCount++
+
+    if (process.stdout.isTTY && sourceCount % 1000 === 0) {
+      process.stdout.write(` ${sourceCount.toLocaleString()}\r`)
+    }
+
+    // remove tracing properties
+    delete feature.properties._pfi
+
+    const suburb = findSuburb(feature)
+
+    outputFeatures['newAddressesWithoutConflicts'][suburb ? suburb.id : 0].push(feature)
 
     callback()
   }
@@ -187,26 +207,22 @@ pipeline(
             process.exit(1)
           } else {
 
-            /*
             console.log('Step 4/4: noExactMatch')
             pipeline(
               fs.createReadStream(path.join(conflatePath, 'noExactMatch.geojson')),
               ndjson.parse(),
-              candidates,
+              candidatesNewAddressesWithoutConflicts,
               err => {
                 if (err) {
                   console.log(err)
                   process.exit(1)
                 } else {
-                  */
                   console.log('Output candidate .osm files')
                   outputCandidates()
                   process.exit(0)
-                  /*
                 }
               }
             )
-            */
           }
         }
       )
