@@ -376,6 +376,7 @@ The dedicated import account used for the import is [`vicmap_import`](https://ww
 `make data/abbrStreetsMR.geojson` generates a MapRoulette challenge file with possible abbreviated street names in existing `addr:street` tags in OSM and suggests fixes. Where the suggested fix matched the unabbreviated road name then this can be safely applied.
 
 - [x] MapRoulette challenge completed [https://maproulette.org/admin/project/42479/challenge/18696](https://maproulette.org/admin/project/42479/challenge/18696) (~230 features)
+- [x] MapRoulette challenge completed [https://maproulette.org/admin/project/42479/challenge/18696](https://maproulette.org/admin/project/42479/challenge/18696) (~38 features) 10/12/2024
 
 ### Stage 1 - postal_code
 For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`](#inclusion-of-addrsuburb-addrpostcode-and-addrstate).
