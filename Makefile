@@ -51,11 +51,13 @@ cleanDist:
 clean:
 	rm -rf dist debug data
 
+# to retain OSM ids use ./bin/vicmap2osm.js --tracing
 dist/vicmap-osm.geojson: data/vicmap.geojson
 	mkdir -p dist
 	./bin/vicmap2osm.js $< $@
 	wc -l $@
 
+# to retain OSM ids use ./bin/vicmap2osm.js --tracing
 dist/vicmap-osm-with-suburb.geojson: data/vicmap.geojson
 	mkdir -p dist
 	./bin/vicmap2osm.js --preserve-derivable-properties $< $@
