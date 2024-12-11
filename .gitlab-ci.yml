@@ -91,6 +91,21 @@ docker candidate:
   when: manual
   cache: {}
 
+docker pages:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: docker
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE":pages -f "docker/pages.Dockerfile" .
+    - docker push "$CI_REGISTRY_IMAGE":pages
+  after_script:
+    - docker logout $CI_REGISTRY
+  when: manual
+  cache: {}
+
 prepare:
   stage: prepare
   image: "registry.gitlab.com/alantgeo/vicmap2osm:prepare"
