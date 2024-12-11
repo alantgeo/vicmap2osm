@@ -454,6 +454,8 @@ Where a Vicmap address matched an OSM address, set `addr:flats` as derived from 
 
 Because `addr:flats` may be tagged on an entrance node denoting which units are accessible from which entrance, in these cases in OSM we should not add `addr:flats` to the way. https://overpass-turbo.eu/s/196m shows there are only 8 existing cases of this, so these are manually removed from the import before executing.
 
+Further we manually drop out the tag modification changes, so only new `addr:flats` tags are introduced.
+
 - [ ] Changeset not yet uploaded (~3360 features)
 
 ### Stage 5 - New addresses in blocks with existing addresses
