@@ -434,7 +434,7 @@ A further manual MapRoulette challenge built from `dist/conflate/mr_explodeUnitF
 
 Candidate files from `dist/candidates/newAddressesInBlocksWithoutAnyExisting/`.
 
-[`bin/upload.sh`](bin/upload.sh) is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
+[`bin/upload_Stage3.sh`](bin/upload_Stage3.sh) is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
 
 This makes it easier for anyone to review uploads in OSMCha and other tools.
 
