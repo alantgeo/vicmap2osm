@@ -279,12 +279,16 @@ build compareSuburb:
 
 pages:
   stage: pages
+  image: "registry.gitlab.com/alantgeo/vicmap2osm:pages"
   before_script:
     - b2 authorize-account $B2_KEYID $B2_APPKEY
     - b2 sync --threads 4 --allowEmptySource --noProgress b2://vicmap2osm/ .
   script:
     - cp -r www public
     - cp dist/conflate/*.changes.json public/data/
+    - b2 ls --recursive b2://vicmap2osm/ | sed -e 's/\(.*\)/ * [\1](\1)/g' > public/index.md
+    - markdown public/index.md > public/index.html
+    - b2 upload-file vicmap2osm public/index.html index.html
   artifacts:
     paths:
       - public
