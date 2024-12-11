@@ -442,7 +442,7 @@ The changeset comment used is
 
     Vicmap Address Import - Stage 3 - New addresses in blocks without any existing addresses: SUBURB_NAME. See https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address
 
-- [ ] Changesets not yet uploaded (~1,843,909 features)
+- [x] Changesets uploaded 11/12/2024
 
 ### Stage 4 - Matched addresses adding addr:flats
 
