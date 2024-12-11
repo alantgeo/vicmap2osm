@@ -217,7 +217,7 @@ summariseBlocksByOSMAddr: dist/blocksByOSMAddr.geojson
 # conflate processed vicmap data with osm data
 dist/conflate:
 	mkdir -p $@
-	./bin/conflate.js dist/vicmap-osm-uniq-flats-withinrange.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson $@
+	node --max_old_space_size=4096 ./bin/conflate.js dist/vicmap-osm-uniq-flats-withinrange.geojson data/victoria-addr.osm.geojson dist/blocksByOSMAddr.geojson $@
 	./bin/mrCoopDiff.js $@/mr_exactMatchSetFlats.geojson $@/mr_exactMatch.changes.json
 	./bin/mrCoopDiff.js $@/mr_explodeUnitFromNumber.geojson $@/mr_explodeUnitFromNumber.changes.json
 	./bin/mrCoopDiff.js $@/mr_explodeUnitFromNumberFuzzyStreet.geojson $@/mr_explodeUnitFromNumberFuzzyStreet.changes.json
