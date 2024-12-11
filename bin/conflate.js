@@ -87,7 +87,7 @@ let osmAddrCount = 0
 const filterOSMAddrPoly = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
-  transform(feature, encoding, callback) {
+  transform(feature, _encoding, callback) {
     osmAddrCount++
 
     if (process.stdout.isTTY && osmAddrCount % 10000 === 0) {
@@ -125,7 +125,7 @@ let sourceCount = 0
 const conflate = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
-  transform(feature, encoding, callback) {
+  transform(feature, _encoding, callback) {
     sourceCount++
 
     if (process.stdout.isTTY && sourceCount % 1000 === 0) {
