@@ -49,7 +49,7 @@ class HTTPError(Exception):
     pass
 
 class OSM_API(object):
-    url = 'https://master.apis.dev.openstreetmap.org/'
+    url = 'https://api.openstreetmap.org/'
     def __init__(self, username = None, password = None):
         if username and password:
             self.username = username
