@@ -80,7 +80,7 @@
                     }
                 })
                 map.addLayer({
-                    id: 'features',
+                    id: 'point-features',
                     source: 'features',
                     type: 'circle',
                     paint: {
@@ -88,10 +88,41 @@
                         'circle-stroke-color': 'white',
                         'circle-stroke-width': 1,
                         'circle-radius': 5
-                    }
+                    },
+                    filter: ["==", ["geometry-type"], "Point"]
+                })
+                map.addLayer({
+                    id: 'line-features',
+                    source: 'features',
+                    type: 'line',
+                    paint: {
+                        'line-color': 'blue',
+                        'line-width': 5
+                    },
+                    filter: ["==", ["geometry-type"], "LineString"]
+                })
+                map.addLayer({
+                    id: 'polygon-features',
+                    source: 'features',
+                    type: 'fill',
+                    paint: {
+                        'fill-color': 'blue',
+                        'fill-opacity': 0.2
+                    },
+                    filter: ["==", ["geometry-type"], "Polygon"]
                 })
 
-                map.on('click', 'features', e => {
+                map.on('click', 'point-features', e => {
+                    const feature = e.features[0]
+                    const id = `${feature.properties['@type']}/${feature.properties['@id']}`
+                    document.getElementById(id).scrollIntoView()
+                })
+                map.on('click', 'line-features', e => {
+                    const feature = e.features[0]
+                    const id = `${feature.properties['@type']}/${feature.properties['@id']}`
+                    document.getElementById(id).scrollIntoView()
+                })
+                map.on('click', 'polygon-features', e => {
                     const feature = e.features[0]
                     const id = `${feature.properties['@type']}/${feature.properties['@id']}`
                     document.getElementById(id).scrollIntoView()
