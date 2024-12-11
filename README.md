@@ -89,6 +89,12 @@ b) _sameGeometry_ - where other features shared the same geometry, but this one 
 make dist/vicmap-osm-uniq-flats-withinrange.geojson
 ```
 
+Report features which are overlapping
+
+```sh
+make dist/vicmap-osm-overlapping.geojson
+```
+
 These results are in GeoJSON format, for easier viewing in QGIS convert to FGB with:
 
 ```sh
