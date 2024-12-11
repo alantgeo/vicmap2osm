@@ -369,9 +369,10 @@ make dist/candidates
 This will split the conflation results into the following import candidate categories, then again split into suburb/locality (`admin_level=9`).
 
 ### Candidate Categories
-1. `newAddressesWithoutConflicts` - new addresses from Vicmap where it's unlikely to conflict with existing OSM addresses, can be imported automatically.
-2. `existingAddressesWithNewTagsOnly` - existing OSM addresses where we add new tags from Vicmap (no modifying or removing tags) and no geometry changes, can be imported automatically.
-3. `addrUnitFromHousenumber` - existing OSM addresses where the existing `addr:housenumber` tag is modified to move the unit number into `addr:unit`, can be imported automatically.
+1. `newAddressesInBlocksWithoutAnyExisting` - new addresses from Vicmap where it's unlikely to conflict with existing OSM addresses, can be imported automatically.
+2. `newAddressesWithoutConflicts` - new addresses from Vicmap where it's unlikely to conflict with existing OSM addresses, can be imported automatically.
+3. `existingAddressesWithNewTagsOnly` - existing OSM addresses where we add new tags from Vicmap (no modifying or removing tags) and no geometry changes, can be imported automatically.
+4. `addrUnitFromHousenumber` - existing OSM addresses where the existing `addr:housenumber` tag is modified to move the unit number into `addr:unit`, can be imported automatically.
 
 ## Import Process
 
@@ -431,6 +432,8 @@ A further manual MapRoulette challenge built from `dist/conflate/mr_explodeUnitF
 
 // Conflation script will be re-run after stage 2 to incorporate the exploded units.
 
+Candidate files from `dist/candidates/newAddressesInBlocksWithoutAnyExisting/`.
+
 [`bin/upload.sh`](bin/upload.sh) is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
 
 This makes it easier for anyone to review uploads in OSMCha and other tools.
@@ -454,6 +457,8 @@ Because `addr:flats` may be tagged on an entrance node denoting which units are 
 - [ ] Changeset not yet uploaded (~3360 features)
 
 ### Stage 5 - New addresses in blocks with existing addresses
+
+Candidate files from `dist/candidates/newAddressesWithoutConflicts/`.
 
 [`bin/upload.sh`](bin/upload.sh) is the script used to perform the actual uploads into OSM. For each import candidate (by candidate category by suburb) there is one OSM Changeset created.
 

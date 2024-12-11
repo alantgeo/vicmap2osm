@@ -39,7 +39,8 @@ if (!fs.existsSync(conflatePath)) {
 
 // output GeoJSON Features by layer by suburb ID
 const outputFeatures = {
-  'newAddressesInBlocksWithoutAnyExisting': {}
+  'newAddressesInBlocksWithoutAnyExisting': {},
+  'newAddressesWithoutConflicts': {}
 }
 
 for (const layer of Object.keys(outputFeatures)) {
