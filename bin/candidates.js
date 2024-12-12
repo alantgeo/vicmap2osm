@@ -75,7 +75,7 @@ let suburbCount = 0
 const readSuburbs = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
-  transform(suburb, encoding, callback) {
+  transform(suburb, _encoding, callback) {
     suburbCount++
 
     if (process.stdout.isTTY && suburbCount % 1000 === 0) {
