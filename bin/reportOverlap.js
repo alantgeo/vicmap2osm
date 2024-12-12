@@ -34,7 +34,7 @@ const features = {}
 const index = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
-  transform(feature, encoding, callback) {
+  transform(feature, _encoding, callback) {
     sourceCount++
 
     if (!argv.quiet) {
@@ -64,7 +64,7 @@ let featureIndex = 0
 const reportOverlap = new Transform({
   readableObjectMode: true,
   writableObjectMode: true,
-  transform(key, encoding, callback) {
+  transform(key, _encoding, callback) {
     featureIndex++
     if (!argv.quiet) {
       if (process.stdout.isTTY && featureIndex % 10000 === 0) {

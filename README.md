@@ -456,13 +456,21 @@ The issue was subsequently fixed in the code here, and problematic imported node
 
     ./bin/reportOverlap.js dist/conflate/noOSMAddressWithinBlock.geojson dist/conflate/noOSMAddressWithinBlock.overlaps.geojson
 
-From here we used the following to identify the node IDS to delete and locations to re-import:
+From here we used the following to identify the node IDs to delete and locations to re-import:
 
-./bin/findAndRemove.js dist/conflate/noOSMAddressWithinBlock.overlaps.geojson dist/candidates/newAddressesInBlocksWithoutAnyExisting/_DONE/ dist/Stage3Repair_NodeIdsToDelete.txt dist/Stage3Repair_LocationsToReInsert.txt
+    ./bin/findAndRemove.js dist/conflate/noOSMAddressWithinBlock.overlaps.geojson dist/candidates/newAddressesInBlocksWithoutAnyExisting/_DONE/ dist/Stage3Repair_NodeIdsToDelete.txt dist/Stage3Repair_LocationsToReInsert.txt
 
 https://www.openstreetmap.org/changeset/160190587 was completed via JOSM, deleting nodes which were corrupted at import. 3 had since been deleted, 1 had been merged into a building way, the rest had been untouched.
 
-Then re-imported the fixed nodes with:
+Then we filter out the nodes to be re-imported with:
+
+    ./bin/filterReInserts.js dist/Stage3Repair_LocationsToReInsert.txt dist/candidates-r2/newAddressesInBlocksWithoutAnyExisting dist/Stage3Repair_NodesToReInsert.geojson
+
+Since JOSM will also merge tags of nodes sharing the same coordinates of an imported GeoJSON, this is converted to .osm with
+
+    ./node_modules/.bin/geojsontoosm dist/Stage3Repair_NodesToReInsert.geojson > dist/Stage3Repair_NodesToReInsert.osm
+
+This is then uploaded with JOSM as a single changeset.
 
 ### Stage 4 - Matched addresses adding addr:flats
 

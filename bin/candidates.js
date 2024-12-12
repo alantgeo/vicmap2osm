@@ -152,7 +152,7 @@ const candidatesNewAddressesWithoutConflicts = new Transform({
 })
 
 /**
- * Save our candidate address data as .osm files by layer by suburb
+ * Save our candidate address data as .geojson and .osm files by layer by suburb
  */
 function outputCandidates() {
   let i = 0
@@ -167,6 +167,7 @@ function outputCandidates() {
 
       const suburbFeatures = outputFeatures[layer][suburbId]
       if (suburbFeatures && suburbFeatures.length) {
+        fs.writeFileSync(path.join(outputPath, layer, `${suburbId}_${suburbName[suburbId]}.geojson`), JSON.stringify({ type: "FeatureCollection", features: suburbFeatures }))
         const xml = geojsontoosm(suburbFeatures)
         fs.writeFileSync(path.join(outputPath, layer, `${suburbId}_${suburbName[suburbId]}.osm`), xml)
       } // else no data for this suburb
