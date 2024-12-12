@@ -449,6 +449,21 @@ The changeset comment used is
 
 - [x] Changesets uploaded 11/12/2024
 
+#### Stage 3 - Repair
+Part way through the import, it was found that import candidate address points which shared the same coordinates were being incorrectly merged into a single node with all the tags combined. This was due to https://github.com/tyrasd/geojsontoosm/issues/10 in the step which converted from GeoJSON to .osm.
+
+The issue was subsequently fixed in the code here, and problematic imported nodes were identified through running
+
+    ./bin/reportOverlap.js dist/conflate/noOSMAddressWithinBlock.geojson dist/conflate/noOSMAddressWithinBlock.overlaps.geojson
+
+From here we used the following to identify the node IDS to delete and locations to re-import:
+
+./bin/findAndRemove.js dist/conflate/noOSMAddressWithinBlock.overlaps.geojson dist/candidates/newAddressesInBlocksWithoutAnyExisting/_DONE/ dist/Stage3Repair_NodeIdsToDelete.txt dist/Stage3Repair_LocationsToReInsert.txt
+
+https://www.openstreetmap.org/changeset/160190587 was completed via JOSM, deleting nodes which were corrupted at import. 3 had since been deleted, 1 had been merged into a building way, the rest had been untouched.
+
+Then re-imported the fixed nodes with:
+
 ### Stage 4 - Matched addresses adding addr:flats
 
 Where a Vicmap address matched an OSM address, set `addr:flats` as derived from Vicmap.
