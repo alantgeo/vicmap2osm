@@ -221,6 +221,8 @@ dist/conflate:
 	./bin/mrCoopDiff.js $@/mr_exactMatchSetFlats.geojson $@/mr_exactMatchSetFlats.changes.json
 	./bin/mrCoopDiff.js $@/mr_explodeUnitFromNumber.geojson $@/mr_explodeUnitFromNumber.changes.json
 	./bin/mrCoopDiff.js $@/mr_explodeUnitFromNumberFuzzyStreet.geojson $@/mr_explodeUnitFromNumberFuzzyStreet.changes.json
+	./bin/reportOverlap.js dist/conflate/noOSMAddressWithinBlock.geojson dist/conflate/noOSMAddressWithinBlock.overlaps.geojson
+	./bin/reportOverlap.js dist/conflate/newAddressesWithoutConflicts.geojson dist/conflate/newAddressesWithoutConflicts.overlaps.geojson
 
 dist/mrPreview.html: www/mrPreview.html
 	cp $< $@

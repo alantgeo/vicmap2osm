@@ -510,6 +510,16 @@ Flag whether within the same property parcel or not.
 
 `mr_duplicateAddressFarApart_NotFoundInOSM.geojson` was used to created the MapRoulette challenge at https://maproulette.org/browse/challenges/21226.
 
+
+## Stage 8 - Imported addresses sharing the same location manual review
+
+The MapRoulette challenge at https://mpr.lt/c/50541 was created to aid the manual review of imported address nodes which share the same location.
+
+The source for this challenge was created with:
+
+./bin/reportOverlap.js dist/conflate/noOSMAddressWithinBlock.geojson dist/conflate/noOSMAddressWithinBlock.overlaps.geojson
+./bin/reportOverlap.js dist/conflate/newAddressesWithoutConflicts.geojson dist/conflate/newAddressesWithoutConflicts.overlaps.geojson
+
 ### Changeset tags
 
 - `source=Vicmap Address`
