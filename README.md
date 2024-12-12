@@ -22,6 +22,11 @@ We use GitLab CI/CD to automate data processing.
 
 - _conflate_ takes the Vicmap OSM ready data and existing OSM address data from the _build_ stage and conflates the two into import candidates.
 
+## Prepare your environment
+You can use a docker environment if you prefer based on the Dockerfiles in `docker`, otherwise you can install the tools mentioned in the Dockerfiles per your OS.
+
+You will need to ensure you do `cp src/polygon-lookup-patch.js node_modules/polygon-lookup/index.js` after your `npm install` or `yarn install`.
+
 ## Vicmap Source Data
 
 The [Vicmap Address](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-address) data is downloaded from [DataShare](https://datashare.maps.vic.gov.au/) with the following configuration:
