@@ -470,7 +470,7 @@ Since JOSM will also merge tags of nodes sharing the same coordinates of an impo
 
     ./node_modules/.bin/geojsontoosm dist/Stage3Repair_NodesToReInsert.geojson > dist/Stage3Repair_NodesToReInsert.osm
 
-This is then uploaded with JOSM as a single changeset.
+This is then uploaded with JOSM as a single changeset at https://www.openstreetmap.org/changeset/160191092
 
 ### Stage 4 - Matched addresses adding addr:flats
 
