@@ -40,6 +40,7 @@ for f in dist/candidates/newAddressesInBlocksWithoutAnyExisting/*.osm; do
         mv "$f" "$DONE/"
         mv "$d/$b.osc" "$DONE/"
         mv "$d/$b.diff.xml" "$DONE/"
+        mv "$d/$b.geojson" "$DONE/"
     fi
 
     # give the api a rest
