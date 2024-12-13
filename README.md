@@ -447,7 +447,7 @@ The changeset comment used is
 
     Vicmap Address Import - Stage 3 - New addresses in blocks without any existing addresses: SUBURB_NAME. See https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address
 
-- [x] Changesets uploaded 11/12/2024
+- [x] Changesets uploaded. 1,539,235 address nodes. Uploads done between 11/12/2024 to 13/12/2024.
 
 #### Stage 3 - Repair
 Part way through the import, it was found that import candidate address points which shared the same coordinates were being incorrectly merged into a single node with all the tags combined. This was due to https://github.com/tyrasd/geojsontoosm/issues/10 in the step which converted from GeoJSON to .osm.
