@@ -385,12 +385,18 @@ The dedicated import account used for the import is [`vicmap_import`](https://ww
 
 
 ### Stage 0 - Find abbreviated addr:street on existing addresses
+
+Status: Completed
+
 `make data/abbrStreetsMR.geojson` generates a MapRoulette challenge file with possible abbreviated street names in existing `addr:street` tags in OSM and suggests fixes. Where the suggested fix matched the unabbreviated road name then this can be safely applied.
 
 - [x] MapRoulette challenge completed [https://maproulette.org/admin/project/42479/challenge/18696](https://maproulette.org/admin/project/42479/challenge/18696) (~230 features)
 - [x] MapRoulette challenge completed [https://maproulette.org/admin/project/42479/challenge/18696](https://maproulette.org/admin/project/42479/challenge/18696) (~38 features) 10/12/2024
 
 ### Stage 1 - postal_code
+
+Status: Completed
+
 For background see [Inclusion of `addr:suburb`, `addr:postcode` and `addr:state`](#inclusion-of-addrsuburb-addrpostcode-and-addrstate).
 
 Using JOSM RemoteControl commands [`postal_code`](https://wiki.openstreetmap.org/wiki/Key:postal_code) will be added to the existing Victorian `admin_level=9` boundaries using the postcode derived from Vicmap Addresses. Except for Melbourne suburb because there are two postal codes in use, and the `postal_code` boundaries are already mapped.
@@ -409,6 +415,9 @@ Import procedure:
 - [x] Changeset uploaded at https://www.openstreetmap.org/changeset/142031616 (2424 features)
 
 ### Stage 2 - Set unit from housenumber
+
+Status: Skipped (not needed)
+
 During the conflation stage, Vicmap addresses which were deemed to match OSM addresses based on the OSM representation as `addr:housenumber=X/Y` and the Vicmap representation as `addr:unit=X`, `addr:housenumber=Y`, then an automated tag change to move the unit into `addr:unit` is performed.
 
 This will be a single Victoria wide changeset.
@@ -435,6 +444,8 @@ A further manual MapRoulette challenge built from `dist/conflate/mr_explodeUnitF
 
 ### Stage 3 - New addresses in blocks without any existing addresses
 
+Status: Completed
+
 // Conflation script will be re-run after stage 2 to incorporate the exploded units.
 
 Candidate files from `dist/candidates/newAddressesInBlocksWithoutAnyExisting/`.
@@ -450,6 +461,9 @@ The changeset comment used is
 - [x] Changesets uploaded. 1,539,235 address nodes. Uploads done between 11/12/2024 to 13/12/2024.
 
 #### Stage 3 - Repair
+
+Status: Completed
+
 Part way through the import, it was found that import candidate address points which shared the same coordinates were being incorrectly merged into a single node with all the tags combined. This was due to https://github.com/tyrasd/geojsontoosm/issues/10 in the step which converted from GeoJSON to .osm.
 
 The issue was subsequently fixed in the code here, and problematic imported nodes were identified through running
