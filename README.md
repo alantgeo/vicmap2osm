@@ -357,6 +357,7 @@ A better way to review matches where some attributes differ, potentially as a qu
 - When a match is found between Vicmap and OSM, we don't compare geometry. When OSM is considered more accurate it's not a problem, but we won't pick up on issues where the OSM geometry is out by a lot, but Vicmap is spot on.
 - Vicmap data isn't perfect, OSM data isn't perfect. While looking over the two datasets for QA this became obvious. Sometimes Vicmap has it right and OSM wrong, sometimes vice versa. This import is done with the community support knowing it won't be perfect 100% of the time, but most of the time it will help get these addresses into OSM where they can be further refined independently of Vicmap.
 - `openstreetmap-carto` currently renders `addr:flats` as a label which would create poor rendering based on how we are planning on populating `addr:flats`. This issue is with `openstreetmap-carto` to fix as our tagging matches current practice and the wiki. See https://github.com/gravitystorm/openstreetmap-carto/issues/4160.
+- `openstreetmap-carto` is unable to localize the display of `addr:unit` and `addr:housenumber` as reported in https://github.com/gravitystorm/openstreetmap-carto/issues/3568. Labels will appear on the map as `{addr:housenumber} {addr:unit}` rather than the more standard local style of `{addr:unit}/{addr:housenumber}`.
 
 ## Prepare Final Import Candidates
 1. Prepare split `addr:unit` / `addr:housenumber` changeset to QA before uploading
