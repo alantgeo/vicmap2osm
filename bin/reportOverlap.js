@@ -82,7 +82,8 @@ const reportOverlap = new Transform({
       this.push({
         type: 'Feature',
         properties: {
-          count: sharedGeometry.length
+          count: sharedGeometry.length,
+          addresses: sharedGeometry.map(feature => `${feature.properties['addr:unit'] ? ''.concat(feature.properties['addr:unit'], '/') : ''}${feature.properties['addr:housenumber']} ${feature.properties['addr:street']}`).join(', ')
         },
         geometry: sharedGeometry[0].geometry
       })
