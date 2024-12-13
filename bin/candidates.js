@@ -11,6 +11,8 @@ const ndjson = require('ndjson')
 const PolygonLookup = require('polygon-lookup')
 const geojsontoosm = require('geojsontoosm')
 
+const MAXIMUM_ELEMENTS_PER_UPLOAD_REQUEST = 10000
+
 const argv = require('yargs/yargs')(process.argv.slice(2))
   .option('verbose', {
     type: 'boolean',
@@ -167,9 +169,18 @@ function outputCandidates() {
 
       const suburbFeatures = outputFeatures[layer][suburbId]
       if (suburbFeatures && suburbFeatures.length) {
-        fs.writeFileSync(path.join(outputPath, layer, `${suburbId}_${suburbName[suburbId]}.geojson`), JSON.stringify({ type: "FeatureCollection", features: suburbFeatures }))
-        const xml = geojsontoosm(suburbFeatures)
-        fs.writeFileSync(path.join(outputPath, layer, `${suburbId}_${suburbName[suburbId]}.osm`), xml)
+        if (suburbFeatures.length > MAXIMUM_ELEMENTS_PER_UPLOAD_REQUEST) {
+          for (var chunk = 0; chunk < Math.ceil(suburbFeatures.length / MAXIMUM_ELEMENTS_PER_UPLOAD_REQUEST); chunk++) {
+            const chunkFeatures = suburbFeatures.slice(chunk * MAXIMUM_ELEMENTS_PER_UPLOAD_REQUEST, (chunk + 1) * MAXIMUM_ELEMENTS_PER_UPLOAD_REQUEST)
+            fs.writeFileSync(path.join(outputPath, layer, `${suburbId}_${suburbName[suburbId]}_${chunk + 1}.geojson`), JSON.stringify({ type: "FeatureCollection", features: chunkFeatures }))
+            const xml = geojsontoosm(chunkFeatures)
+            fs.writeFileSync(path.join(outputPath, layer, `${suburbId}_${suburbName[suburbId]}_${chunk + 1}.osm`), xml)
+          }
+        } else {
+          fs.writeFileSync(path.join(outputPath, layer, `${suburbId}_${suburbName[suburbId]}.geojson`), JSON.stringify({ type: "FeatureCollection", features: suburbFeatures }))
+          const xml = geojsontoosm(suburbFeatures)
+          fs.writeFileSync(path.join(outputPath, layer, `${suburbId}_${suburbName[suburbId]}.osm`), xml)
+        }
       } // else no data for this suburb
     }
   }
