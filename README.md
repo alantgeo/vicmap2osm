@@ -513,12 +513,17 @@ Flag whether within the same property parcel or not.
 
 ## Stage 8 - Imported addresses sharing the same location manual review
 
+Some addresses within Vicmap share the same location, while there may be situations where this is valid, it may also be due to limitations of the Vicmap data.
+
+Furthermore, while it's possible to work with overlapping nodes in both iD and JOSM it can complicate editing as neither editors make it obvious that there are multiple nodes on top of each other.
+
 The MapRoulette challenge at https://mpr.lt/c/50541 was created to aid the manual review of imported address nodes which share the same location.
 
 The source for this challenge was created with:
 
-./bin/reportOverlap.js dist/conflate/noOSMAddressWithinBlock.geojson dist/conflate/noOSMAddressWithinBlock.overlaps.geojson
-./bin/reportOverlap.js dist/conflate/newAddressesWithoutConflicts.geojson dist/conflate/newAddressesWithoutConflicts.overlaps.geojson
+    make dist/maproulette
+
+- [ ] https://mpr.lt/c/50541 **In Progress**
 
 ### Changeset tags
 

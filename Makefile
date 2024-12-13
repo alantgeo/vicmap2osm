@@ -224,6 +224,11 @@ dist/conflate:
 	./bin/reportOverlap.js dist/conflate/noOSMAddressWithinBlock.geojson dist/conflate/noOSMAddressWithinBlock.overlaps.geojson
 	./bin/reportOverlap.js dist/conflate/newAddressesWithoutConflicts.geojson dist/conflate/newAddressesWithoutConflicts.overlaps.geojson
 
+dist/maproulette: dist/conflate/noOSMAddressWithinBlock.overlaps.geojson # dist/conflate/newAddressesWithoutConflicts.overlaps.geojson
+	mkdir -p $@
+	ogr2ogr -f GeoJSON $@/MapRoulette_ImportedOverlappingNodes-NoOSMAddressWithinBlock.geojson dist/conflate/noOSMAddressWithinBlock.overlaps.geojson
+# ogr2ogr -f GeoJSON $@/MapRoulette_ImportedOverlappingNodes-NewAddressesWithoutConflicts.geojson dist/conflate/newAddressesWithoutConflicts.overlaps.geojson
+
 dist/mrPreview.html: www/mrPreview.html
 	cp $< $@
 
