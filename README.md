@@ -513,20 +513,20 @@ The changeset comment used is
 
     Vicmap Address Import - Stage 5 - New addresses: SUBURB_NAME. See https://wiki.openstreetmap.org/wiki/Imports/Vicmap_Address
 
-- [ ] Changesets not yet uploaded
+- [x] Changesets uploaded. 1,160,294 address nodes. Uploads done between 13/12/2024 and .14/12/2024.
 
 ### Stage 6 - Complete incomplete existing addresses
 
-Adding `addr:street` and other tags where none exists but the `addr:housenumber` matches.
+Where a Vicmap address matched an OSM address, add `addr:street` and other tags where none exists in OSM but the `addr:housenumber` matches.
 
-Flag whether within the same property parcel or not.
+Consider flagging whether within the same property parcel or not?
 
 ### Stage 7 - Duplicate addresses from Vicmap needing manual review
 
 `mr_duplicateAddressFarApart_NotFoundInOSM.geojson` was used to created the MapRoulette challenge at https://maproulette.org/browse/challenges/21226.
 
 
-## Stage 8 - Imported addresses sharing the same location manual review
+### Stage 8 - Imported addresses sharing the same location manual review
 
 Some addresses within Vicmap share the same location, while there may be situations where this is valid, it may also be due to limitations of the Vicmap data.
 
