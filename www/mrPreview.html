@@ -142,8 +142,14 @@
             section.setAttribute('id', id)
 
             const header = document.createElement('h2')
-            header.textContent = id
+            const headerLink = document.createElement('a')
+            headerLink.textContent = id
+            headerLink.setAttribute('href', `https://www.openstreetmap.org/${id}`)
+            headerLink.setAttribute('target', '_blank')
+            header.appendChild(headerLink)
             section.appendChild(header)
+            const subtitle = document.createElement('span')
+            section.appendChild(subtitle)
 
             const table = document.createElement('table')
 
@@ -169,7 +175,7 @@
             let tagsRemoved = false
 
             // properties
-            const distinctKeys = [...new Set([...Object.keys(change.before.properties), ...Object.keys(change.after.properties)])]
+            const distinctKeys = [...new Set([...Object.keys(change.before?.properties || {}), ...Object.keys(change.after?.properties || {})])]
             for (const key of distinctKeys) {
                 const tr = document.createElement('tr')
 
@@ -177,11 +183,11 @@
                 tdKey.textContent = key
 
                 const tdBefore = document.createElement('td')
-                const beforeValue = change.before.properties[key]
+                const beforeValue = change.before?.properties[key]
                 tdBefore.textContent = beforeValue
 
                 const tdAfter = document.createElement('td')
-                const afterValue = change.after.properties[key]
+                const afterValue = change.after?.properties[key]
                 tdAfter.textContent = afterValue
 
                 if (beforeValue && afterValue && beforeValue !== afterValue) {
@@ -212,7 +218,7 @@
 
                 table.appendChild(tr)
             }
-            header.textContent = `${id} (${tagsAdded ? 'Added' : ''} ${tagsModified ? 'Modified' : ''} ${tagsRemoved ? 'Removed' : ''})`
+            subtitle.textContent = `(${tagsAdded ? 'Added' : ''} ${tagsModified ? 'Modified' : ''} ${tagsRemoved ? 'Removed' : ''})`
 
             section.appendChild(table)
             content.appendChild(section)
