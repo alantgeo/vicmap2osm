@@ -532,13 +532,15 @@ Some addresses within Vicmap share the same location, while there may be situati
 
 Furthermore, while it's possible to work with overlapping nodes in both iD and JOSM it can complicate editing as neither editors make it obvious that there are multiple nodes on top of each other.
 
-The MapRoulette challenge at https://mpr.lt/c/50541 was created to aid the manual review of imported address nodes which share the same location.
+The MapRoulette challenges below were created to aid the manual review of imported address nodes which share the same location.
 
-The source for this challenge was created with:
+The source for these challenges was created with:
 
     make dist/maproulette
 
 - [ ] https://mpr.lt/c/50541 **In Progress**
+- [ ] https://mpr.lt/c/50549 **In Progress**
+
 
 ### Changeset tags
 
