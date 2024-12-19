@@ -554,6 +554,12 @@ Not covered within this import scope, however a suggested way to address this is
 
 - Monitoring for modified and deleted addresses from Vicmap
 
+### Tagging addr:flats per floor
+Vicmap data includes the building floor/level of each unit. This import did not consider that data, and future work could use this data to:
+
+* add missing `building:levels` tags
+* provide a breakdown of unit numbers per level via a tag like `addr:flats:level:N=X` and `addr:flats:level:ref:N=X` as I've proposed at (https://wiki.openstreetmap.org/wiki/Talk:Key:addr:flats)[https://wiki.openstreetmap.org/wiki/Talk:Key:addr:flats#addr:flats:level:N=*_and_addr:flats:level:ref:N=]. Further discussion also at https://community.openstreetmap.org/t/vicmap-address-import-progress/122863/8
+
 ## Community Feedback
 
 Consultation with the local community on talk-au at https://lists.openstreetmap.org/pipermail/talk-au/2021-May/014622.html determined:
